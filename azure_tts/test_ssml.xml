@@ -1,0 +1,12 @@
+<speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="en-US"><voice name="en-US-JaneNeural"><s /><mstts:express-as style="cheerful">Good morning, Contoso restaurant. I am your AI assistant, Jane. How can I help you?</mstts:express-as><s /></voice>
+<voice name="en-US-TonyNeural"><s /><mstts:express-as style="friendly">Hi<break strength="weak" />, I would like to make a dinner reservation.</mstts:express-as><s /></voice>
+<voice name="en-US-JaneNeural"><s /><mstts:express-as style="cheerful">Of course, what evening will you be joining us on?</mstts:express-as><s /></voice>
+<voice name="en-US-TonyNeural">We will need the reservation for Thursday night.</voice>
+<voice name="en-US-JaneNeural"><s /><mstts:express-as style="cheerful"><prosody rate="+20.00%">And what time would you like the reservation for?</prosody></mstts:express-as><s /></voice>
+<voice name="en-US-TonyNeural">We would prefer 7:00 or 7:30.</voice>
+<voice name="en-US-JaneNeural"><s /><mstts:express-as style="cheerful"><prosody rate="+10.00%">Sounds good!</prosody><prosody rate="-5.00%"> And for how many people?</prosody></mstts:express-as><s /></voice>
+<voice name="en-US-TonyNeural"><s />There will be 5 of us.<s /></voice>
+<voice name="en-US-JaneNeural"><s /><mstts:express-as style="cheerful">Fine, I can seat you at 7:00 on Thursday, if you would kindly give me your name.</mstts:express-as><s /></voice>
+<voice name="en-US-TonyNeural"><mstts:express-as style="friendly">The last name is Wood. W-O-O-D, Wood.</mstts:express-as><s /></voice>
+<voice name="en-US-JaneNeural"><s /><mstts:express-as style="excited">See you at 7:00 this Thursday, Mr. Wood.</mstts:express-as><s /></voice>
+<voice name="en-US-TonyNeural"><s /><mstts:express-as style="Default">Thank you.</mstts:express-as><s /></voice></speak>
