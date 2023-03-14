@@ -15,7 +15,7 @@ def request_voice_fn(text):
     result = synthesizer.speak_ssml_async(ssml).get()
 
     stream = speechsdk.AudioDataStream(result)
-    stream.save_to_wav_file("response.wav")
+    stream.save_to_wav_file("./kiki_hub/response.wav")
     
 # text = "Today was a good day, want you agree?"
 # request_voice_fn(text)

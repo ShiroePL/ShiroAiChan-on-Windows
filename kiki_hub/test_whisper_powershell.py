@@ -5,7 +5,7 @@ def transcribe_audio_question():
     #start timer
     start_time = time.time()
     # Load audio file as base64 encoded string
-    with open("recording.wav", "rb") as audio_file:
+    with open("./kiki_hub/question.wav", "rb") as audio_file:
         audio_data = base64.b64encode(audio_file.read()).decode("utf-8")
 
     response = requests.post("http://127.0.0.1:7860/run/predict", json={
@@ -13,7 +13,7 @@ def transcribe_audio_question():
             "transcribe",
             "gpu",
             "en",
-            "base.en",
+            "small.en",
             {"name": "recording.wav", "data": f"data:audio/wav;base64,{audio_data}"},
             {"name": "recording.wav", "data": f"data:audio/wav;base64,{audio_data}"}
         ]
