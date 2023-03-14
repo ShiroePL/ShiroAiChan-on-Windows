@@ -1,6 +1,6 @@
 import discord
 import chatgpt_api
-import connect_to_azuredb
+import connect_to_phpmyadmin
 import play_audio as play_audio
 import request_voice_tts as request_voice
 from better_profanity import profanity
@@ -13,8 +13,8 @@ async def handle_openai_response_voice(question,interaction):
     user = interaction.user
     discord_username = f"{interaction.user.name}#{interaction.user.discriminator}" 
     print("---------------------------------")
-    connect_to_azuredb.check_user_in_database(discord_username) #check if user is in database and create table for him/her if not
-    messages = connect_to_azuredb.retrieve_chat_history_from_database(discord_username)           
+    connect_to_phpmyadmin.check_user_in_database(discord_username) #check if user is in database and create table for him/her if not
+    messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(discord_username)           
     try:
         if profanity.contains_profanity(question) == False: # if false in question then generate answer
             
@@ -27,9 +27,9 @@ async def handle_openai_response_voice(question,interaction):
 
             if profanity.contains_profanity(answer) == False: # if false in answer then  
                     #send to azure db
-                connect_to_azuredb.insert_message_to_database(discord_username, question, answer, messages) #insert to Azure DB to user table    
-                connect_to_azuredb.connect_to_azuredb_fn(question_to_db, answer) #to general table with all  questions and answers
-                connect_to_azuredb.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
+                connect_to_phpmyadmin.insert_message_to_database(discord_username, question, answer, messages) #insert to Azure DB to user table    
+                connect_to_phpmyadmin.connect_to_azuredb_fn(question_to_db, answer) #to general table with all  questions and answers
+                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
                 print("---------------------------------")   
                     #tts request
                 request_voice.request_voice_fn(answer) #IT WOULD BE GOOD TO RUN THIS IN SUBPROCES BEFORE DATABASE
@@ -59,9 +59,9 @@ async def handle_openai_response_voice(question,interaction):
             else:       # if answer contains some censored words
                     #send to azure db   
                 censored = profanity.censor(answer)
-                connect_to_azuredb.insert_message_to_database(discord_username, question, censored, messages)
-                connect_to_azuredb.connect_to_azuredb_fn(question_to_db, censored)
-                connect_to_azuredb.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens)
+                connect_to_phpmyadmin.insert_message_to_database(discord_username, question, censored, messages)
+                connect_to_phpmyadmin.connect_to_azuredb_fn(question_to_db, censored)
+                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens)
         
         
         
