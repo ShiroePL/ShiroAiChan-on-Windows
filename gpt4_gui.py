@@ -19,12 +19,18 @@ import request_voice_tts as request_voice
 import sys
 from db_config import conn
 from tkinter import scrolledtext
+from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
+from pathlib import Path
+from ctypes import windll
+from tkinter import *
+OUTPUT_PATH = Path(__file__).parent
+ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
 
 # Initialize the question to speech engine 
 engine=pyttsx3.init()
 conn = None
 
-
+windll.shcore.SetProcessDpiAwareness(1)
 def transcribe_audio_question(filename):
     start_time = time.time()
     # Load audio file as base64 encoded string
@@ -68,18 +74,33 @@ def play_audio_fn(filename):
     p.terminate()
     print("Playing voice")
 # Replace print() statements with this function
-def print_response(response):
-    response_area.insert(tk.END, response + '\n')
-    response_area.see(tk.END)
+# def print_response(response):
+#     response_area.insert(tk.END, response + '\n')
+#     response_area.see(tk.END)
 def print_response_label(response):
     response_label.config(text=response)
+    
+    
 
 def voice_control():
-    recognizer = sr.Recognizer() # don't knwo why but without this it doesn't work probably because : with sr.Microphone() as source:
+    # don't knwo why but without this it doesn't work probably because : with sr.Microphone() as source:
+    name = user_name_entry.get()
+    choice = reset_database_var.get()
+    print("Your name?: " + name)
+    print("Do you want to reset your chat history? You chose: " + choice)
+    print("say 'exit program' to exit the program")
+    
+    if choice == "Yes":
+        connect_to_phpmyadmin.reset_chat_history(name)
+        
+    connect_to_phpmyadmin.check_user_in_database(name)
+    recognizer = sr.Recognizer() 
+
+
     print("started lintening")
     while running: #while runnign is true
         
-        print_response("Say 'pathfinder' to start a conversation")
+        #print_response("Say 'pathfinder' to start a conversation")
         messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
         #Wait for user to say "pathfinder"
         print("Say 'pathfinder' to start a conversation")
@@ -93,7 +114,7 @@ def voice_control():
             f.close()  
             try:
                 transcription = transcribe_audio_question(alias) #make transcription from alias file
-                print_response(transcription)
+                #print_response(transcription)
                 print_response_label(transcription)
                 if transcription.rstrip('.,?!').lower() == " exit program":
                     sys.exit()
@@ -143,15 +164,7 @@ def voice_control():
     # Replace `print()` statements with `print_response()`
             # ...
 
-print("say 'exit program' to exit the program")
-print("What is your name?: ")
-name = input()
-print("Do you want to reset your chat history? (yes/no):")
-choice = input()
-if choice =="yes":
-    connect_to_phpmyadmin.reset_chat_history(name)
-    
-connect_to_phpmyadmin.check_user_in_database(name)
+
 
 def start_voice_control():
     global running
@@ -165,29 +178,203 @@ def stop_listening():
     running = False #will cut off the while loop in voice control
     
 
+def relative_to_assets(path: str) -> Path:
+    return ASSETS_PATH / Path(path)
 # GUI elements
 root = tk.Tk()
 root.title("ShiroAi-chan Control Panel")
 
-frame = tk.Frame(root)
-frame.pack(padx=10, pady=10)
 
-start_button = tk.Button(frame, text="Start Listening", command=start_voice_control, width=20)
-start_button.grid(row=0, column=0, padx=5, pady=5)
+root.geometry("1000x600")
+root.configure(bg = "#4B98E0")
 
-stop_button = tk.Button(frame, text="Stop Listening", command=stop_listening)
-stop_button.grid(row=0, column=1, padx=5, pady=5)
+canvas = Canvas(
+    root,
+    bg = "#4B98E0",
+    height = 600,
+    width = 1000,
+    bd = 0,
+    highlightthickness = 0,
+    relief = "ridge"
+)
+
+canvas.place(x = 0, y = 0)
+image_image_1 = PhotoImage(
+    file=relative_to_assets("image_1.png"))
+image_1 = canvas.create_image(
+    500.0,
+    300.0,
+    image=image_image_1
+)
+
+canvas.create_text(
+    204.0,
+    7.0,
+    anchor="nw",
+    text="ShiroAi-chan Control Panel",
+    fill="#F9C6B3",
+    font=("Inter Bold", 40 * -1)
+)
+
+button_image_1 = PhotoImage(
+    file=relative_to_assets("button_1.png"))
+start_button = Button(
+    image=button_image_1,
+    borderwidth=0,
+    highlightthickness=0,
+    command=start_voice_control,
+    relief="flat"
+)
+
+
+start_button.place(
+    x=64.0,
+    y=69.0,
+    width=120.0,
+    height=50.0
+)
+
+button_image_2 = PhotoImage(
+    file=relative_to_assets("button_2.png"))
+stop_button = Button(
+    image=button_image_2,
+    borderwidth=0,
+    highlightthickness=0,
+    command=stop_listening,
+    relief="flat"
+)
+
+
+stop_button.place(
+    x=225.0,
+    y=66.0,
+    width=120.0,
+    height=53.0
+)
+
+
+# frame = tk.Frame(root)
+# frame.pack(padx=10, pady=10)
+
+#start_button = tk.Button(root, command=start_voice_control)
+#start_button.grid(row=0, column=0, padx=5, pady=5)
+
+
+#stop_button = tk.Button(root, command=stop_listening)
+#stop_button.grid(row=0, column=1, padx=5, pady=5)
+
+entry_image_1 = PhotoImage(
+    file=relative_to_assets("entry_1.png"))
+entry_bg_1 = canvas.create_image(
+    124.5,
+    168.0,
+    image=entry_image_1
+)
+
+
+user_name_entry = Entry(
+    bd=0,
+    bg="#FFDDD3",
+    fg="#000716",
+    highlightthickness=0
+)
+user_name_entry.place(
+    x=53.0,
+    y=151.0,
+    width=143.0,
+    height=32.0
+)
+
+# Create the Radiobutton widgets
+reset_database_var = StringVar()
+reset_database_var.set("No")  # Set the initial value to "No"
+reset_database_yes = Radiobutton(root, text="Yes", variable=reset_database_var, value="Yes")
+reset_database_no = Radiobutton(root, text="No", variable=reset_database_var, value="No")
+reset_database_yes.place(x=100, y=200)
+reset_database_no.place(x=150, y=200)
+
+
+
+
+
+
+
+
+
+
+
+response_label = tk.Label(
+    root,
+    text="",
+    bg=root.cget("bg"),
+    fg="#F9C6B3",
+    font=("Inter Regular", 16),
+    wraplength=300,
+    anchor="center",  # Centers the text vertically
+    justify="center",  # Centers the text horizontally
+    width=30,  # Adjust this value to control the width of the label
+)
+response_label.place(
+    x=100,
+    y=230,
+)
+
+canvas.create_text(
+    31.0,
+    119.0,
+    anchor="nw",
+    text="name:",
+    fill="#FFFFFF",
+    font=("Inter Regular", 24 * -1)
+)
+
+image_image_2 = PhotoImage(
+    file=relative_to_assets("image_2.png"))
+image_2 = canvas.create_image(
+    810.0,
+    312.0,
+    image=image_image_2
+)
+
+# response_area = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=60, height=10)
+# response_area.grid(row=1, column=0, columnspan=3, padx=5, pady=5)
+
+
+root.resizable(False, False)
+running = False
+thread_running = False
+root.mainloop()
 
 # other_button = tk.Button(frame, text="Other Function", command=other_function)
 # other_button.grid(row=0, column=2, padx=5, pady=5)
 
-response_area = scrolledtext.ScrolledText(frame, wrap=tk.WORD, width=60, height=10)
-response_area.grid(row=1, column=0, columnspan=3, padx=5, pady=5)
 
-response_label = tk.Label(root, text="", wraplength=300)
-response_label.pack()
 
-running = False
-thread_running = False
 
-root.mainloop()
+
+# response_label = tk.Label(root, text="", wraplength=300)
+# response_label.pack()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
