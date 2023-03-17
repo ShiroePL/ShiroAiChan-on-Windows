@@ -23,12 +23,18 @@ from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
 from pathlib import Path
 from ctypes import windll
 from tkinter import *
+from vtube_studio_api import VTubeStudioAPI
+
+
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
 
 # Initialize the question to speech engine 
 engine=pyttsx3.init()
 conn = None
+api = VTubeStudioAPI()
+
+
 
 windll.shcore.SetProcessDpiAwareness(1)
 def transcribe_audio_question(filename):
@@ -104,6 +110,9 @@ def voice_control():
         messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
         #Wait for user to say "pathfinder"
         print("Say 'pathfinder' to start a conversation")
+
+        progress_var.set(0)
+
         with sr.Microphone() as source:
             recognizer = sr.Recognizer()
             audio = recognizer.listen(source)
@@ -111,9 +120,15 @@ def voice_control():
             transcribed = f"./kiki_hub/{alias}.wav"
             with open(transcribed, "wb") as f:
                 f.write(audio.get_wav_data())
-            f.close()  
+            f.close()
+            
+            progress_var.set(50) 
+
             try:
                 transcription = transcribe_audio_question(alias) #make transcription from alias file
+                
+                progress_var.set(100) 
+                
                 #print_response(transcription)
                 print_response_label(transcription)
                 if transcription.rstrip('.,?!').lower() == " exit program":
@@ -180,6 +195,14 @@ def stop_listening():
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
+
+
+def on_closing():
+    api.close()
+    root.destroy()
+
+
+
 # GUI elements
 root = tk.Tk()
 root.title("ShiroAi-chan Control Panel")
@@ -252,6 +275,15 @@ stop_button.place(
     height=53.0
 )
 
+play_animation_button = tk.Button(root, text="Play Animation", command=lambda: api.play_animation("introduce"))
+play_animation_button.place(
+    x=225.0,
+    y=466.0,
+    width=120.0,
+    height=53.0
+)
+
+
 
 # frame = tk.Frame(root)
 # frame.pack(padx=10, pady=10)
@@ -286,13 +318,20 @@ user_name_entry.place(
 )
 
 # Create the Radiobutton widgets
+style = ttk.Style()
+style.theme_use("default")
+style.configure("TRadiobutton", font=("Helvetica", 12), background="#E6E6E6", foreground="#333333")
 reset_database_var = StringVar()
-reset_database_var.set("No")  # Set the initial value to "No"
-reset_database_yes = Radiobutton(root, text="Yes", variable=reset_database_var, value="Yes")
-reset_database_no = Radiobutton(root, text="No", variable=reset_database_var, value="No")
+reset_database_var.set("No")
+reset_database_yes = ttk.Radiobutton(root, text="Yes", variable=reset_database_var, value="Yes")
+reset_database_no = ttk.Radiobutton(root, text="No", variable=reset_database_var, value="No")
 reset_database_yes.place(x=100, y=200)
-reset_database_no.place(x=150, y=200)
+reset_database_no.place(x=170, y=200)
 
+# Create the ProgressBar widget
+progress_var = IntVar()
+progress_bar = ttk.Progressbar(root, maximum=100, variable=progress_var)
+progress_bar.place(x=240, y=200)
 
 
 
@@ -343,8 +382,9 @@ image_2 = canvas.create_image(
 root.resizable(False, False)
 running = False
 thread_running = False
+root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
-
+#root.protocol("WM_DELETE_WINDOW", on_closing)
 # other_button = tk.Button(frame, text="Other Function", command=other_function)
 # other_button.grid(row=0, column=2, padx=5, pady=5)
 
@@ -354,26 +394,6 @@ root.mainloop()
 
 # response_label = tk.Label(root, text="", wraplength=300)
 # response_label.pack()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

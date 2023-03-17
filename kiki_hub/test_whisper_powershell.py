@@ -13,7 +13,7 @@ def transcribe_audio_question():
             "transcribe",
             "gpu",
             "en",
-            "base.en",
+            "small.en",
             {"name": "recording.wav", "data": f"data:audio/wav;base64,{audio_data}"},
             {"name": "recording.wav", "data": f"data:audio/wav;base64,{audio_data}"}
         ]

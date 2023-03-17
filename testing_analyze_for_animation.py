@@ -18,7 +18,7 @@ def analyzing_fn(prompt, keywords):
     counting = keyword_check(prompt, keywords)
 
     if sentimental == "negative" and counting > 1:
-        print("negative and zaimek i cry jest, running animation 'crying'")
+        print("negative and zaimek 'i cry' jest, running animation 'crying'")
 
     #main program playing animation
 

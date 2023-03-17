@@ -18,11 +18,13 @@ def check_sentiment_fn(sentence):
         return sentiment
     #print("Sentiment:", sentiment)
 
-# sentences = ["AH... . IT HURTS THERE , i think i want to stop",  # positive sentence example
-#                 "I don't want to do more. But if you want. but still, I am not ready",  # punctuation emphasis handled correctly (sentiment intensity adjusted)
-#                 "O-okay! Just be gentle please? It hurts a bit but, if you're sure you can do this. Please go on", # booster words handled correctly (sentiment intensity adjusted)
-#                 "no, I didn't say that! she is embarrassed . I think it's good"  # Capitalized negation
-#                 ]
+sentences = ["AH... . IT HURTS THERE , i think i want to stop",  # positive sentence example
+                "I don't want to do more. But if you want. but still, I am not ready",  # punctuation emphasis handled correctly (sentiment intensity adjusted)
+                "O-okay! Just be gentle please? It hurts a bit but, if you're sure you can do this. Please go on", # booster words handled correctly (sentiment intensity adjusted)
+                "no, I didn't say that! she is embarrassed . I think it's good",  # Capitalized negation
+                ]
 #check_sentiment_fn(sentences)
 if __name__ == "__main__":
-    pass
+    #print each sentiment
+    for sentence in sentences:
+        print(check_sentiment_fn(sentence))
