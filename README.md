@@ -1,5 +1,5 @@
 # 1. ShiroAi-chan and her friend Kiki-chan
-![Screenshot](pictures/shiro_chan.png)
+![Screenshot](pictures/shiro_black_github.png)
 ![Screenshot](pictures/kiki_chan.png)
 
 
