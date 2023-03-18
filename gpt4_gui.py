@@ -25,6 +25,8 @@ from ctypes import windll
 from tkinter import *
 from vtube_studio_api import VTubeStudioAPI
 from PIL import Image, ImageTk
+import string
+
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
@@ -131,9 +133,15 @@ def voice_control():
                 update_progress_bar(100)
                 #print_response(transcription)
                 print_response_label(transcription)
-                if transcription.rstrip('.,?!').lower() == " exit program" or transcription.rstrip('.,?!').lower() == " bye bye shiro":
+                    #checking if user said started listening or other commands
+
+                transcription_cleaned = transcription.translate(str.maketrans("", "", string.punctuation)).strip().lower()
+                   
+                if transcription_cleaned in ("bye bye shiro", "exit program", "bye bye shira"):
+                    beep = "cute_beep" #NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
+                    play_audio_fn(beep)    
                     sys.exit()
-                if transcription.rstrip('.,?!').replace(' ', '').lower() == "pathfinder":
+                if transcription_cleaned in ("shiro", "shira", "pathfinder", "hello shiro", "hello shira"):
                         #record audio
                     question_file = "question"
                     filename = f"./kiki_hub/{question_file}.wav"
