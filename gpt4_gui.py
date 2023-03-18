@@ -34,7 +34,7 @@ ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
 # Initialize the question to speech engine 
 engine=pyttsx3.init()
 conn = None
-api = VTubeStudioAPI()
+api = None
 
 
 
@@ -206,7 +206,8 @@ def relative_to_assets(path: str) -> Path:
 
 
 def on_closing():
-    api.close()
+    if api:
+        api.close()
     root.destroy()
 
 def update_progress_bar(value):
@@ -216,6 +217,13 @@ def update_progress_bar(value):
     canvas.itemconfig(filled_progress, image=filled_photo)
     canvas.image = filled_photo  # Keep a reference to the image object to prevent garbage collection
 
+def connect_to_vtube():
+    global api
+    api = VTubeStudioAPI()
+    
+def disconnect_from_vtube():
+    global api
+    api.close()
 
 
 # GUI elements
@@ -301,7 +309,7 @@ button_3 = Button(
     image=button_image_3,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_3 clicked"),
+    command=lambda: connect_to_phpmyadmin.reset_chat_history(user_name_entry.get()),
     relief="flat"
 )
 button_3.place(
@@ -333,7 +341,7 @@ button_5 = Button(
     image=button_image_5,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_5 clicked"),
+    command=connect_to_vtube,
     relief="flat"
 )
 button_5.place(
@@ -349,7 +357,7 @@ button_6 = Button(
     image=button_image_6,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_6 clicked"),
+    command=disconnect_from_vtube,
     relief="flat"
 )
 button_6.place(
