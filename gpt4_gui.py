@@ -24,7 +24,7 @@ from pathlib import Path
 from ctypes import windll
 from tkinter import *
 from vtube_studio_api import VTubeStudioAPI
-
+from PIL import Image, ImageTk
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
@@ -111,8 +111,8 @@ def voice_control():
         #Wait for user to say "pathfinder"
         print("Say 'pathfinder' to start a conversation")
 
-        progress_var.set(0)
-
+        
+        update_progress_bar(0)
         with sr.Microphone() as source:
             recognizer = sr.Recognizer()
             audio = recognizer.listen(source)
@@ -122,16 +122,16 @@ def voice_control():
                 f.write(audio.get_wav_data())
             f.close()
             
-            progress_var.set(50) 
-
+            
+            update_progress_bar(50)
             try:
                 transcription = transcribe_audio_question(alias) #make transcription from alias file
                 
-                progress_var.set(100) 
                 
+                update_progress_bar(100)
                 #print_response(transcription)
                 print_response_label(transcription)
-                if transcription.rstrip('.,?!').lower() == " exit program":
+                if transcription.rstrip('.,?!').lower() == " exit program" or transcription.rstrip('.,?!').lower() == " bye bye shiro":
                     sys.exit()
                 if transcription.rstrip('.,?!').replace(' ', '').lower() == "pathfinder":
                         #record audio
@@ -201,6 +201,13 @@ def on_closing():
     api.close()
     root.destroy()
 
+def update_progress_bar(value):
+    filled_width = int(value * progress_width / 100)
+    filled_image_cropped = filled_image.crop((0, 0, filled_width, progress_height))
+    filled_photo = ImageTk.PhotoImage(filled_image_cropped)
+    canvas.itemconfig(filled_progress, image=filled_photo)
+    canvas.image = filled_photo  # Keep a reference to the image object to prevent garbage collection
+
 
 
 # GUI elements
@@ -208,14 +215,14 @@ root = tk.Tk()
 root.title("ShiroAi-chan Control Panel")
 
 
-root.geometry("1000x600")
+root.geometry("1200x800")
 root.configure(bg = "#4B98E0")
 
 canvas = Canvas(
     root,
     bg = "#4B98E0",
-    height = 600,
-    width = 1000,
+    height = 800,
+    width = 1200,
     bd = 0,
     highlightthickness = 0,
     relief = "ridge"
@@ -225,127 +232,242 @@ canvas.place(x = 0, y = 0)
 image_image_1 = PhotoImage(
     file=relative_to_assets("image_1.png"))
 image_1 = canvas.create_image(
-    500.0,
-    300.0,
+    600.0,
+    400.0,
     image=image_image_1
 )
 
+image_image_2 = PhotoImage(
+    file=relative_to_assets("image_2.png"))
+image_2 = canvas.create_image(
+    959.0,
+    400.0,
+    image=image_image_2
+)
+
+
 canvas.create_text(
-    204.0,
-    7.0,
+    257.0,
+    12.0,
     anchor="nw",
     text="ShiroAi-chan Control Panel",
-    fill="#F9C6B3",
-    font=("Inter Bold", 40 * -1)
+    fill="#12D4FF",
+    font=("Inter Bold", 48 * -1)
 )
 
 button_image_1 = PhotoImage(
     file=relative_to_assets("button_1.png"))
-start_button = Button(
+button_1 = Button(
     image=button_image_1,
     borderwidth=0,
     highlightthickness=0,
     command=start_voice_control,
     relief="flat"
 )
-
-
-start_button.place(
-    x=64.0,
-    y=69.0,
-    width=120.0,
-    height=50.0
+button_1.place(
+    x=52.0,
+    y=91.0,
+    width=127.0,
+    height=51.0
 )
 
 button_image_2 = PhotoImage(
     file=relative_to_assets("button_2.png"))
-stop_button = Button(
+button_2 = Button(
     image=button_image_2,
     borderwidth=0,
     highlightthickness=0,
     command=stop_listening,
     relief="flat"
 )
-
-
-stop_button.place(
-    x=225.0,
-    y=66.0,
-    width=120.0,
-    height=53.0
+button_2.place(
+    x=204.0,
+    y=91.0,
+    width=127.0,
+    height=51.0
 )
 
-play_animation_button = tk.Button(root, text="Play Animation", command=lambda: api.play_animation("introduce"))
-play_animation_button.place(
-    x=225.0,
-    y=466.0,
-    width=120.0,
-    height=53.0
+button_image_3 = PhotoImage(
+    file=relative_to_assets("button_3.png"))
+button_3 = Button(
+    image=button_image_3,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_3 clicked"),
+    relief="flat"
+)
+button_3.place(
+    x=356.0,
+    y=91.0,
+    width=127.0,
+    height=51.0
 )
 
+button_image_4 = PhotoImage(
+    file=relative_to_assets("button_4.png"))
+button_4 = Button(
+    image=button_image_4,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_4 clicked"),
+    relief="flat"
+)
+button_4.place(
+    x=508.0,
+    y=91.0,
+    width=127.0,
+    height=51.0
+)
 
+button_image_5 = PhotoImage(
+    file=relative_to_assets("button_5.png"))
+button_5 = Button(
+    image=button_image_5,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_5 clicked"),
+    relief="flat"
+)
+button_5.place(
+    x=52.0,
+    y=165.0,
+    width=127.0,
+    height=51.0
+)
 
-# frame = tk.Frame(root)
-# frame.pack(padx=10, pady=10)
+button_image_6 = PhotoImage(
+    file=relative_to_assets("button_6.png"))
+button_6 = Button(
+    image=button_image_6,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_6 clicked"),
+    relief="flat"
+)
+button_6.place(
+    x=204.0,
+    y=165.0,
+    width=127.0,
+    height=51.0
+)
 
-#start_button = tk.Button(root, command=start_voice_control)
-#start_button.grid(row=0, column=0, padx=5, pady=5)
+button_image_7 = PhotoImage(
+    file=relative_to_assets("button_7.png"))
+button_7 = Button(
+    image=button_image_7,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: api.play_animation("introduce"),
+    relief="flat"
+)
+button_7.place(
+    x=356.0,
+    y=165.0,
+    width=127.0,
+    height=51.0
+)
 
-
-#stop_button = tk.Button(root, command=stop_listening)
-#stop_button.grid(row=0, column=1, padx=5, pady=5)
 
 entry_image_1 = PhotoImage(
     file=relative_to_assets("entry_1.png"))
 entry_bg_1 = canvas.create_image(
-    124.5,
-    168.0,
+    113.0,
+    52.0,
     image=entry_image_1
 )
 
 
 user_name_entry = Entry(
     bd=0,
-    bg="#FFDDD3",
+    bg="#7FD7EC",
     fg="#000716",
     highlightthickness=0
 )
 user_name_entry.place(
-    x=53.0,
-    y=151.0,
-    width=143.0,
+    x=52.0,
+    y=35.0,
+    width=122.0,
     height=32.0
 )
+default_user = "shiro"
+user_name_entry.insert(0, default_user)
 
+canvas.create_text(
+    58.0,
+    5.0,
+    anchor="nw",
+    text="Your name:",
+    fill="#7FD5EA",
+    font=("Inter Bold", 20 * -1)
+)
+#OMG RADIO BUTTONS START--------------------------------------------------------------------------------------------------
 # Create the Radiobutton widgets
 style = ttk.Style()
-style.theme_use("default")
-style.configure("TRadiobutton", font=("Helvetica", 12), background="#E6E6E6", foreground="#333333")
-reset_database_var = StringVar()
+# Configure the custom radio button style
+style.layout("Custom.TRadiobutton", [
+    ("Custom.TRadiobutton.focus", {"children":
+        [("Custom.TRadiobutton.indicator", {"side": "left", "sticky": ""}),
+         ("Custom.TRadiobutton.padding", {"expand": "1", "sticky": "nswe", "children":
+             [("Custom.TRadiobutton.label", {"sticky": "nswe"})]
+          })
+         ]
+     })
+])
+
+style.configure("Custom.TRadiobutton", background="#000000", foreground="#FFFFFF", font=("Helvetica", 12))
+style.map("Custom.TRadiobutton", background=[("active", "#000000")])
+
+# Create custom images for the radio button states
+normal_image = tk.PhotoImage(width=16, height=16)
+selected_image = tk.PhotoImage(width=16, height=16)
+
+# Fill in the images with the desired color and shape
+normal_image.put(("black",), to=(0, 0, 16, 16))
+selected_image.put(("red",), to=(0, 0, 16, 16))
+
+# Draw arrow-like shape on the selected image
+selected_image.put(("black",), to=(2, 7, 14, 9))
+selected_image.put(("black",), to=(7, 2, 9, 14))
+
+style.element_create("Custom.TRadiobutton.indicator", "image", normal_image,
+                     ("selected", selected_image),
+                     sticky="", padding=2)
+
+
+reset_database_var = tk.StringVar()
 reset_database_var.set("No")
-reset_database_yes = ttk.Radiobutton(root, text="Yes", variable=reset_database_var, value="Yes")
-reset_database_no = ttk.Radiobutton(root, text="No", variable=reset_database_var, value="No")
-reset_database_yes.place(x=100, y=200)
-reset_database_no.place(x=170, y=200)
+reset_database_yes = ttk.Radiobutton(root, text="Yes", variable=reset_database_var, value="Yes", style="Custom.TRadiobutton")
+reset_database_no = ttk.Radiobutton(root, text="No", variable=reset_database_var, value="No", style="Custom.TRadiobutton")
+reset_database_yes.place(x=195, y=25)
+reset_database_no.place(x=195, y=55)
 
-# Create the ProgressBar widget
-progress_var = IntVar()
-progress_bar = ttk.Progressbar(root, maximum=100, variable=progress_var)
-progress_bar.place(x=240, y=200)
+#OMG RADIO BUTTONS ENDDD--------------------------------------------------------------------------------------------------
 
 
 
 
 
+# PROGRESS BARRRRRRRRRRRRRRRRRRRR OMGGGGGGGGGGGGGGG
+background_image = Image.open("./assets/frame0/progress_background.png")
+filled_image = Image.open("./assets/frame0/progress_filled.png")
 
+progress_width, progress_height = background_image.size
 
+background_photo = ImageTk.PhotoImage(background_image)
+
+canvas = tk.Canvas(root, width=progress_width, height=progress_height,bg="black", highlightthickness=0, bd=0, relief='ridge')
+canvas.place(x=508, y=178)
+
+background_progress = canvas.create_image(0, 0, anchor=tk.NW, image=background_photo)
+filled_progress = canvas.create_image(0, 0, anchor=tk.NW)
+# END PROGRESS BARRRRRRRRRRRRRRRRRRRR OMGGGGGGGGGGGGGGG
 
 
 
 response_label = tk.Label(
     root,
     text="",
-    bg=root.cget("bg"),
+    bg="black",
     fg="#F9C6B3",
     font=("Inter Regular", 16),
     wraplength=300,
@@ -358,25 +480,7 @@ response_label.place(
     y=230,
 )
 
-canvas.create_text(
-    31.0,
-    119.0,
-    anchor="nw",
-    text="name:",
-    fill="#FFFFFF",
-    font=("Inter Regular", 24 * -1)
-)
 
-image_image_2 = PhotoImage(
-    file=relative_to_assets("image_2.png"))
-image_2 = canvas.create_image(
-    810.0,
-    312.0,
-    image=image_image_2
-)
-
-# response_area = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=60, height=10)
-# response_area.grid(row=1, column=0, columnspan=3, padx=5, pady=5)
 
 
 root.resizable(False, False)
@@ -384,16 +488,6 @@ running = False
 thread_running = False
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
-#root.protocol("WM_DELETE_WINDOW", on_closing)
-# other_button = tk.Button(frame, text="Other Function", command=other_function)
-# other_button.grid(row=0, column=2, padx=5, pady=5)
-
-
-
-
-
-# response_label = tk.Label(root, text="", wraplength=300)
-# response_label.pack()
 
 
 
