@@ -87,8 +87,10 @@ def play_audio_fn(filename):
 #     response_area.see(tk.END)
 def print_response_label(response):
     response_label.config(text=response)
-    
-    
+    #messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
+
+
+
 
 def voice_control():
     # don't knwo why but without this it doesn't work probably because : with sr.Microphone() as source:
@@ -143,6 +145,9 @@ def voice_control():
                     sys.exit()
                 if transcription_cleaned in ("shiro", "shira", "pathfinder", "hello shiro", "hello shira"):
                         #record audio
+                    
+                    update_progress_bar(10)
+
                     question_file = "question"
                     filename = f"./kiki_hub/{question_file}.wav"
                     print("---------------------------------")
@@ -156,34 +161,48 @@ def voice_control():
                         with open(filename, "wb") as f:
                             f.write(audio.get_wav_data())
                         f.close()           
-                    #transcript audio to question 
+                    #transcript audio to question
+                    update_progress_bar(20) 
                     question = transcribe_audio_question(question_file)
-                    
+                    cleaned_question = transcription.translate(str.maketrans("", "", string.punctuation)).strip().lower()
+
+                    update_progress_bar(30)
                     if question:
                             #to database
-                        question = f"{name}: {question}"
+                        if cleaned_question != " ask me":    
+                            question = f"{name}: {question}"
+                        else:
+                            question = f"Can you ask me some question? I am bored and I would like ot talk with you."   
                             #add question line to messages list
+                        print("question variable:" + question)
                         messages.append({"role": "user", "content": question})
                             # send to open ai for answer
-                        answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages)        
+                        update_progress_bar(40)    
+                        answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages)
+                        update_progress_bar(60)        
                         request_voice.request_voice_fn(answer) #request Azure TTS to for answer
-                        
+                        update_progress_bar(70)
                         print("ShiroAi-chan: " + answer)
                         play_audio_fn("response")
                         
                         if profanity.contains_profanity(answer) == True:
                             answer = profanity.censor(answer)                    
-
+                        update_progress_bar(80)
                         connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
                         connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
                         connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
                         print("---------------------------------")
-
+                        
+                        
+                        
+                        update_progress_bar(100)
                         if transcribed == " exit program":
                             print("exiting program")
                             sys.exit()
             except Exception as e:
                 print("An error occurred: {}".format(e))
+
+           
     # Replace `print()` statements with `print_response()`
             # ...
 
@@ -325,7 +344,7 @@ button_4 = Button(
     image=button_image_4,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_4 clicked"),
+    command=print("hello"),
     relief="flat"
 )
 button_4.place(
