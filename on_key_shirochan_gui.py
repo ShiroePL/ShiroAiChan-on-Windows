@@ -41,6 +41,7 @@ stop_listening_flag = False
 global recording_key
 recording_key = False
 
+answer_history = [] #for the history of answers
 
 
 
@@ -286,6 +287,8 @@ canvas = Canvas(
 )
 
 canvas.place(x = 0, y = 0)
+
+
 image_image_1 = PhotoImage(
     file=relative_to_assets("image_1.png"))
 image_1 = canvas.create_image(
@@ -301,6 +304,8 @@ image_2 = canvas.create_image(
     400.0,
     image=image_image_2
 )
+
+
 
 
 canvas.create_text(
@@ -366,7 +371,7 @@ button_4 = Button(
     image=button_image_4,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("hello"),
+    command=lambda: print_response_label("Meow! Hi there! I'm doing pawsome, thank you for asking. How about you? *purrs*"),
     relief="flat"
 )
 button_4.place(
@@ -423,6 +428,40 @@ button_7.place(
     width=127.0,
     height=51.0
 )
+
+left_arrow_img = PhotoImage(
+    file=relative_to_assets("left_arrow.png"))
+left_arrow = Button(
+    image=left_arrow_img,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("left_arrow clicked"),
+    relief="flat"
+)
+left_arrow.place(
+    x=3.0,
+    y=217.0,
+    width=30.0,
+    height=18.0
+)
+
+right_arrow_img = PhotoImage(
+    file=relative_to_assets("right_arrow.png"))
+right_arrow = Button(
+    image=right_arrow_img,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("right_arrow clicked"),
+    relief="flat"
+)
+right_arrow.place(
+    x=40.0,
+    y=217.0,
+    width=30.0,
+    height=18.0
+)
+
+
 
 
 entry_image_1 = PhotoImage(
@@ -527,14 +566,14 @@ response_label = tk.Label(
     bg="black",
     fg="#F9C6B3",
     font=("Inter Regular", 16),
-    wraplength=300,
+    wraplength=410,
     anchor="center",  # Centers the text vertically
     justify="center",  # Centers the text horizontally
-    width=30,  # Adjust this value to control the width of the label
+    width=26,  # Adjust this value to control the width of the label
 )
 response_label.place(
-    x=100,
-    y=230,
+    x=52,
+    y=240,
 )
 
 log_label = tk.Label(

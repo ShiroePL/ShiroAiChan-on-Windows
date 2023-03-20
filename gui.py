@@ -241,5 +241,37 @@ image_6 = canvas.create_image(
     43.0,
     image=image_image_6
 )
+
+button_image_8 = PhotoImage(
+    file=relative_to_assets("button_8.png"))
+button_8 = Button(
+    image=button_image_8,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_8 clicked"),
+    relief="flat"
+)
+button_8.place(
+    x=3.0,
+    y=217.0,
+    width=30.0,
+    height=18.0
+)
+
+button_image_9 = PhotoImage(
+    file=relative_to_assets("button_9.png"))
+button_9 = Button(
+    image=button_image_9,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_9 clicked"),
+    relief="flat"
+)
+button_9.place(
+    x=40.0,
+    y=217.0,
+    width=30.0,
+    height=18.0
+)
 window.resizable(False, False)
 window.mainloop()
