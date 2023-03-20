@@ -52,6 +52,15 @@ image_2 = canvas.create_image(
 )
 
 canvas.create_text(
+    508.0,
+    185.0,
+    anchor="nw",
+    text="logs from logs",
+    fill="#12D4FF",
+    font=("Inter Bold", 10 * -1)
+)
+
+canvas.create_text(
     257.0,
     12.0,
     anchor="nw",
@@ -172,6 +181,22 @@ button_7.place(
     height=51.0
 )
 
+image_image_3 = PhotoImage(
+    file=relative_to_assets("image_3.png"))
+image_3 = canvas.create_image(
+    571.0,
+    217.0,
+    image=image_image_3
+)
+
+image_image_4 = PhotoImage(
+    file=relative_to_assets("image_4.png"))
+image_4 = canvas.create_image(
+    571.0,
+    175.0,
+    image=image_image_4
+)
+
 entry_image_1 = PhotoImage(
     file=relative_to_assets("entry_1.png"))
 entry_bg_1 = canvas.create_image(
@@ -199,6 +224,22 @@ canvas.create_text(
     text="Your name:",
     fill="#7FD5EA",
     font=("Inter Bold", 20 * -1)
+)
+
+image_image_5 = PhotoImage(
+    file=relative_to_assets("image_5.png"))
+image_5 = canvas.create_image(
+    207.0,
+    65.0,
+    image=image_image_5
+)
+
+image_image_6 = PhotoImage(
+    file=relative_to_assets("image_6.png"))
+image_6 = canvas.create_image(
+    207.0,
+    43.0,
+    image=image_image_6
 )
 window.resizable(False, False)
 window.mainloop()

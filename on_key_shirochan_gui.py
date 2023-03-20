@@ -26,6 +26,7 @@ from tkinter import *
 from vtube_studio_api import VTubeStudioAPI
 from PIL import Image, ImageTk
 import string
+import keyboard
 
 
 OUTPUT_PATH = Path(__file__).parent
@@ -35,6 +36,12 @@ ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
 engine=pyttsx3.init()
 conn = None
 api = None
+global stop_listening_flag
+stop_listening_flag = False
+global recording_key
+recording_key = False
+
+
 
 
 
@@ -80,19 +87,33 @@ def play_audio_fn(filename):
     stream.stop_stream()
     stream.close()
     p.terminate()
-    print("Playing voice")
-# Replace print() statements with this function
-# def print_response(response):
-#     response_area.insert(tk.END, response + '\n')
-#     response_area.see(tk.END)
+    #print("Playing voice")
+
 def print_response_label(response):
     response_label.config(text=response)
-    #messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
+   
+def print_log_label(response):
+    log_label.config(text=response)
+
+
+def on_ctrl_press(event):
+    global recording_key
+    if not recording_key:
+        start_voice_control()
+        recording_key = True
+    else:
+        stop_listening()
+        recording_key = False
 
 
 
 
 def voice_control():
+    global stop_listening_flag
+    global running
+    stop_listening_flag = False
+
+
     # don't knwo why but without this it doesn't work probably because : with sr.Microphone() as source:
     name = user_name_entry.get()
     choice = reset_database_var.get()
@@ -113,92 +134,88 @@ def voice_control():
         #print_response("Say 'pathfinder' to start a conversation")
         messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
         #Wait for user to say "pathfinder"
-        print("Say 'pathfinder' to start a conversation")
+        update_progress_bar(10), print_log_label("recording...")
 
-        
-        update_progress_bar(0)
+        beep = "cute_beep" #started recording
+        play_audio_fn(beep)
+
+        print("Started recording: say you question NOW")
+
+        question_file = "question"
+        filename = f"./kiki_hub/{question_file}.wav"
+
         with sr.Microphone() as source:
             recognizer = sr.Recognizer()
-            audio = recognizer.listen(source)
-            alias = "alias"
-            transcribed = f"./kiki_hub/{alias}.wav"
-            with open(transcribed, "wb") as f:
+            source.pause_threshold = 1 #this is the end of my speaking, but before saving it to file
+
+        
+            audio = recognizer.listen(source, phrase_time_limit=None, timeout=None)
+            
+            if stop_listening_flag:
+                print("Stopped recording on user request via clicking button")
+                print("---------------------------------")  # Check if the stop_listening button was pressed
+                update_progress_bar(0), print_log_label("stopped rec. test raz dwa trzy cztery")
+                beep = "cute_beep" #NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
+                play_audio_fn(beep)
+                break
+            with open(filename, "wb") as f:
                 f.write(audio.get_wav_data())
             f.close()
-            
-            
-            update_progress_bar(50)
-            try:
-                transcription = transcribe_audio_question(alias) #make transcription from alias file
+
+            update_progress_bar(20), print_log_label("transcribing...") #recorded audio
+
+            try:  
+                print("---------------------------------")
                 
+  
+                question = transcribe_audio_question(question_file)
+                cleaned_question = question.translate(str.maketrans("", "", string.punctuation)).strip().lower()
                 
-                update_progress_bar(100)
-                #print_response(transcription)
-                print_response_label(transcription)
-                    #checking if user said started listening or other commands
+                if profanity.contains_profanity(question) == True: #dcensor question words for openAI send
+                    question = profanity.censor(answer)
 
-                transcription_cleaned = transcription.translate(str.maketrans("", "", string.punctuation)).strip().lower()
-                   
-                if transcription_cleaned in ("bye bye shiro", "exit program", "bye bye shira"):
-                    beep = "cute_beep" #NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
-                    play_audio_fn(beep)    
-                    sys.exit()
-                if transcription_cleaned in ("shiro", "shira", "pathfinder", "hello shiro", "hello shira"):
-                        #record audio
-                    
-                    update_progress_bar(10)
+                if question:
 
-                    question_file = "question"
-                    filename = f"./kiki_hub/{question_file}.wav"
-                    print("---------------------------------")
-                    print("Say your question")
-                    beep = "cute_beep"
-                    play_audio_fn(beep)
-                    with sr.Microphone() as source:
-                        recognizer = sr.Recognizer()
-                        source.pause_threshold = 1
-                        audio = recognizer.listen(source, phrase_time_limit=None, timeout=None)
-                        with open(filename, "wb") as f:
-                            f.write(audio.get_wav_data())
-                        f.close()           
-                    #transcript audio to question
-                    update_progress_bar(20) 
-                    question = transcribe_audio_question(question_file)
-                    cleaned_question = transcription.translate(str.maketrans("", "", string.punctuation)).strip().lower()
+                    update_progress_bar(30),print_log_label("transcribed.")
 
-                    update_progress_bar(30)
-                    if question:
-                            #to database
-                        if cleaned_question != " ask me":    
-                            question = f"{name}: {question}"
-                        else:
-                            question = f"Can you ask me some question? I am bored and I would like ot talk with you."   
+                    if cleaned_question in ("bye bye shiro", "exit program", "bye bye shira"):
+                        beep = "cute_beep" #NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
+                        play_audio_fn(beep)    
+                        sys.exit()
+                    else:               
+                            #to database 
+                        question = f"{name}: {question}"
                             #add question line to messages list
                         print("question variable:" + question)
                         messages.append({"role": "user", "content": question})
                             # send to open ai for answer
-                        update_progress_bar(40)    
-                        answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages)
-                        update_progress_bar(60)        
+                        update_progress_bar(40), print_log_label("sending to openAI...")  
+
+                        answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+                        print_response_label(answer)
+
+                        update_progress_bar(60), print_log_label("got answer")    
+
                         request_voice.request_voice_fn(answer) #request Azure TTS to for answer
-                        update_progress_bar(70)
+
+                        update_progress_bar(70), print_log_label("got voice")
+
                         print("ShiroAi-chan: " + answer)
                         play_audio_fn("response")
                         
                         if profanity.contains_profanity(answer) == True:
                             answer = profanity.censor(answer)                    
-                        update_progress_bar(80)
+                        update_progress_bar(80), print_log_label("saving to DB...")
                         connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
                         connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
                         connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
                         print("---------------------------------")
+
+                        beep = "cute_beep" #END OF ANSWER
+                        play_audio_fn(beep)
+                        running = False
+                        update_progress_bar(100), print_log_label("saved to DB, done")
                         
-                        
-                        
-                        update_progress_bar(100)
-                        if transcribed == " exit program":
-                            print("exiting program")
-                            sys.exit()
             except Exception as e:
                 print("An error occurred: {}".format(e))
 
@@ -217,7 +234,10 @@ def start_voice_control():
 
 def stop_listening():
     global running
+    global stop_listening_flag
+    stop_listening_flag = True
     running = False #will cut off the while loop in voice control
+
     
 
 def relative_to_assets(path: str) -> Path:
@@ -248,6 +268,8 @@ def disconnect_from_vtube():
 # GUI elements
 root = tk.Tk()
 root.title("ShiroAi-chan Control Panel")
+
+keyboard.on_press_key("F10", on_ctrl_press)  # Replace "ctrl+alt" with the desired key combination
 
 
 root.geometry("1200x800")
@@ -328,7 +350,7 @@ button_3 = Button(
     image=button_image_3,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: connect_to_phpmyadmin.reset_chat_history(user_name_entry.get()),
+    command=lambda: (connect_to_phpmyadmin.reset_chat_history(user_name_entry.get()), print_log_label("reset chat history")),
     relief="flat"
 )
 button_3.place(
@@ -344,7 +366,7 @@ button_4 = Button(
     image=button_image_4,
     borderwidth=0,
     highlightthickness=0,
-    command=print("hello"),
+    command=lambda: print("hello"),
     relief="flat"
 )
 button_4.place(
@@ -491,7 +513,7 @@ progress_width, progress_height = background_image.size
 background_photo = ImageTk.PhotoImage(background_image)
 
 canvas = tk.Canvas(root, width=progress_width, height=progress_height,bg="black", highlightthickness=0, bd=0, relief='ridge')
-canvas.place(x=508, y=178)
+canvas.place(x=508, y=165)
 
 background_progress = canvas.create_image(0, 0, anchor=tk.NW, image=background_photo)
 filled_progress = canvas.create_image(0, 0, anchor=tk.NW)
@@ -515,6 +537,21 @@ response_label.place(
     y=230,
 )
 
+log_label = tk.Label(
+    root,
+    text="",
+    bg="black",
+    fg="#12D4FF",
+    font=("Inter Bold", 12 * -1),
+    wraplength=110,
+    anchor="center",  # Centers the text vertically
+    justify="center",  # Centers the text horizontally
+    width=15,  # Adjust this value to control the width of the label
+)
+log_label.place(
+    x=515,
+    y=185,
+)
 
 
 
