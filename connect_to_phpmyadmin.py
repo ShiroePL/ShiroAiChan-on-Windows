@@ -80,7 +80,6 @@ def retrieve_chat_history_from_database(name):
     """Retrieve all messages from the user's table and return them as messages"""
     # Connect to the database
     global conn
-    
     cursor = conn.cursor()
     # Default messages not added to database to save varchar for description
     messages = [
@@ -104,6 +103,28 @@ def retrieve_chat_history_from_database(name):
             messages.append(message) # add to messages list
     return messages # Return the messages to the calling function
     
+
+def only_conversation_history_from_database(name):
+    global conn
+    only_conversation_history = []
+    cursor = conn.cursor()
+    
+    # Execute a SELECT COUNT(*) query to check if the table is empty
+    cursor.execute(f"SELECT COUNT(*) FROM {name}")    
+    result = cursor.fetchone() # Fetch the result of the query
+
+    if result[0] != 0: # If table is not empty
+        # Retrieve the messages for the user from the database
+        cursor.execute(f"SELECT role, content FROM {name}")
+        rows = cursor.fetchall()
+        # Create a list of messages in the same format as the 'messages' variable
+        for row in rows:
+            message_for_history = {"role": row[0], "content": row[1]}
+            only_conversation_history.append(message_for_history) # add to only_conversation_history list
+    return only_conversation_history # Return the messages to the calling function
+
+
+
 
 def insert_message_to_database(name, question, answer, messages):
     """Insert a message into the user's table."""

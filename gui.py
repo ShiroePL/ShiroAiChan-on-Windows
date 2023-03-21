@@ -273,5 +273,25 @@ button_9.place(
     width=30.0,
     height=18.0
 )
+
+entry_image_2 = PhotoImage(
+    file=relative_to_assets("entry_2.png"))
+entry_bg_2 = canvas.create_image(
+    279.0,
+    714.0,
+    image=entry_image_2
+)
+entry_2 = Text(
+    bd=0,
+    bg="#FFFFFF",
+    fg="#000716",
+    highlightthickness=0
+)
+entry_2.place(
+    x=8.0,
+    y=641.0,
+    width=542.0,
+    height=144.0
+)
 window.resizable(False, False)
 window.mainloop()

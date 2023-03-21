@@ -91,7 +91,10 @@ def play_audio_fn(filename):
     #print("Playing voice")
 
 def print_response_label(response):
-    response_label.config(text=response)
+    response_widget.delete('1.0', 'end')
+    response_widget.insert(tk.END, f"{response}", 'center')
+    response_widget.tag_configure('center', justify='center')
+    response_widget.insert(tk.END, "\n")
    
 def print_log_label(response):
     log_label.config(text=response)
@@ -134,6 +137,16 @@ def on_ctrl_press(event):
         stop_listening()
         recording_key = False
 
+
+def display_messages_from_database_only(messages):
+    for message in messages:
+        role = message['role']
+        content = message['content']
+        text_widget.insert(tk.END, f"Role: {role}\n", 'center')
+        text_widget.tag_configure('center', justify='center')
+        text_widget.insert(tk.END, f"{content}\n", 'center')
+        text_widget.insert(tk.END, "\n")
+    text_widget.see('end')
 
 
 
@@ -225,7 +238,6 @@ def voice_control():
                             # FOR ARROWS TO PREVIOUS ANSWERS
                         add_answer_to_history(answer)
                         current_answer_index = len(answer_history) - 1
-                        display_answer(answer)
                             # END OF ARROWS TO PREVIOUS ANSWERS
                         update_progress_bar(60), print_log_label("got answer")    
 
@@ -246,6 +258,13 @@ def voice_control():
 
                         beep = "cute_beep" #END OF ANSWER
                         play_audio_fn(beep)
+
+                            #show history in text widget
+                        update_progress_bar(90), print_log_label("showing in text box...")
+                        text_widget.delete('1.0', 'end')
+                        display_messages_from_database_only(take_history_from_database())
+                        
+
                         running = False
                         update_progress_bar(100), print_log_label("saved to DB, done")
                         
@@ -297,12 +316,22 @@ def disconnect_from_vtube():
     global api
     api.close()
 
+def take_history_from_database():
+    name = user_name_entry.get()
+    connect_to_phpmyadmin.check_user_in_database(name)
+    history_from_database = connect_to_phpmyadmin.only_conversation_history_from_database(name)
+    return history_from_database
 
 # GUI elements
 root = tk.Tk()
 root.title("ShiroAi-chan Control Panel")
 
 keyboard.on_press_key("F10", on_ctrl_press)  # Replace "ctrl+alt" with the desired key combination
+
+
+
+
+
 
 
 root.geometry("1200x800")
@@ -403,7 +432,7 @@ button_4 = Button(
     image=button_image_4,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print_response_label("Meow! Hi there! I'm doing pawsome, thank you for asking. How about you? *purrs*"),
+    command=lambda: print_response_label("Meow! Hi there! I'm doing pawsome, thank you for asking. How about you? *purrs*TESTTEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3  1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3  "),
     relief="flat"
 )
 button_4.place(
@@ -517,7 +546,7 @@ user_name_entry.place(
     width=122.0,
     height=32.0
 )
-default_user = "shiro"
+default_user = "shiroe"
 user_name_entry.insert(0, default_user)
 
 canvas.create_text(
@@ -608,6 +637,15 @@ response_label.place(
     y=240,
 )
 
+response_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
+                      bg='black', fg='#F9C6B3', font=("Inter Regular", 14),  bd=0)
+response_widget.place(x=52, y=240, width=450, height=210)
+
+
+
+
+
+
 log_label = tk.Label(
     root,
     text="",
@@ -623,6 +661,36 @@ log_label.place(
     x=515,
     y=185,
 )
+
+# Create the Text widget
+text_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
+                      bg='black', fg='#12D4FF', font=("Inter Bold", 9),  bd=0)
+text_widget.place(x=10, y=590, width=450, height=200)
+text_widget.see('end')
+# Create a Scrollbar and associate it with the Text widget
+# scrollbar = ttk.Scrollbar(root, command=text_widget.yview)
+# scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+# text_widget.config(yscrollcommand=scrollbar.set)
+
+# name = user_name_entry.get()
+# connect_to_phpmyadmin.check_user_in_database(name)
+# history_from_database = connect_to_phpmyadmin.only_conversation_history_from_database(name)
+
+# for message in history_from_database:
+#     print("Role: " + message["role"] + ", content: " + message["content"])
+    
+# print("History from database: " + str(history_from_database))
+
+
+
+# Display the messages in the Text widget
+display_messages_from_database_only(take_history_from_database())
+
+text_widget.see('end')
+
+
+
+
 
 
 
