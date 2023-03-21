@@ -42,7 +42,28 @@ recording_key = False
 default_user = "shiroe"
 answer_history = [] #for the history of answers
 
+class ToolTip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tooltip = None
+        self.widget.bind("<Enter>", self.enter)
+        self.widget.bind("<Leave>", self.leave)
 
+    def enter(self, event=None):
+        x, y, _, _ = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 25
+        y += self.widget.winfo_rooty() + 25
+        self.tooltip = tk.Toplevel(self.widget)
+        self.tooltip.wm_overrideredirect(True)
+        self.tooltip.wm_geometry(f"+{x}+{y}")
+        label = tk.Label(self.tooltip, text=self.text, background="black", foreground="#7FD5EA", relief="solid", borderwidth=2, font=("Inter Bold", 9))
+        label.pack()
+
+    def leave(self, event=None):
+        if self.tooltip:
+            self.tooltip.destroy()
+            self.tooltip = None
 
 
 windll.shcore.SetProcessDpiAwareness(1)
@@ -101,7 +122,7 @@ def print_log_label(response):
 
 
 
-# ----------- START FUNCTIONS FOR THE RESPONSE BACKING
+# ----------- START FUNCTIONS FOR THE arrows
 
 def add_answer_to_history(answer):
     answer_history.append(answer)
@@ -125,7 +146,7 @@ def display_answer(answer):
     # Update your GUI element (e.g., a Label) that displays the answer
     print_response_label(answer)
 
-# ----------- END FUNCTIONS FOR THE RESPONSE BACKING
+# ----------- END FUNCTIONS FOR THE arrows
 
 def on_ctrl_press(event):
     global recording_key
@@ -461,6 +482,9 @@ button_5.place(
     height=51.0
 )
 
+tooltip = ToolTip(button_5, "This is the description of the button.")
+
+
 button_image_6 = PhotoImage(
     file=relative_to_assets("button_6.png"))
 button_6 = Button(
@@ -526,6 +550,77 @@ right_arrow.place(
 )
 
 
+button_image_10 = PhotoImage(
+    file=relative_to_assets("button_10.png"))
+button_10 = Button(
+    image=button_image_10,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_10 clicked"),
+    relief="flat"
+)
+button_10.place(
+    x=3.0,
+    y=240.0,
+    width=42.0,
+    height=42.0
+)
+
+tooltip = ToolTip(button_10, "Show persona description for current table.")
+
+button_image_11 = PhotoImage(
+    file=relative_to_assets("button_11.png"))
+button_11 = Button(
+    image=button_image_11,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: show_history_from_db_widget.delete('1.0', 'end'),
+    relief="flat"
+)
+button_11.place(
+    x=133.0,
+    y=545.0,
+    width=42.0,
+    height=42.0
+)
+
+tooltip = ToolTip(button_11, "Clean text box below.")
+
+button_image_12 = PhotoImage(
+    file=relative_to_assets("button_12.png"))
+button_12 = Button(
+    image=button_image_12,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_12 clicked"),
+    relief="flat"
+)
+button_12.place(
+    x=211.0,
+    y=545.0,
+    width=42.0,
+    height=42.0
+)
+
+tooltip = ToolTip(button_12, "Show all descriptions of persona.")
+
+button_image_13 = PhotoImage(
+    file=relative_to_assets("button_13.png"))
+button_13 = Button(
+    image=button_image_13,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_13 clicked"),
+    relief="flat"
+)
+button_13.place(
+    x=289.0,
+    y=545.0,
+    width=42.0,
+    height=42.0
+)
+
+tooltip = ToolTip(button_13, "Insert new description to current table.")
 
 
 entry_image_1 = PhotoImage(
