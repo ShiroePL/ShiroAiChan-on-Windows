@@ -185,7 +185,7 @@ image_image_3 = PhotoImage(
     file=relative_to_assets("image_3.png"))
 image_3 = canvas.create_image(
     571.0,
-    217.0,
+    175.0,
     image=image_image_3
 )
 
@@ -277,8 +277,8 @@ button_9.place(
 entry_image_2 = PhotoImage(
     file=relative_to_assets("entry_2.png"))
 entry_bg_2 = canvas.create_image(
-    279.0,
-    714.0,
+    232.0,
+    697.0,
     image=entry_image_2
 )
 entry_2 = Text(
@@ -288,10 +288,30 @@ entry_2 = Text(
     highlightthickness=0
 )
 entry_2.place(
-    x=8.0,
-    y=641.0,
-    width=542.0,
-    height=144.0
+    x=50.0,
+    y=607.0,
+    width=364.0,
+    height=178.0
+)
+
+entry_image_3 = PhotoImage(
+    file=relative_to_assets("entry_3.png"))
+entry_bg_3 = canvas.create_image(
+    265.0,
+    354.0,
+    image=entry_image_3
+)
+entry_3 = Text(
+    bd=0,
+    bg="#FFFFFF",
+    fg="#000716",
+    highlightthickness=0
+)
+entry_3.place(
+    x=93.0,
+    y=240.0,
+    width=344.0,
+    height=226.0
 )
 window.resizable(False, False)
 window.mainloop()
