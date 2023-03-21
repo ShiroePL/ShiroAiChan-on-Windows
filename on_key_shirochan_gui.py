@@ -97,6 +97,34 @@ def print_log_label(response):
     log_label.config(text=response)
 
 
+
+
+# ----------- START FUNCTIONS FOR THE RESPONSE BACKING
+
+def add_answer_to_history(answer):
+    answer_history.append(answer)
+
+current_answer_index = -1
+
+def show_previous_answer():
+    global current_answer_index
+    if current_answer_index > 0:
+        current_answer_index -= 1
+        display_answer(answer_history[current_answer_index])
+
+def show_next_answer():
+    global current_answer_index
+    if current_answer_index < len(answer_history) - 1:
+        current_answer_index += 1
+        display_answer(answer_history[current_answer_index])
+
+
+def display_answer(answer):
+    # Update your GUI element (e.g., a Label) that displays the answer
+    print_response_label(answer)
+
+# ----------- END FUNCTIONS FOR THE RESPONSE BACKING
+
 def on_ctrl_press(event):
     global recording_key
     if not recording_key:
@@ -113,7 +141,7 @@ def voice_control():
     global stop_listening_flag
     global running
     stop_listening_flag = False
-
+    global current_answer_index
 
     # don't knwo why but without this it doesn't work probably because : with sr.Microphone() as source:
     name = user_name_entry.get()
@@ -194,7 +222,11 @@ def voice_control():
 
                         answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
                         print_response_label(answer)
-
+                            # FOR ARROWS TO PREVIOUS ANSWERS
+                        add_answer_to_history(answer)
+                        current_answer_index = len(answer_history) - 1
+                        display_answer(answer)
+                            # END OF ARROWS TO PREVIOUS ANSWERS
                         update_progress_bar(60), print_log_label("got answer")    
 
                         request_voice.request_voice_fn(answer) #request Azure TTS to for answer
@@ -435,7 +467,7 @@ left_arrow = Button(
     image=left_arrow_img,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("left_arrow clicked"),
+    command=show_previous_answer,
     relief="flat"
 )
 left_arrow.place(
@@ -451,7 +483,7 @@ right_arrow = Button(
     image=right_arrow_img,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("right_arrow clicked"),
+    command=show_next_answer,
     relief="flat"
 )
 right_arrow.place(
