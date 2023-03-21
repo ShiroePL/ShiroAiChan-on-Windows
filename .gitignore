@@ -25,6 +25,7 @@ creds.js
 alias.wav
 question.wav
 response.wav
+sonar-project.properties
 # Private Files
 *.json
 *.csv
