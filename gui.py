@@ -277,8 +277,8 @@ button_9.place(
 entry_image_2 = PhotoImage(
     file=relative_to_assets("entry_2.png"))
 entry_bg_2 = canvas.create_image(
-    232.0,
-    697.0,
+    265.0,
+    354.0,
     image=entry_image_2
 )
 entry_2 = Text(
@@ -288,30 +288,118 @@ entry_2 = Text(
     highlightthickness=0
 )
 entry_2.place(
-    x=50.0,
-    y=607.0,
-    width=364.0,
-    height=178.0
-)
-
-entry_image_3 = PhotoImage(
-    file=relative_to_assets("entry_3.png"))
-entry_bg_3 = canvas.create_image(
-    265.0,
-    354.0,
-    image=entry_image_3
-)
-entry_3 = Text(
-    bd=0,
-    bg="#FFFFFF",
-    fg="#000716",
-    highlightthickness=0
-)
-entry_3.place(
     x=93.0,
     y=240.0,
     width=344.0,
     height=226.0
 )
+
+canvas.create_text(
+    16.0,
+    479.0,
+    anchor="nw",
+    text="guzik do wymazania okienka na dole zeby wprowadzic input",
+    fill="#FFFFFF",
+    font=("Inter", 12 * -1)
+)
+
+canvas.create_text(
+    104.0,
+    440.0,
+    anchor="nw",
+    text="guzik do pokazania tabelki z opisami wszystkich uzytych characterow w dolnym oknie",
+    fill="#00719F",
+    font=("Inter", 12 * -1)
+)
+
+canvas.create_text(
+    274.0,
+    470.0,
+    anchor="nw",
+    text="guzik do zatwierdzenia zmiany w opisie characteru w obecnej tableki dla teog uzytkownika",
+    fill="#FFFFFF",
+    font=("Inter", 12 * -1)
+)
+
+canvas.create_text(
+    8.0,
+    282.0,
+    anchor="nw",
+    text="guzik do pokazania obecnego opisu charakteru moze byc na gorze",
+    fill="#FFFFFF",
+    font=("Inter", 12 * -1)
+)
+
+button_image_10 = PhotoImage(
+    file=relative_to_assets("button_10.png"))
+button_10 = Button(
+    image=button_image_10,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_10 clicked"),
+    relief="flat"
+)
+button_10.place(
+    x=3.0,
+    y=240.0,
+    width=42.0,
+    height=42.0
+)
+
+button_image_11 = PhotoImage(
+    file=relative_to_assets("button_11.png"))
+button_11 = Button(
+    image=button_image_11,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_11 clicked"),
+    relief="flat"
+)
+button_11.place(
+    x=133.0,
+    y=545.0,
+    width=42.0,
+    height=42.0
+)
+
+button_image_12 = PhotoImage(
+    file=relative_to_assets("button_12.png"))
+button_12 = Button(
+    image=button_image_12,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_12 clicked"),
+    relief="flat"
+)
+button_12.place(
+    x=211.0,
+    y=545.0,
+    width=42.0,
+    height=42.0
+)
+
+button_image_13 = PhotoImage(
+    file=relative_to_assets("button_13.png"))
+button_13 = Button(
+    image=button_image_13,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_13 clicked"),
+    relief="flat"
+)
+button_13.place(
+    x=289.0,
+    y=545.0,
+    width=42.0,
+    height=42.0
+)
+
+canvas.create_rectangle(
+    10.0,
+    590.0,
+    460.0,
+    790.0,
+    fill="#D9D9D9",
+    outline="")
 window.resizable(False, False)
 window.mainloop()
