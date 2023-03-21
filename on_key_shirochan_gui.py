@@ -40,7 +40,7 @@ global stop_listening_flag
 stop_listening_flag = False
 global recording_key
 recording_key = False
-
+default_user = "shiroe"
 answer_history = [] #for the history of answers
 
 
@@ -139,14 +139,15 @@ def on_ctrl_press(event):
 
 
 def display_messages_from_database_only(messages):
+    show_history_from_db_widget.delete('1.0', 'end')
     for message in messages:
         role = message['role']
         content = message['content']
-        text_widget.insert(tk.END, f"Role: {role}\n", 'center')
-        text_widget.tag_configure('center', justify='center')
-        text_widget.insert(tk.END, f"{content}\n", 'center')
-        text_widget.insert(tk.END, "\n")
-    text_widget.see('end')
+        show_history_from_db_widget.insert(tk.END, f"Role: {role}\n", 'center')
+        show_history_from_db_widget.tag_configure('center', justify='center')
+        show_history_from_db_widget.insert(tk.END, f"{content}\n", 'center')
+        show_history_from_db_widget.insert(tk.END, "\n")
+    show_history_from_db_widget.see('end')
 
 
 
@@ -261,7 +262,7 @@ def voice_control():
 
                             #show history in text widget
                         update_progress_bar(90), print_log_label("showing in text box...")
-                        text_widget.delete('1.0', 'end')
+                        #show_history_from_db_widget.delete('1.0', 'end')
                         display_messages_from_database_only(take_history_from_database())
                         
 
@@ -432,7 +433,7 @@ button_4 = Button(
     image=button_image_4,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print_response_label("Meow! Hi there! I'm doing pawsome, thank you for asking. How about you? *purrs*TESTTEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3  1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3 TEST 1 2 3  "),
+    command=lambda: display_messages_from_database_only(take_history_from_database()),
     relief="flat"
 )
 button_4.place(
@@ -546,7 +547,7 @@ user_name_entry.place(
     width=122.0,
     height=32.0
 )
-default_user = "shiroe"
+
 user_name_entry.insert(0, default_user)
 
 canvas.create_text(
@@ -645,7 +646,7 @@ response_widget.place(x=52, y=240, width=450, height=210)
 
 
 
-
+            # i think i will change this to show_history_from_db_widget
 log_label = tk.Label(
     root,
     text="",
@@ -663,14 +664,14 @@ log_label.place(
 )
 
 # Create the Text widget
-text_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
+show_history_from_db_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
                       bg='black', fg='#12D4FF', font=("Inter Bold", 9),  bd=0)
-text_widget.place(x=10, y=590, width=450, height=200)
-text_widget.see('end')
+show_history_from_db_widget.place(x=10, y=590, width=450, height=200)
+show_history_from_db_widget.see('end')
 # Create a Scrollbar and associate it with the Text widget
-# scrollbar = ttk.Scrollbar(root, command=text_widget.yview)
+# scrollbar = ttk.Scrollbar(root, command=show_history_from_db_widget.yview)
 # scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-# text_widget.config(yscrollcommand=scrollbar.set)
+# show_history_from_db_widget.config(yscrollcommand=scrollbar.set)
 
 # name = user_name_entry.get()
 # connect_to_phpmyadmin.check_user_in_database(name)
@@ -686,7 +687,7 @@ text_widget.see('end')
 # Display the messages in the Text widget
 display_messages_from_database_only(take_history_from_database())
 
-text_widget.see('end')
+show_history_from_db_widget.see('end')
 
 
 
