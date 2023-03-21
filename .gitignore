@@ -33,7 +33,7 @@ sonar-project.properties
 *.tsv
 *.tsv.gz
 *.xlsx
-
+.scannerwork
 
 # Mac/OSX
 .DS_Store
