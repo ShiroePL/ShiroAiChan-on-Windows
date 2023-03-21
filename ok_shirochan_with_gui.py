@@ -37,7 +37,7 @@ conn = None
 api = None
 
 
-#test
+#tests
 windll.shcore.SetProcessDpiAwareness(1)
 def transcribe_audio_question(filename):
     start_time = time.time()
