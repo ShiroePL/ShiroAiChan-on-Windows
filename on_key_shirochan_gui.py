@@ -22,7 +22,6 @@ from tkinter import scrolledtext
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
 from pathlib import Path
 from ctypes import windll
-from tkinter import *
 from vtube_studio_api import VTubeStudioAPI
 from PIL import Image, ImageTk
 import string
@@ -176,6 +175,7 @@ def voice_control():
         
         #print_response("Say 'pathfinder' to start a conversation")
         messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
+        
         #Wait for user to say "pathfinder"
         update_progress_bar(10), print_log_label("recording...")
 
@@ -231,9 +231,10 @@ def voice_control():
                             #add question line to messages list
                         print("question variable:" + question)
                         messages.append({"role": "user", "content": question})
+                        
                             # send to open ai for answer
                         update_progress_bar(40), print_log_label("sending to openAI...")  
-
+                        print("messages: " + str(messages))
                         answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
                         print_response_label(answer)
                             # FOR ARROWS TO PREVIOUS ANSWERS

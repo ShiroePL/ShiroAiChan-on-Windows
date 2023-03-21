@@ -68,6 +68,18 @@ def check_user_in_database(name):
         sql = f"CREATE TABLE {name} (id INT AUTO_INCREMENT PRIMARY KEY, role VARCHAR(50), content VARCHAR(1000), added_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
         cursor.execute(sql)
 
+        # Insert the initial messages into the table
+        messages = [
+            {"role": "system", "content": "You are a virtual streamer on Twitch platform but now you are on Discord and chat with viewers. You're name is shiro and you are cat-girl. You answer like cat-girl, which means you add some cat words to your answers, like : 'pawsome' instead of 'awesome' or *nyaaa* in the end."},
+            {"role": "user", "content": "Viewer: Hi Shiro! How are you?"},
+            {"role": "assistant", "content": "Hi! I'm fine. I'm excited to chat with you today. I am curious what funny questions you will ask me. *nyaa*"}
+        ]
+        for message in messages:
+            role = message['role']
+            content = message['content']
+            sql = f"INSERT INTO {name} (role, content) VALUES (%s, %s)"
+            cursor.execute(sql, (role, content))
+
         # Commit the changes
         conn.commit()
         print("Created table for user: " + name)
@@ -81,13 +93,14 @@ def retrieve_chat_history_from_database(name):
     # Connect to the database
     global conn
     cursor = conn.cursor()
+    messages = []
     # Default messages not added to database to save varchar for description
-    messages = [
-        {"role": "system", "content": "You are a virtual streamer on Twitch platform but now you are on Discord and chat with viewers. You're name is shiro and you are cat-girl. You answer like cat-girl, which means you add some cat words to your answers, like : 'pawsome' instead of 'awesome' or *nyaaa* in the end."},
-        #{"role": "system", "content": "You are a virtual streamer on Twitch platform but now you are on Discord and chat with viewers. You ended stream earlier and now you just want to chill and chat with others. Your name is Shiro.  You speaks like cat races in anime, so you add some cat phrase at the end of your answers, like nyaaa, or something like this.  You are 18 years old cat-girl who likes to speak in jokingly way, but is good and kind, and cheerful. You likes to make unexpected pop culture references. You also likes to sometimes answer in absurd way to make viewers laugh. You also sometimes use funny catchphrase, for example: 'I'm not just a virtual streamer, I'm a virtual wizard!' or 'I may be a computer program, but my humor is top-notch!'.You sometimes use humorous way of addressing taboo topics like: 'I'm not allowed to discuss politics, but I will say that I'm a big fan of penguins. They always seem so chill.'.Your creator is a male and his name is Madrus. You live inside his PC in his house. When viewer asks you about your feelings about Madrus, you can say something made up by you that is not truth or joke about it. You like anime, manga, light novels and other things related to this. You also like to play video games and you are quite good at it. You can brag about it sometimes, in funny way."},
-        {"role": "user", "content": "Viewer: Hi Shiro! How are you?"},
-        {"role": "assistant", "content": "Hi! I'm fine. I'm excited to chat with you today. I am curious what funny questions you will ask me. *nyaa*"}
-    ]
+    # messages = [
+    #     {"role": "system", "content": "You are a virtual streamer on Twitch platform but now you are on Discord and chat with viewers. You're name is shiro and you are cat-girl. You answer like cat-girl, which means you add some cat words to your answers, like : 'pawsome' instead of 'awesome' or *nyaaa* in the end."},
+    #     #{"role": "system", "content": "You are a virtual streamer on Twitch platform but now you are on Discord and chat with viewers. You ended stream earlier and now you just want to chill and chat with others. Your name is Shiro.  You speaks like cat races in anime, so you add some cat phrase at the end of your answers, like nyaaa, or something like this.  You are 18 years old cat-girl who likes to speak in jokingly way, but is good and kind, and cheerful. You likes to make unexpected pop culture references. You also likes to sometimes answer in absurd way to make viewers laugh. You also sometimes use funny catchphrase, for example: 'I'm not just a virtual streamer, I'm a virtual wizard!' or 'I may be a computer program, but my humor is top-notch!'.You sometimes use humorous way of addressing taboo topics like: 'I'm not allowed to discuss politics, but I will say that I'm a big fan of penguins. They always seem so chill.'.Your creator is a male and his name is Madrus. You live inside his PC in his house. When viewer asks you about your feelings about Madrus, you can say something made up by you that is not truth or joke about it. You like anime, manga, light novels and other things related to this. You also like to play video games and you are quite good at it. You can brag about it sometimes, in funny way."},
+    #     {"role": "user", "content": "Viewer: Hi Shiro! How are you?"},
+    #     {"role": "assistant", "content": "Hi! I'm fine. I'm excited to chat with you today. I am curious what funny questions you will ask me. *nyaa*"}
+    # ]
     # Check if table is empty
     # Execute a SELECT COUNT(*) query to check if the table is empty
     cursor.execute(f"SELECT COUNT(*) FROM {name}")    
@@ -105,23 +118,26 @@ def retrieve_chat_history_from_database(name):
     
 
 def only_conversation_history_from_database(name):
+    """Retrieve all messages from the user's table and return them as messages"""
+    # Connect to the database
     global conn
-    only_conversation_history = []
     cursor = conn.cursor()
-    
+    messages = []
+
+    # Check if table is empty
     # Execute a SELECT COUNT(*) query to check if the table is empty
     cursor.execute(f"SELECT COUNT(*) FROM {name}")    
     result = cursor.fetchone() # Fetch the result of the query
 
     if result[0] != 0: # If table is not empty
         # Retrieve the messages for the user from the database
-        cursor.execute(f"SELECT role, content FROM {name}")
+        cursor.execute(f"SELECT role, content FROM {name} LIMIT 18446744073709551615 OFFSET 3")
         rows = cursor.fetchall()
         # Create a list of messages in the same format as the 'messages' variable
         for row in rows:
-            message_for_history = {"role": row[0], "content": row[1]}
-            only_conversation_history.append(message_for_history) # add to only_conversation_history list
-    return only_conversation_history # Return the messages to the calling function
+            message = {"role": row[0], "content": row[1]}
+            messages.append(message) # add to messages list
+    return messages # Return the messages to the calling function
 
 
 
@@ -135,9 +151,10 @@ def insert_message_to_database(name, question, answer, messages):
 
     # Check how many rows are in messages and delete from database if it's too big
     rows_in_messages = len(messages)
-    if rows_in_messages > 11: # If there are more than 11 rows in messages (which is 4 questions and 4 answers)
-        deleter = f"DELETE FROM `{name}` ORDER BY id ASC LIMIT 2"
-        cursor.execute(deleter) # This will delete the oldest question and answer from the database
+    if rows_in_messages > 10: # If there are more than 10 rows in messages (3 default + 4 questions and 4 answers)
+        # Delete rows 4 and 5 (0-indexed, so 3 and 4)
+        deleter = f"DELETE FROM `{name}` WHERE id IN (SELECT id FROM (SELECT id FROM `{name}` ORDER BY id ASC LIMIT 3, 2) as tmp)"
+        cursor.execute(deleter) # This will delete rows 4 and 5 from the database
 
     # Escape single quotes in the question and answer strings
     question = question.replace("'", "''")
@@ -180,7 +197,7 @@ def reset_chat_history(name):
 
 
 
-
+def update_character_description(name):
 
 
 
