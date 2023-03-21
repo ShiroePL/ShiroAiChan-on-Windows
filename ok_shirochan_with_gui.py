@@ -138,7 +138,7 @@ def voice_control():
                     #checking if user said started listening or other commands
 
                 transcription_cleaned = transcription.translate(str.maketrans("", "", string.punctuation)).strip().lower()
-                   
+            
                 if transcription_cleaned in ("bye bye shiro", "exit program", "bye bye shira"):
                     beep = "cute_beep" #NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
                     play_audio_fn(beep)    
