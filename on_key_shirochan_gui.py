@@ -396,7 +396,7 @@ button_1.place(
     height=51.0
 )
 
-#tet
+#tet2
 button_image_2 = PhotoImage(
     file=relative_to_assets("button_2.png"))
 button_2 = Button(
