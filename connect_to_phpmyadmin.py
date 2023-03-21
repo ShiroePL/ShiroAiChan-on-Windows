@@ -40,9 +40,12 @@ def send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_token
     cursor.execute(sql2)
 
     # Fetch the result and calculate the price for all tokens used in the database
+
     token_sum = cursor.fetchone()[0]
     token_sum = Decimal(str(token_sum))
-    price = token_sum * Decimal('0.000002') * Decimal('10')
+    price_per_1000_tokens = Decimal('0.002')
+    tokens_per_dollar = Decimal('1000')
+    price = token_sum / tokens_per_dollar * price_per_1000_tokens
 
     # Print the usage information and price
     print("Added usage to database")
@@ -198,7 +201,7 @@ def reset_chat_history(name):
 
 
 def update_character_description(name):
-
+    pass
 
 
 
