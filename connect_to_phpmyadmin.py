@@ -98,7 +98,7 @@ def check_user_in_database(name):
         cursor.execute("SELECT id FROM all_descriptions WHERE description = %s", (description,))
         result = cursor.fetchone()
         if not result:
-            cursor.execute("INSERT INTO all_descriptions (description) VALUES (%s)", (description,))
+            cursor.execute("INSERT INTO all_descriptions (description) VALUES (%s)",(description,))
             conn.commit()
 
         print(f"Created table for user: {name}")
@@ -228,12 +228,12 @@ def update_character_description(name, new_description):
     row_id = result[0]
     
     # Check if the new description is already present in all_descriptions table
-    cursor.execute("SELECT id FROM all_descriptions WHERE description = %s", (new_description,))
+    cursor.execute("SELECT id FROM all_descriptions WHERE description = %s",(new_description,))
     result = cursor.fetchone()
     
     if not result:
         # Update the all_descriptions table with the new description
-        cursor.execute("INSERT INTO all_descriptions (description) VALUES (%s)", (new_description,))
+        cursor.execute("INSERT INTO all_descriptions (description) VALUES (%s)",(new_description,))
         print("Added new description to all_descriptions table")
     
     # Update the row with the given data
@@ -268,7 +268,24 @@ def show_character_description(name):
     return None # Return None if there are no messages in the table
     
     
+def get_all_descriptions():
+    """Retrieve all rows from the 'all_descriptions' table and return them as a list of dictionaries"""
+    # Connect to the database
+    cursor = conn.cursor()
 
+    # Retrieve all rows from the 'all_descriptions' table
+    cursor.execute("SELECT * FROM all_descriptions")
+    rows = cursor.fetchall()
+
+    # Convert the rows to a list of dictionaries
+    descriptions = []
+    for row in rows:
+        description = {"id": row[0], "description": row[1]}
+        descriptions.append(description)
+
+    # Close the cursor and return the list of descriptions
+    cursor.close()
+    return descriptions
 
 
 
