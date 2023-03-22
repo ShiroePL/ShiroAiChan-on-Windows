@@ -350,6 +350,18 @@ def take_history_from_database():
     history_from_database = connect_to_phpmyadmin.only_conversation_history_from_database(name)
     return history_from_database
 
+def display_all_descriptions():
+    """Display all descriptions from the 'all_descriptions' table in a Tkinter window"""
+    
+    # Retrieve all descriptions from the 'all_descriptions' table
+    descriptions = connect_to_phpmyadmin.get_all_descriptions()
+    response_widget.delete('1.0', 'end')
+    # Display the descriptions in the Text widget
+    for description in descriptions:
+        response_widget.insert(tk.END, f"{description['id']}: {description['description']}\n")
+        response_widget.insert(tk.END, "\n")
+
+
 
 
 # GUI elements
@@ -525,7 +537,7 @@ button_7.place(
 )
 
 left_arrow_img = PhotoImage(
-    file=relative_to_assets("left_arrow.png"))
+    file=relative_to_assets("button_7.png"))
 left_arrow = Button(
     image=left_arrow_img,
     borderwidth=0,
@@ -541,7 +553,7 @@ left_arrow.place(
 )
 
 right_arrow_img = PhotoImage(
-    file=relative_to_assets("right_arrow.png"))
+    file=relative_to_assets("button_8.png"))
 right_arrow = Button(
     image=right_arrow_img,
     borderwidth=0,
@@ -599,7 +611,7 @@ button_12 = Button(
     image=button_image_12,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_12 clicked"),
+    command=display_all_descriptions,
     relief="flat"
 )
 button_12.place(
@@ -710,8 +722,8 @@ reset_database_no.place(x=195, y=55)
 
 
 # PROGRESS BARRRRRRRRRRRRRRRRRRRR OMGGGGGGGGGGGGGGG
-background_image = Image.open("./assets/frame0/progress_background.png")
-filled_image = Image.open("./assets/frame0/progress_filled.png")
+background_image = Image.open("./assets/frame0/image_3.png")
+filled_image = Image.open("./assets/frame0/image_4.png")
 
 progress_width, progress_height = background_image.size
 
