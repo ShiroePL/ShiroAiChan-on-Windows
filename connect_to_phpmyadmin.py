@@ -10,6 +10,7 @@ password = api_keys.db_password
 
 
 def add_pair_to_general_table(question, answer):
+    """Add a pair of question and answer to the general table in the database"""
     global conn
     cursor = conn.cursor()
 
@@ -28,6 +29,7 @@ def add_pair_to_general_table(question, answer):
         
     
 def send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens):
+    """Send the usage of the chatgpt api to the database"""
     global conn
     cursor = conn.cursor()
 
@@ -60,6 +62,7 @@ def send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_token
 
 
 def check_user_in_database(name):
+    """Check if the user is already in the database and create new table if not"""
     # Connect to the database
     cursor = conn.cursor()
 
@@ -67,11 +70,11 @@ def check_user_in_database(name):
     if cursor.execute(f"SHOW TABLES LIKE '{name}'"):
         print(f"Table for user {name} already exists.")
     else:
-        # Create a table for the user if it doesn't exist yet
+        # Create the user's table if it doesn't exist yet
         sql = f"CREATE TABLE {name} (id INT AUTO_INCREMENT PRIMARY KEY, role VARCHAR(50), content VARCHAR(1000), added_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
         cursor.execute(sql)
 
-        # Insert the initial messages into the table
+        # Insert the initial messages into the user's table
         messages = [
             {"role": "system", "content": "You are a virtual streamer on Twitch platform but now you are on Discord and chat with viewers. You're name is shiro and you are cat-girl. You answer like cat-girl, which means you add some cat words to your answers, like : 'pawsome' instead of 'awesome' or *nyaaa* in the end."},
             {"role": "user", "content": "Viewer: Hi Shiro! How are you?"},
@@ -83,9 +86,22 @@ def check_user_in_database(name):
             sql = f"INSERT INTO {name} (role, content) VALUES (%s, %s)"
             cursor.execute(sql, (role, content))
 
-        # Commit the changes
+        # Commit the changes to the user's table
         conn.commit()
-        print("Created table for user: " + name)
+
+        # Create the all_descriptions table if it doesn't exist yet
+        cursor.execute("CREATE TABLE IF NOT EXISTS all_descriptions (id INT AUTO_INCREMENT PRIMARY KEY, description TEXT NOT NULL)")
+        conn.commit()
+
+        # Insert the initial description into the all_descriptions table if it doesn't exist yet
+        description = messages[0]['content']
+        cursor.execute("SELECT id FROM all_descriptions WHERE description = %s", (description,))
+        result = cursor.fetchone()
+        if not result:
+            cursor.execute("INSERT INTO all_descriptions (description) VALUES (%s)", (description,))
+            conn.commit()
+
+        print(f"Created table for user: {name}")
     
     # Close the connection
     cursor.close()
@@ -97,14 +113,7 @@ def retrieve_chat_history_from_database(name):
     global conn
     cursor = conn.cursor()
     messages = []
-    # Default messages not added to database to save varchar for description
-    # messages = [
-    #     {"role": "system", "content": "You are a virtual streamer on Twitch platform but now you are on Discord and chat with viewers. You're name is shiro and you are cat-girl. You answer like cat-girl, which means you add some cat words to your answers, like : 'pawsome' instead of 'awesome' or *nyaaa* in the end."},
-    #     #{"role": "system", "content": "You are a virtual streamer on Twitch platform but now you are on Discord and chat with viewers. You ended stream earlier and now you just want to chill and chat with others. Your name is Shiro.  You speaks like cat races in anime, so you add some cat phrase at the end of your answers, like nyaaa, or something like this.  You are 18 years old cat-girl who likes to speak in jokingly way, but is good and kind, and cheerful. You likes to make unexpected pop culture references. You also likes to sometimes answer in absurd way to make viewers laugh. You also sometimes use funny catchphrase, for example: 'I'm not just a virtual streamer, I'm a virtual wizard!' or 'I may be a computer program, but my humor is top-notch!'.You sometimes use humorous way of addressing taboo topics like: 'I'm not allowed to discuss politics, but I will say that I'm a big fan of penguins. They always seem so chill.'.Your creator is a male and his name is Madrus. You live inside his PC in his house. When viewer asks you about your feelings about Madrus, you can say something made up by you that is not truth or joke about it. You like anime, manga, light novels and other things related to this. You also like to play video games and you are quite good at it. You can brag about it sometimes, in funny way."},
-    #     {"role": "user", "content": "Viewer: Hi Shiro! How are you?"},
-    #     {"role": "assistant", "content": "Hi! I'm fine. I'm excited to chat with you today. I am curious what funny questions you will ask me. *nyaa*"}
-    # ]
-    # Check if table is empty
+    
     # Execute a SELECT COUNT(*) query to check if the table is empty
     cursor.execute(f"SELECT COUNT(*) FROM {name}")    
     result = cursor.fetchone() # Fetch the result of the query
@@ -199,16 +208,66 @@ def reset_chat_history(name):
         print("Oops, something went wrong while deleting the history. Check the logs for more information.")
 
 
+   
+def update_character_description(name, new_description):
+    """Update character description in database."""
+    # Connect to the database
+    # Connect to the database
+    global conn
+    cursor = conn.cursor()
+    
+    # Check if the table is not empty
+    cursor.execute(f"SELECT COUNT(*) FROM {name}")
+    result = cursor.fetchone()
+    if result[0] == 0:
+        return False # Return False if table is empty
+    
+    # Get the ID of the first row in the table
+    cursor.execute(f"SELECT id FROM {name} ORDER BY id LIMIT 1")
+    result = cursor.fetchone()
+    row_id = result[0]
+    
+    # Check if the new description is already present in all_descriptions table
+    cursor.execute("SELECT id FROM all_descriptions WHERE description = %s", (new_description,))
+    result = cursor.fetchone()
+    
+    if not result:
+        # Update the all_descriptions table with the new description
+        cursor.execute("INSERT INTO all_descriptions (description) VALUES (%s)", (new_description,))
+        print("Added new description to all_descriptions table")
+    
+    # Update the row with the given data
+    cursor.execute(f"UPDATE {name} SET content = %s WHERE id = %s", (new_description, row_id))
+    conn.commit()
+    
+    # Check if the update was successful
+    if cursor.rowcount > 0:
+        return True # Return True if the update was successful
+    else:
+        return False # Return False if the update was not successful
 
-def update_character_description(name):
-    pass
 
+def show_character_description(name):
+    """Show character description from database."""
+    # Connect to the database
+    global conn
+    cursor = conn.cursor()
+    
+    # Execute a SELECT COUNT(*) query to check if the table is empty
+    cursor.execute(f"SELECT COUNT(*) FROM {name}")    
+    result = cursor.fetchone() # Fetch the result of the query
 
-
-
-
-
-
+    if result[0] != 0: # If table is not empty
+        # Retrieve the content of the first message for the user from the database
+        cursor.execute(f"SELECT content FROM {name} LIMIT 1")
+        row = cursor.fetchone()
+        if row: # If there is a row returned
+            content = row[0] # Get the content of the message
+            return content # Return the content to the calling function
+    
+    return None # Return None if there are no messages in the table
+    
+    
 
 
 

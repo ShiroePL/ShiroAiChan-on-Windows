@@ -31,6 +31,8 @@ import keyboard
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
 
+windll.shcore.SetProcessDpiAwareness(1) #make window sharp on high dpi screens
+
 # Initialize the question to speech engine 
 engine=pyttsx3.init()
 conn = None
@@ -66,7 +68,8 @@ class ToolTip:
             self.tooltip = None
 
 
-windll.shcore.SetProcessDpiAwareness(1)
+
+
 def transcribe_audio_question(filename):
     start_time = time.time()
     # Load audio file as base64 encoded string
@@ -178,7 +181,9 @@ def voice_control():
     global current_answer_index
 
     # don't knwo why but without this it doesn't work probably because : with sr.Microphone() as source:
-    name = user_name_entry.get()
+
+    name = user_name_entry.get() # takes name from input
+
     choice = reset_database_var.get()
     print("Your name?: " + name)
     print("Do you want to reset your chat history? You chose: " + choice)
@@ -344,6 +349,8 @@ def take_history_from_database():
     connect_to_phpmyadmin.check_user_in_database(name)
     history_from_database = connect_to_phpmyadmin.only_conversation_history_from_database(name)
     return history_from_database
+
+
 
 # GUI elements
 root = tk.Tk()
@@ -556,7 +563,7 @@ button_10 = Button(
     image=button_image_10,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_10 clicked"),
+    command=lambda: print_response_label(connect_to_phpmyadmin.show_character_description(user_name_entry.get())),
     relief="flat"
 )
 button_10.place(
@@ -610,7 +617,7 @@ button_13 = Button(
     image=button_image_13,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_13 clicked"),
+    command=lambda: connect_to_phpmyadmin.update_character_description(user_name_entry.get() ,show_history_from_db_widget.get("1.0", tk.END)),
     relief="flat"
 )
 button_13.place(
