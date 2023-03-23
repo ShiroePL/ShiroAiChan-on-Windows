@@ -100,29 +100,6 @@ def transcribe_audio_question(filename):
     return question
 
 
-# def play_audio_fn(filename):
-#     chunk = 1024
-#     wf = wave.open(f'./kiki_hub/{filename}.wav', 'rb')
-#     p = pyaudio.PyAudio()
-#     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-#                     channels=wf.getnchannels(),
-#                     rate=wf.getframerate(),
-#                     output=True)
-#     data = wf.readframes(chunk)
-#     while data:
-#         stream.write(data)
-#         data = wf.readframes(chunk)
-#     stream.stop_stream()
-#     stream.close()
-#     p.terminate()
-
-
-# def play_audio_fn(filename):
-#     try:
-#         playsound(f'./kiki_hub/{filename}.wav')
-#         print("Playing voice")
-#     except:
-#         print("Error or ended reading audio.")
 
 def play_audio_fn(filename):
     pygame.mixer.init()
@@ -136,6 +113,7 @@ def play_audio_fn(filename):
         print("Error or ended reading audio.")
     finally:
         pygame.mixer.quit()
+
 
 def print_response_label(response):
     response_widget.delete('1.0', 'end')
