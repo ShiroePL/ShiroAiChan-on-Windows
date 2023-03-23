@@ -52,7 +52,7 @@ image_2 = canvas.create_image(
 )
 
 canvas.create_text(
-    543.0,
+    575.0,
     158.0,
     anchor="nw",
     text="logs from logs",
@@ -62,7 +62,7 @@ canvas.create_text(
 
 canvas.create_text(
     284.0,
-    12.0,
+    10.0,
     anchor="nw",
     text="ShiroAi-chan Control Panel",
     fill="#78CBED",
@@ -129,7 +129,7 @@ button_4 = Button(
 button_4.place(
     x=39.0,
     y=158.0,
-    width=155.0,
+    width=157.0,
     height=47.0
 )
 
@@ -168,8 +168,8 @@ button_6.place(
 image_image_3 = PhotoImage(
     file=relative_to_assets("image_3.png"))
 image_3 = canvas.create_image(
-    606.0,
-    204.0,
+    603.0,
+    146.0,
     image=image_image_3
 )
 
@@ -184,8 +184,8 @@ image_4 = canvas.create_image(
 entry_image_1 = PhotoImage(
     file=relative_to_assets("entry_1.png"))
 entry_bg_1 = canvas.create_image(
-    116.0,
-    52.0,
+    99.0,
+    51.0,
     image=entry_image_1
 )
 entry_1 = Entry(
@@ -195,15 +195,15 @@ entry_1 = Entry(
     highlightthickness=0
 )
 entry_1.place(
-    x=55.0,
+    x=54.0,
     y=35.0,
-    width=122.0,
-    height=32.0
+    width=90.0,
+    height=30.0
 )
 
 canvas.create_text(
-    38.0,
-    10.0,
+    50.0,
+    12.0,
     anchor="nw",
     text="Your name:",
     fill="#A8E1F6",
@@ -273,7 +273,7 @@ button_9 = Button(
 )
 button_9.place(
     x=12.0,
-    y=278.0,
+    y=252.0,
     width=42.0,
     height=42.0
 )
@@ -289,7 +289,7 @@ button_10 = Button(
 )
 button_10.place(
     x=9.0,
-    y=345.0,
+    y=314.0,
     width=45.0,
     height=42.0
 )
@@ -305,7 +305,7 @@ button_11 = Button(
 )
 button_11.place(
     x=12.0,
-    y=412.0,
+    y=376.0,
     width=42.0,
     height=42.0
 )
@@ -320,7 +320,7 @@ button_12 = Button(
     relief="flat"
 )
 button_12.place(
-    x=188.0,
+    x=166.0,
     y=536.0,
     width=42.0,
     height=42.0
@@ -336,7 +336,7 @@ button_13 = Button(
     relief="flat"
 )
 button_13.place(
-    x=259.0,
+    x=228.0,
     y=536.0,
     width=42.0,
     height=42.0
@@ -352,8 +352,40 @@ button_14 = Button(
     relief="flat"
 )
 button_14.place(
-    x=330.0,
+    x=290.0,
     y=536.0,
+    width=42.0,
+    height=42.0
+)
+
+button_image_15 = PhotoImage(
+    file=relative_to_assets("button_15.png"))
+button_15 = Button(
+    image=button_image_15,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_15 clicked"),
+    relief="flat"
+)
+button_15.place(
+    x=352.0,
+    y=536.0,
+    width=42.0,
+    height=42.0
+)
+
+button_image_16 = PhotoImage(
+    file=relative_to_assets("button_16.png"))
+button_16 = Button(
+    image=button_image_16,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_16 clicked"),
+    relief="flat"
+)
+button_16.place(
+    x=12.0,
+    y=438.0,
     width=42.0,
     height=42.0
 )
@@ -367,7 +399,7 @@ entry_bg_3 = canvas.create_image(
 )
 entry_3 = Text(
     bd=0,
-    bg="#1A1245",
+    bg="#040211",
     fg="#000716",
     highlightthickness=0
 )
@@ -376,6 +408,14 @@ entry_3.place(
     y=587.0,
     width=428.0,
     height=198.0
+)
+
+image_image_5 = PhotoImage(
+    file=relative_to_assets("image_5.png"))
+image_5 = canvas.create_image(
+    540.0,
+    252.0,
+    image=image_image_5
 )
 window.resizable(False, False)
 window.mainloop()

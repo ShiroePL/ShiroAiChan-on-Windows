@@ -41,7 +41,7 @@ global stop_listening_flag
 stop_listening_flag = False
 global recording_key
 recording_key = False
-default_user = "shiroe"
+default_user = "normal"
 answer_history = [] #for the history of answers
 
 class ToolTip:
@@ -182,7 +182,7 @@ def voice_control():
 
     # don't knwo why but without this it doesn't work probably because : with sr.Microphone() as source:
 
-    name = user_name_entry.get() # takes name from input
+    name = table_name_input.get() # takes name from input
 
     choice = reset_database_var.get()
     print("Your name?: " + name)
@@ -253,7 +253,7 @@ def voice_control():
                         sys.exit()
                     else:               
                             #to database 
-                        question = f"{name}: {question}"
+                        question = f"Madrus: {question}"
                             #add question line to messages list
                         print("question variable:" + question)
                         messages.append({"role": "user", "content": question})
@@ -345,7 +345,7 @@ def disconnect_from_vtube():
     api.close()
 
 def take_history_from_database():
-    name = user_name_entry.get()
+    name = table_name_input.get()
     connect_to_phpmyadmin.check_user_in_database(name)
     history_from_database = connect_to_phpmyadmin.only_conversation_history_from_database(name)
     return history_from_database
@@ -412,12 +412,12 @@ image_2 = canvas.create_image(
 
 
 canvas.create_text(
-    257.0,
-    12.0,
+    284.0,
+    10.0,
     anchor="nw",
     text="ShiroAi-chan Control Panel",
-    fill="#12D4FF",
-    font=("Inter Bold", 48 * -1)
+    fill="#78CBED",
+    font=("BalooBhai2 SemiBold", 53 * -1)
 )
 
 button_image_1 = PhotoImage(
@@ -430,10 +430,10 @@ button_1 = Button(
     relief="flat"
 )
 button_1.place(
-    x=52.0,
-    y=91.0,
-    width=127.0,
-    height=51.0
+    x=39.0,
+    y=89.0,
+    width=161.0,
+    height=55.0
 )
 
 #tet2sss
@@ -447,10 +447,10 @@ button_2 = Button(
     relief="flat"
 )
 button_2.place(
-    x=204.0,
-    y=91.0,
-    width=127.0,
-    height=51.0
+    x=215.0,
+    y=89.0,
+    width=158.0,
+    height=47.0
 )
 
 button_image_3 = PhotoImage(
@@ -459,15 +459,16 @@ button_3 = Button(
     image=button_image_3,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: (connect_to_phpmyadmin.reset_chat_history(user_name_entry.get()), print_log_label("reset chat history")),
+    command=lambda: (connect_to_phpmyadmin.reset_chat_history(table_name_input.get()), print_log_label("reset chat history")),
     relief="flat"
 )
 button_3.place(
-    x=356.0,
-    y=91.0,
-    width=127.0,
-    height=51.0
+    x=396.0,
+    y=89.0,
+    width=131.0,
+    height=47.0
 )
+
 
 button_image_4 = PhotoImage(
     file=relative_to_assets("button_4.png"))
@@ -475,14 +476,14 @@ button_4 = Button(
     image=button_image_4,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: display_messages_from_database_only(take_history_from_database()),
+    command=connect_to_vtube,
     relief="flat"
 )
 button_4.place(
-    x=508.0,
-    y=91.0,
-    width=127.0,
-    height=51.0
+    x=39.0,
+    y=158.0,
+    width=157.0,
+    height=47.0
 )
 
 button_image_5 = PhotoImage(
@@ -491,18 +492,15 @@ button_5 = Button(
     image=button_image_5,
     borderwidth=0,
     highlightthickness=0,
-    command=connect_to_vtube,
+    command=disconnect_from_vtube,
     relief="flat"
 )
 button_5.place(
-    x=52.0,
-    y=165.0,
-    width=127.0,
-    height=51.0
+    x=215.0,
+    y=158.0,
+    width=168.0,
+    height=47.0
 )
-
-tooltip = ToolTip(button_5, "This is the description of the button.")
-
 
 button_image_6 = PhotoImage(
     file=relative_to_assets("button_6.png"))
@@ -510,31 +508,20 @@ button_6 = Button(
     image=button_image_6,
     borderwidth=0,
     highlightthickness=0,
-    command=disconnect_from_vtube,
-    relief="flat"
-)
-button_6.place(
-    x=204.0,
-    y=165.0,
-    width=127.0,
-    height=51.0
-)
-
-button_image_7 = PhotoImage(
-    file=relative_to_assets("button_7.png"))
-button_7 = Button(
-    image=button_image_7,
-    borderwidth=0,
-    highlightthickness=0,
     command=lambda: api.play_animation("introduce"),
     relief="flat"
 )
-button_7.place(
-    x=356.0,
-    y=165.0,
-    width=127.0,
-    height=51.0
+button_6.place(
+    x=396.0,
+    y=158.0,
+    width=134.0,
+    height=47.0
 )
+
+
+
+
+
 
 left_arrow_img = PhotoImage(
     file=relative_to_assets("button_7.png"))
@@ -547,9 +534,9 @@ left_arrow = Button(
 )
 left_arrow.place(
     x=3.0,
-    y=217.0,
-    width=30.0,
-    height=18.0
+    y=214.0,
+    width=43.0,
+    height=36.0
 )
 
 right_arrow_img = PhotoImage(
@@ -562,12 +549,30 @@ right_arrow = Button(
     relief="flat"
 )
 right_arrow.place(
-    x=40.0,
-    y=217.0,
-    width=30.0,
-    height=18.0
+    x=51.0,
+    y=214.0,
+    width=43.0,
+    height=36.0
 )
 
+
+button_image_9 = PhotoImage(
+    file=relative_to_assets("button_9.png"))
+button_9 = Button(
+    image=button_image_9,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print_response_label(connect_to_phpmyadmin.show_character_description(table_name_input.get())),
+    relief="flat"
+)
+button_9.place(
+    x=12.0,
+    y=252.0,
+    width=42.0,
+    height=42.0
+)
+
+tooltip = ToolTip(button_9, "Show persona description for current table.")
 
 button_image_10 = PhotoImage(
     file=relative_to_assets("button_10.png"))
@@ -575,17 +580,18 @@ button_10 = Button(
     image=button_image_10,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print_response_label(connect_to_phpmyadmin.show_character_description(user_name_entry.get())),
+    command=display_all_descriptions,
     relief="flat"
 )
 button_10.place(
-    x=3.0,
-    y=240.0,
-    width=42.0,
+    x=9.0,
+    y=314.0,
+    width=45.0,
     height=42.0
 )
 
-tooltip = ToolTip(button_10, "Show persona description for current table.")
+tooltip = ToolTip(button_10, "Show all descriptions of persona.")
+
 
 button_image_11 = PhotoImage(
     file=relative_to_assets("button_11.png"))
@@ -593,17 +599,18 @@ button_11 = Button(
     image=button_image_11,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: show_history_from_db_widget.delete('1.0', 'end'),
+    command=lambda: response_widget.delete('1.0', 'end'), #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     relief="flat"
 )
 button_11.place(
-    x=133.0,
-    y=545.0,
+    x=12.0,
+    y=376.0,
     width=42.0,
     height=42.0
 )
 
-tooltip = ToolTip(button_11, "Clean text box below.")
+tooltip = ToolTip(button_11, "Clean text box on the right")
+
 
 button_image_12 = PhotoImage(
     file=relative_to_assets("button_12.png"))
@@ -611,17 +618,18 @@ button_12 = Button(
     image=button_image_12,
     borderwidth=0,
     highlightthickness=0,
-    command=display_all_descriptions,
+    command=lambda: show_history_from_db_widget.delete('1.0', 'end'),
     relief="flat"
 )
 button_12.place(
-    x=211.0,
-    y=545.0,
+    x=166.0,
+    y=536.0,
     width=42.0,
     height=42.0
 )
 
-tooltip = ToolTip(button_12, "Show all descriptions of persona.")
+tooltip = ToolTip(button_12, "Clean text box below.")
+
 
 button_image_13 = PhotoImage(
     file=relative_to_assets("button_13.png"))
@@ -629,12 +637,12 @@ button_13 = Button(
     image=button_image_13,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: connect_to_phpmyadmin.update_character_description(user_name_entry.get() ,show_history_from_db_widget.get("1.0", tk.END)),
+    command=lambda: connect_to_phpmyadmin.update_character_description(table_name_input.get() ,show_history_from_db_widget.get("1.0", tk.END)),
     relief="flat"
 )
 button_13.place(
-    x=289.0,
-    y=545.0,
+    x=228.0,
+    y=536.0,
     width=42.0,
     height=42.0
 )
@@ -642,37 +650,99 @@ button_13.place(
 tooltip = ToolTip(button_13, "Insert new description to current table.")
 
 
+button_image_14 = PhotoImage(
+    file=relative_to_assets("button_14.png"))
+button_14 = Button(
+    image=button_image_14,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: display_messages_from_database_only(take_history_from_database()),
+    relief="flat"
+)
+button_14.place(
+    x=290.0,
+    y=536.0,
+    width=42.0,
+    height=42.0
+)
+
+tooltip = ToolTip(button_14, "Show history of chat in current table.")
+
+button_image_15 = PhotoImage(
+    file=relative_to_assets("button_15.png"))
+button_15 = Button(
+    image=button_image_15,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_15 clicked"),
+    relief="flat"
+)
+button_15.place(
+    x=352.0,
+    y=536.0,
+    width=42.0,
+    height=42.0
+)
+
+tooltip = ToolTip(button_15, "Send text message to Shiro")
+
+button_image_16 = PhotoImage(
+    file=relative_to_assets("button_16.png"))
+button_16 = Button(
+    image=button_image_16,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: print("button_16 clicked"),
+    relief="flat"
+)
+button_16.place(
+    x=12.0,
+    y=438.0,
+    width=42.0,
+    height=42.0
+)
+
+tooltip = ToolTip(button_16, "Stop Shiro from talking.")
+
 entry_image_1 = PhotoImage(
     file=relative_to_assets("entry_1.png"))
 entry_bg_1 = canvas.create_image(
-    113.0,
+    116.0,
     52.0,
     image=entry_image_1
 )
 
 
-user_name_entry = Entry(
+image_image_5 = PhotoImage(
+    file=relative_to_assets("image_5.png"))
+image_5 = canvas.create_image(
+    540.0,
+    252.0,
+    image=image_image_5
+)
+
+table_name_input = Entry(
     bd=0,
-    bg="#7FD7EC",
+    bg="#FFFFFF",
     fg="#000716",
     highlightthickness=0
 )
-user_name_entry.place(
-    x=52.0,
+table_name_input.place(
+    x=55.0,
     y=35.0,
     width=122.0,
     height=32.0
 )
 
-user_name_entry.insert(0, default_user)
+table_name_input.insert(0, default_user)
 
 canvas.create_text(
-    58.0,
-    5.0,
+    50.0,
+    12.0,
     anchor="nw",
     text="Your name:",
-    fill="#7FD5EA",
-    font=("Inter Bold", 20 * -1)
+    fill="#A8E1F6",
+    font=("BalooBhai2 SemiBold", 20 * -1)
 )
 #OMG RADIO BUTTONS START--------------------------------------------------------------------------------------------------
 # Create the Radiobutton widgets
@@ -730,7 +800,7 @@ progress_width, progress_height = background_image.size
 background_photo = ImageTk.PhotoImage(background_image)
 
 canvas = tk.Canvas(root, width=progress_width, height=progress_height,bg="black", highlightthickness=0, bd=0, relief='ridge')
-canvas.place(x=508, y=165)
+canvas.place(x=543, y=136)
 
 background_progress = canvas.create_image(0, 0, anchor=tk.NW, image=background_photo)
 filled_progress = canvas.create_image(0, 0, anchor=tk.NW)
@@ -738,25 +808,25 @@ filled_progress = canvas.create_image(0, 0, anchor=tk.NW)
 
 
 
-response_label = tk.Label(
-    root,
-    text="",
-    bg="black",
-    fg="#F9C6B3",
-    font=("Inter Regular", 16),
-    wraplength=410,
-    anchor="center",  # Centers the text vertically
-    justify="center",  # Centers the text horizontally
-    width=26,  # Adjust this value to control the width of the label
-)
-response_label.place(
-    x=52,
-    y=240,
-)
+# response_label = tk.Label(
+#     root,
+#     text="",
+#     bg="black",
+#     fg="#F9C6B3",
+#     font=("Inter Regular", 16),
+#     wraplength=410,
+#     anchor="center",  # Centers the text vertically
+#     justify="center",  # Centers the text horizontally
+#     width=26,  # Adjust this value to control the width of the label
+# )
+# response_label.place(
+#     x=52,
+#     y=240,
+# )
 
 response_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
-                      bg='black', fg='#F9C6B3', font=("Inter Regular", 14),  bd=0)
-response_widget.place(x=52, y=240, width=450, height=210)
+                      bg='black', fg='#A8E1F6', font=("BalooBhai2 SemiBold", 14),  bd=0)
+response_widget.place(x=66, y=252, width=428, height=226)
 
 
 
@@ -767,29 +837,29 @@ log_label = tk.Label(
     root,
     text="",
     bg="black",
-    fg="#12D4FF",
-    font=("Inter Bold", 12 * -1),
+    fg="#A8E1F6",
+    font=("BalooBhai2 SemiBold", 12 * -1),
     wraplength=110,
     anchor="center",  # Centers the text vertically
     justify="center",  # Centers the text horizontally
-    width=15,  # Adjust this value to control the width of the label
+    width=17,  # Adjust this value to control the width of the label
 )
 log_label.place(
-    x=515,
-    y=185,
+    x=543,
+    y=158,
 )
 
 # Create the Text widget
 show_history_from_db_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
-                      bg='black', fg='#12D4FF', font=("Inter Bold", 9),  bd=0)
-show_history_from_db_widget.place(x=10, y=590, width=450, height=200)
+                      bg='black', fg='#78CBED', font=("BalooBhai2 SemiBold", 9),  bd=0)
+show_history_from_db_widget.place(x=66, y=587, width=428, height=198)
 show_history_from_db_widget.see('end')
 # Create a Scrollbar and associate it with the Text widget
 # scrollbar = ttk.Scrollbar(root, command=show_history_from_db_widget.yview)
 # scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 # show_history_from_db_widget.config(yscrollcommand=scrollbar.set)
 
-# name = user_name_entry.get()
+# name = table_name_input.get()
 # connect_to_phpmyadmin.check_user_in_database(name)
 # history_from_database = connect_to_phpmyadmin.only_conversation_history_from_database(name)
 
@@ -810,7 +880,7 @@ show_history_from_db_widget.see('end')
 
 
 
-
+update_progress_bar(100)
 root.resizable(False, False)
 running = False
 thread_running = False
