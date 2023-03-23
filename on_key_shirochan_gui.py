@@ -174,130 +174,136 @@ def display_messages_from_database_only(messages):
 
 
 
-def voice_control():
+def voice_control(input_text=None):
     global stop_listening_flag
     global running
     stop_listening_flag = False
     global current_answer_index
 
-    # don't knwo why but without this it doesn't work probably because : with sr.Microphone() as source:
-
-    name = table_name_input.get() # takes name from input
+    name = table_name_input.get()  # takes name from input
 
     choice = reset_database_var.get()
     print("Your name?: " + name)
     print("Do you want to reset your chat history? You chose: " + choice)
     print("say 'exit program' to exit the program")
-    
+
     if choice == "Yes":
         connect_to_phpmyadmin.reset_chat_history(name)
-        
+
     connect_to_phpmyadmin.check_user_in_database(name)
-    recognizer = sr.Recognizer() 
+    recognizer = sr.Recognizer()
 
+    
+    while running:  # while running is true
 
-    print("started lintening")
-    while running: #while runnign is true
-        
-        #print_response("Say 'pathfinder' to start a conversation")
         messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
-        
-        #Wait for user to say "pathfinder"
-        update_progress_bar(10), print_log_label("recording...")
 
-        beep = "cute_beep" #started recording
-        play_audio_fn(beep)
+        if input_text is None:
+            update_progress_bar(10), print_log_label("recording...")
+            print("started listening")
+            beep = "cute_beep"  # started recording
+            play_audio_fn(beep)
 
-        print("Started recording: say you question NOW")
+            print("Started recording: say you question NOW")
 
-        question_file = "question"
-        filename = f"./kiki_hub/{question_file}.wav"
+            question_file = "question"
+            filename = f"./kiki_hub/{question_file}.wav"
 
-        with sr.Microphone() as source:
-            recognizer = sr.Recognizer()
-            source.pause_threshold = 1 #this is the end of my speaking, but before saving it to file
+            with sr.Microphone() as source:
+                recognizer = sr.Recognizer()
+                source.pause_threshold = 1
 
-        
-            audio = recognizer.listen(source, phrase_time_limit=None, timeout=None)
-            
-            if stop_listening_flag:
-                print("Stopped recording on user request via clicking button")
-                print("---------------------------------")  # Check if the stop_listening button was pressed
-                update_progress_bar(0), print_log_label("stopped rec. test raz dwa trzy cztery")
-                beep = "cute_beep" #NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
+                audio = recognizer.listen(source, phrase_time_limit=None, timeout=None)
+
+                if stop_listening_flag:
+                    print("Stopped recording on user request via clicking button")
+                    print("---------------------------------")
+                    update_progress_bar(0), print_log_label("stopped rec. test raz dwa trzy cztery")
+                    beep = "cute_beep"  # NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
+                    play_audio_fn(beep)
+                    break
+                with open(filename, "wb") as f:
+                    f.write(audio.get_wav_data())
+                f.close()
+
+                update_progress_bar(20), print_log_label("transcribing...")  # recorded audio
+
+                try:
+                    print("---------------------------------")
+
+                    question = transcribe_audio_question(question_file)
+                except Exception as e:
+                    print("An error occurred: {}".format(e))
+        else:
+            question = input_text
+            input_text = None
+
+        # The rest of the code remains the same
+
+        cleaned_question = question.translate(str.maketrans("", "", string.punctuation)).strip().lower()
+
+        if profanity.contains_profanity(question) == True:  # dcensor question words for openAI send
+            question = profanity.censor(answer)
+
+        if question:
+
+            if input_text is None:
+                update_progress_bar(30), print_log_label("transcribed.")
+            else:
+                update_progress_bar(30), print_log_label("question given in input.")
+
+
+            if cleaned_question in ("bye bye shiro", "exit program", "bye bye shira"):
+                beep = "cute_beep"  # NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
                 play_audio_fn(beep)
-                break
-            with open(filename, "wb") as f:
-                f.write(audio.get_wav_data())
-            f.close()
+                sys.exit()
+            else:
+                # to database
+                question = f"Madrus: {question}"
+                print("question variable:" + question)
+                messages.append({"role": "user", "content": question})
+                
+                    # send to open ai for answer
+                update_progress_bar(40), print_log_label("sending to openAI...")  
+                print("messages: " + str(messages))
+                answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+                print_response_label(answer)
+                    # FOR ARROWS TO PREVIOUS ANSWERS
+                add_answer_to_history(answer)
+                current_answer_index = len(answer_history) - 1
+                    # END OF ARROWS TO PREVIOUS ANSWERS
+                update_progress_bar(60), print_log_label("got answer")    
 
-            update_progress_bar(20), print_log_label("transcribing...") #recorded audio
+                request_voice.request_voice_fn(answer) #request Azure TTS to for answer
 
-            try:  
+                update_progress_bar(70), print_log_label("got voice")
+
+                print("ShiroAi-chan: " + answer)
+                play_audio_fn("response")
+                
+                if profanity.contains_profanity(answer) == True:
+                    answer = profanity.censor(answer)                    
+                update_progress_bar(80), print_log_label("saving to DB...")
+                connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
+                connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
+                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
                 print("---------------------------------")
+
+                beep = "cute_beep" #END OF ANSWER
+                play_audio_fn(beep)
+
+                    #show history in text widget
+                update_progress_bar(90), print_log_label("showing in text box...")
+                #show_history_from_db_widget.delete('1.0', 'end')
+                display_messages_from_database_only(take_history_from_database())
                 
-  
-                question = transcribe_audio_question(question_file)
-                cleaned_question = question.translate(str.maketrans("", "", string.punctuation)).strip().lower()
-                
-                if profanity.contains_profanity(question) == True: #dcensor question words for openAI send
-                    question = profanity.censor(answer)
 
-                if question:
-
-                    update_progress_bar(30),print_log_label("transcribed.")
-
-                    if cleaned_question in ("bye bye shiro", "exit program", "bye bye shira"):
-                        beep = "cute_beep" #NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
-                        play_audio_fn(beep)    
-                        sys.exit()
-                    else:               
-                            #to database 
-                        question = f"Madrus: {question}"
-                            #add question line to messages list
-                        print("question variable:" + question)
-                        messages.append({"role": "user", "content": question})
+                running = False
+                update_progress_bar(100), print_log_label("saved to DB, done")
                         
-                            # send to open ai for answer
-                        update_progress_bar(40), print_log_label("sending to openAI...")  
-                        print("messages: " + str(messages))
-                        answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
-                        print_response_label(answer)
-                            # FOR ARROWS TO PREVIOUS ANSWERS
-                        add_answer_to_history(answer)
-                        current_answer_index = len(answer_history) - 1
-                            # END OF ARROWS TO PREVIOUS ANSWERS
-                        update_progress_bar(60), print_log_label("got answer")    
-
-                        request_voice.request_voice_fn(answer) #request Azure TTS to for answer
-
-                        update_progress_bar(70), print_log_label("got voice")
-
-                        print("ShiroAi-chan: " + answer)
-                        play_audio_fn("response")
-                        
-                        if profanity.contains_profanity(answer) == True:
-                            answer = profanity.censor(answer)                    
-                        update_progress_bar(80), print_log_label("saving to DB...")
-                        connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
-                        connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
-                        connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
-                        print("---------------------------------")
-
-                        beep = "cute_beep" #END OF ANSWER
-                        play_audio_fn(beep)
-
-                            #show history in text widget
-                        update_progress_bar(90), print_log_label("showing in text box...")
-                        #show_history_from_db_widget.delete('1.0', 'end')
-                        display_messages_from_database_only(take_history_from_database())
-                        
-
-                        running = False
-                        update_progress_bar(100), print_log_label("saved to DB, done")
-                        
-            except Exception as e:
-                print("An error occurred: {}".format(e))
+    
+                    
+        
 
            
     # Replace `print()` statements with `print_response()`
@@ -310,6 +316,12 @@ def start_voice_control():
     running = True #will start the while loop in voice control
     voice_thread = threading.Thread(target=voice_control)
     voice_thread.start()
+
+def start_voice_control_input(text):
+    global running
+    running = True #will start the while loop in voice control
+    voice_thread = threading.Thread(target=voice_control, args=(text,))
+    voice_thread.start()    
 
 
 def stop_listening():
@@ -674,7 +686,7 @@ button_15 = Button(
     image=button_image_15,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_15 clicked"),
+    command=lambda: start_voice_control_input(show_history_from_db_widget.get("1.0", tk.END)),
     relief="flat"
 )
 button_15.place(
@@ -707,7 +719,7 @@ tooltip = ToolTip(button_16, "Stop Shiro from talking.")
 entry_image_1 = PhotoImage(
     file=relative_to_assets("entry_1.png"))
 entry_bg_1 = canvas.create_image(
-    116.0,
+    100.0,
     52.0,
     image=entry_image_1
 )
@@ -723,15 +735,16 @@ image_5 = canvas.create_image(
 
 table_name_input = Entry(
     bd=0,
-    bg="#FFFFFF",
+    bg="#A8E1F6",
     fg="#000716",
-    highlightthickness=0
+    highlightthickness=0,
+    justify="center",
 )
 table_name_input.place(
     x=55.0,
-    y=35.0,
-    width=122.0,
-    height=32.0
+    y=37.8,
+    width=90.0,
+    height=27.0,
 )
 
 table_name_input.insert(0, default_user)
@@ -808,28 +821,9 @@ filled_progress = canvas.create_image(0, 0, anchor=tk.NW)
 
 
 
-# response_label = tk.Label(
-#     root,
-#     text="",
-#     bg="black",
-#     fg="#F9C6B3",
-#     font=("Inter Regular", 16),
-#     wraplength=410,
-#     anchor="center",  # Centers the text vertically
-#     justify="center",  # Centers the text horizontally
-#     width=26,  # Adjust this value to control the width of the label
-# )
-# response_label.place(
-#     x=52,
-#     y=240,
-# )
-
 response_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
                       bg='black', fg='#A8E1F6', font=("BalooBhai2 SemiBold", 14),  bd=0)
 response_widget.place(x=66, y=252, width=428, height=226)
-
-
-
 
 
             # i think i will change this to show_history_from_db_widget
@@ -854,30 +848,12 @@ show_history_from_db_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, widt
                       bg='black', fg='#78CBED', font=("BalooBhai2 SemiBold", 9),  bd=0)
 show_history_from_db_widget.place(x=66, y=587, width=428, height=198)
 show_history_from_db_widget.see('end')
-# Create a Scrollbar and associate it with the Text widget
-# scrollbar = ttk.Scrollbar(root, command=show_history_from_db_widget.yview)
-# scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-# show_history_from_db_widget.config(yscrollcommand=scrollbar.set)
-
-# name = table_name_input.get()
-# connect_to_phpmyadmin.check_user_in_database(name)
-# history_from_database = connect_to_phpmyadmin.only_conversation_history_from_database(name)
-
-# for message in history_from_database:
-#     print("Role: " + message["role"] + ", content: " + message["content"])
-    
-# print("History from database: " + str(history_from_database))
-
 
 
 # Display the messages in the Text widget
 display_messages_from_database_only(take_history_from_database())
 
 show_history_from_db_widget.see('end')
-
-
-
-
 
 
 update_progress_bar(100)
