@@ -27,7 +27,6 @@ from PIL import Image, ImageTk
 import string
 import keyboard
 from tkinter.font import Font
-from playsound import playsound
 import pygame
 
 
