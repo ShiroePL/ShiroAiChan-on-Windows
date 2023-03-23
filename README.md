@@ -3,7 +3,7 @@
 ![Screenshot](pictures/kiki_chan.png)
 
 
-### My attempt to create my anime waifu discord bot that can write and speak in cute voice.
+### My attempt to create my anime waifu assistant that can write and speak in cute voice.
 
 ### Description:
 My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long time and now with really cheap and powerful model like [ChatGPT API] it's possible for anyone.
