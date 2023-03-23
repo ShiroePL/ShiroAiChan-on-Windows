@@ -26,6 +26,9 @@ from vtube_studio_api import VTubeStudioAPI
 from PIL import Image, ImageTk
 import string
 import keyboard
+from tkinter.font import Font
+from playsound import playsound
+import pygame
 
 
 OUTPUT_PATH = Path(__file__).parent
@@ -42,6 +45,7 @@ stop_listening_flag = False
 global recording_key
 recording_key = False
 default_user = "normal"
+font_family = "Baloo Bhai 2 SemiBold"
 answer_history = [] #for the history of answers
 
 class ToolTip:
@@ -96,22 +100,42 @@ def transcribe_audio_question(filename):
     return question
 
 
+# def play_audio_fn(filename):
+#     chunk = 1024
+#     wf = wave.open(f'./kiki_hub/{filename}.wav', 'rb')
+#     p = pyaudio.PyAudio()
+#     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+#                     channels=wf.getnchannels(),
+#                     rate=wf.getframerate(),
+#                     output=True)
+#     data = wf.readframes(chunk)
+#     while data:
+#         stream.write(data)
+#         data = wf.readframes(chunk)
+#     stream.stop_stream()
+#     stream.close()
+#     p.terminate()
+
+
+# def play_audio_fn(filename):
+#     try:
+#         playsound(f'./kiki_hub/{filename}.wav')
+#         print("Playing voice")
+#     except:
+#         print("Error or ended reading audio.")
+
 def play_audio_fn(filename):
-    chunk = 1024
-    wf = wave.open(f'./kiki_hub/{filename}.wav', 'rb')
-    p = pyaudio.PyAudio()
-    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
-                    output=True)
-    data = wf.readframes(chunk)
-    while data:
-        stream.write(data)
-        data = wf.readframes(chunk)
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-    #print("Playing voice")
+    pygame.mixer.init()
+    try:
+        pygame.mixer.music.load(f'./kiki_hub/{filename}.wav')
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)
+        print("Playing voice")
+    except:
+        print("Error or ended reading audio.")
+    finally:
+        pygame.mixer.quit()
 
 def print_response_label(response):
     response_widget.delete('1.0', 'end')
@@ -168,8 +192,8 @@ def display_messages_from_database_only(messages):
         content = message['content']
         show_history_from_db_widget.insert(tk.END, f"Role: {role}\n", 'center')
         show_history_from_db_widget.tag_configure('center', justify='center')
-        show_history_from_db_widget.insert(tk.END, f"{content}\n", 'center')
-        show_history_from_db_widget.insert(tk.END, "\n")
+        show_history_from_db_widget.insert(tk.END, f"{content}\n\n", 'center')
+        
     show_history_from_db_widget.see('end')
 
 
@@ -182,13 +206,11 @@ def voice_control(input_text=None):
 
     name = table_name_input.get()  # takes name from input
 
-    choice = reset_database_var.get()
+    choice = mute_or_unmute.get()
     print("Your name?: " + name)
-    print("Do you want to reset your chat history? You chose: " + choice)
+    print("Do you want voice? You chose: " + choice)
     print("say 'exit program' to exit the program")
 
-    if choice == "Yes":
-        connect_to_phpmyadmin.reset_chat_history(name)
 
     connect_to_phpmyadmin.check_user_in_database(name)
     recognizer = sr.Recognizer()
@@ -272,14 +294,16 @@ def voice_control(input_text=None):
                 add_answer_to_history(answer)
                 current_answer_index = len(answer_history) - 1
                     # END OF ARROWS TO PREVIOUS ANSWERS
-                update_progress_bar(60), print_log_label("got answer")    
+                update_progress_bar(60), print_log_label("got answer") 
 
-                request_voice.request_voice_fn(answer) #request Azure TTS to for answer
-
-                update_progress_bar(70), print_log_label("got voice")
+                if choice == "Yes": #IF YES THEN WITH VOICE
+                    request_voice.request_voice_fn(answer) #request Azure TTS to for answer
+                    update_progress_bar(70), print_log_label("got voice")
+                    play_audio_fn("response")
+                    
 
                 print("ShiroAi-chan: " + answer)
-                play_audio_fn("response")
+                
                 
                 if profanity.contains_profanity(answer) == True:
                     answer = profanity.censor(answer)                    
@@ -383,11 +407,6 @@ root.title("ShiroAi-chan Control Panel")
 keyboard.on_press_key("F10", on_ctrl_press)  # Replace "ctrl+alt" with the desired key combination
 
 
-
-
-
-
-
 root.geometry("1200x800")
 root.configure(bg = "#4B98E0")
 
@@ -429,7 +448,7 @@ canvas.create_text(
     anchor="nw",
     text="ShiroAi-chan Control Panel",
     fill="#78CBED",
-    font=("BalooBhai2 SemiBold", 53 * -1)
+    font=(font_family, 53 * -1)
 )
 
 button_image_1 = PhotoImage(
@@ -704,7 +723,7 @@ button_16 = Button(
     image=button_image_16,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_16 clicked"),
+    command=lambda: print("doesnt work for now"),
     relief="flat"
 )
 button_16.place(
@@ -714,7 +733,7 @@ button_16.place(
     height=42.0
 )
 
-tooltip = ToolTip(button_16, "Stop Shiro from talking.")
+tooltip = ToolTip(button_16, "Stop Shiro from talking. now doesnt work")
 
 entry_image_1 = PhotoImage(
     file=relative_to_assets("entry_1.png"))
@@ -755,7 +774,7 @@ canvas.create_text(
     anchor="nw",
     text="Your name:",
     fill="#A8E1F6",
-    font=("BalooBhai2 SemiBold", 20 * -1)
+    font=(font_family, 20 * -1)
 )
 #OMG RADIO BUTTONS START--------------------------------------------------------------------------------------------------
 # Create the Radiobutton widgets
@@ -771,36 +790,28 @@ style.layout("Custom.TRadiobutton", [
      })
 ])
 
-style.configure("Custom.TRadiobutton", background="#000000", foreground="#FFFFFF", font=("Helvetica", 12))
+style.configure("Custom.TRadiobutton", background="#000000", foreground="#FFFFFF", font=(font_family, 12))
 style.map("Custom.TRadiobutton", background=[("active", "#000000")])
 
 # Create custom images for the radio button states
-normal_image = tk.PhotoImage(width=16, height=16)
-selected_image = tk.PhotoImage(width=16, height=16)
+normal_image = tk.PhotoImage(file=relative_to_assets("black.png"))
+selected_image = tk.PhotoImage(file=relative_to_assets("check.png"))
 
-# Fill in the images with the desired color and shape
-normal_image.put(("black",), to=(0, 0, 16, 16))
-selected_image.put(("red",), to=(0, 0, 16, 16))
 
-# Draw arrow-like shape on the selected image
-selected_image.put(("black",), to=(2, 7, 14, 9))
-selected_image.put(("black",), to=(7, 2, 9, 14))
 
 style.element_create("Custom.TRadiobutton.indicator", "image", normal_image,
                      ("selected", selected_image),
                      sticky="", padding=2)
 
 
-reset_database_var = tk.StringVar()
-reset_database_var.set("No")
-reset_database_yes = ttk.Radiobutton(root, text="Yes", variable=reset_database_var, value="Yes", style="Custom.TRadiobutton")
-reset_database_no = ttk.Radiobutton(root, text="No", variable=reset_database_var, value="No", style="Custom.TRadiobutton")
-reset_database_yes.place(x=195, y=25)
-reset_database_no.place(x=195, y=55)
+mute_or_unmute = tk.StringVar()
+mute_or_unmute.set("Yes")
+mute_or_unmute_yes = ttk.Radiobutton(root, text=" voice", variable=mute_or_unmute, value="Yes", style="Custom.TRadiobutton")
+mute_or_unmute_no = ttk.Radiobutton(root, text=" no voice", variable=mute_or_unmute, value="No", style="Custom.TRadiobutton")
+mute_or_unmute_yes.place(x=169, y=17)
+mute_or_unmute_no.place(x=169, y=50)
 
 #OMG RADIO BUTTONS ENDDD--------------------------------------------------------------------------------------------------
-
-
 
 
 
@@ -822,7 +833,7 @@ filled_progress = canvas.create_image(0, 0, anchor=tk.NW)
 
 
 response_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
-                      bg='black', fg='#A8E1F6', font=("BalooBhai2 SemiBold", 14),  bd=0)
+                      bg='black', fg='#A8E1F6', font=(font_family, 14),  bd=0)
 response_widget.place(x=66, y=252, width=428, height=226)
 
 
@@ -832,7 +843,7 @@ log_label = tk.Label(
     text="",
     bg="black",
     fg="#A8E1F6",
-    font=("BalooBhai2 SemiBold", 12 * -1),
+    font=(font_family, 12 * -1),
     wraplength=110,
     anchor="center",  # Centers the text vertically
     justify="center",  # Centers the text horizontally
@@ -845,7 +856,7 @@ log_label.place(
 
 # Create the Text widget
 show_history_from_db_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
-                      bg='black', fg='#78CBED', font=("BalooBhai2 SemiBold", 9),  bd=0)
+                      bg='black', fg='#78CBED', font=(font_family, 9),  bd=0)
 show_history_from_db_widget.place(x=66, y=587, width=428, height=198)
 show_history_from_db_widget.see('end')
 
