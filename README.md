@@ -6,26 +6,30 @@
 ### My attempt to create my anime waifu discord bot that can write and speak in cute voice.
 
 ### Description:
-Discord bot, or as it is now duet of bots. ShiroAi-chan is a Virtual streamer on Twitch platform but now she is just chatting on Discord. She uses [ChatGPT API] as her brain and [Azure TTS] as her voice. Unfortunately I encountered a problem when I was working on her speech capabilities and I needed to use second bot to record questions on voice channel. Now ShiroAi-chan has a friend Kiki-chan that is kind of her interpreter.
+My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long time and now with really cheap and powerful model like [ChatGPT API] it's possible for anyone.
 
 ### Her personality
-* As for now she is Virtual streamer on Twitch platform that is off work and just chat on Discord with viewers. She is cat-girl and likes to answer with cat-style words. She is cheerful and likes joking.
-  
+* She is virtual cat-girl that likes anime, manga, light novels and games. (I wrote it for my preferences, but it can be changed easily). I am using tables as her 'personalities' for example, 'normal' is just her basic character description, but 'programmer' is her when she is in coding mode. Then she can help me with coding or I can just converse with her and she know what I am talking about.
+
+### GUI
+![Screenshot](pictures/gui.png)
+
 ## Some steps that she uses
 ### 1. Writing
 * She uses [ChatGPT API] to generate responses.
-* She has some slash commands to interact with her.
 
 
 ### 2. Her memory :heart_eyes:
-* She uses [Azure SQL Database] to store her memories. She can remember up to 4 last questions, more is too expensive using [ChatGPT API].
-* Every user has his own table in database and can reset it with command.
+* She uses MariaDB to store her memories. She can remember up to 4 last questions, more is too expensive using [ChatGPT API].
+* Every 'persona' setting has its own table in database and can reset it with button.
 
 
 ### 3. Give her voice! :microphone:
 *  Using Microsoft [Azure TTS], send API with generated prompts to get audio file.
 
-
+### 4. Communicate with her :speech_balloon:
+* I am using open source Whisper Model from OpenAI to transcribe audio from microphone to text.
+* Also it's possible to just write in input and sent it to her.
 
 
 
@@ -37,10 +41,6 @@ Discord bot, or as it is now duet of bots. ShiroAi-chan is a Virtual streamer on
 ### But how will it look from back side?
 
 
-## Progress for now
-* I got it to work with [gradio]. 
-  * There is some manual procedure, need to start [koboldAI] and [gradio] via Power Shell and [Vtube studio] with plugin.
-  * **BUT!** I can converse and see response in chat log and hear her voice while she looks at me  :blush: :smile:
 
 #### To do but small steps:
 * #### Voice:
@@ -54,13 +54,12 @@ Discord bot, or as it is now duet of bots. ShiroAi-chan is a Virtual streamer on
 
 [ChatGPT API] : https://openai.com/blog/introducing-chatgpt-and-whisper-apis
 
-[Azure SQL Database] : https://azure.microsoft.com/en-us/products/azure-sql/database
+
 
 [Azure TTS] : https://azure.microsoft.com/en-us/products/cognitive-services/text-to-speech/
 
 
 
-[Azure SQL Database]: https://azure.microsoft.com/en-us/products/azure-sql/database
 [ChatGPT API]: https://openai.com/blog/introducing-chatgpt-and-whisper-apis
 [Azure TTS]: https://azure.microsoft.com/en-us/products/cognitive-services/text-to-speech/
 
