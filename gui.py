@@ -46,8 +46,8 @@ image_1 = canvas.create_image(
 image_image_2 = PhotoImage(
     file=relative_to_assets("image_2.png"))
 image_2 = canvas.create_image(
-    959.0,
-    400.0,
+    962.0,
+    504.0,
     image=image_image_2
 )
 
@@ -417,5 +417,13 @@ image_5 = canvas.create_image(
     252.0,
     image=image_image_5
 )
+
+canvas.create_rectangle(
+    169.0,
+    25.0,
+    245.0,
+    77.0,
+    fill="#000000",
+    outline="")
 window.resizable(False, False)
 window.mainloop()
