@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi import File, UploadFile
+from fastapi.responses import FileResponse
+
 import shiro_on_android
 app = FastAPI()
 
@@ -9,7 +12,9 @@ class QuestionWithUser(BaseModel):
     question: str
     username: str
 
-
+@app.get("/audio/{audio_file_name}")
+async def get_audio(audio_file_name: str):
+    return FileResponse(f"./kiki_hub/{audio_file_name}")
 
 @app.post("/question")
 async def question(payload: QuestionWithUser):
