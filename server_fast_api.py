@@ -1,35 +1,28 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-
+import shiro_on_android
 app = FastAPI()
 
-class Numbers(BaseModel):
-    a: int
-    b: int
-class Question(BaseModel):
+
+
+class QuestionWithUser(BaseModel):
     question: str
-
-
-@app.post("/multiply")
-async def multiply_numbers(numbers: Numbers):
-    """
-    A FastAPI endpoint to multiply two numbers
-    """
-    result = numbers.a * numbers.b
-    print(f"Received numbers: a = {numbers.a}, b = {numbers.b}")
-    print(f"Result: {result}")
-    return {"result": f"twoja liczba{result}"}
+    username: str
 
 
 
 @app.post("/question")
-async def question(question: Question):
+async def question(payload: QuestionWithUser):
     """
     A FastAPI endpoint to answer a question
     """
-    answer = "it worked"
-    return {"answer": answer}
+    question_text = payload.question
+    username = payload.username
 
+    answer = shiro_on_android.voice_control(question_text, username)
+    # Process the question and username as needed
+    done_answer = f"Hello, {username}! This is a test answer for your question: {answer}"
+    return {"answer": done_answer}
 
 if __name__ == "__main__":
     import uvicorn
