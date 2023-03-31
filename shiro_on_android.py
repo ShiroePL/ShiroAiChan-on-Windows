@@ -168,7 +168,7 @@ def voice_control(question, name):
 
 
         # if choice == "Yes": #IF YES THEN WITH VOICE
-        #     request_voice.request_voice_fn(answer) #request Azure TTS to for answer
+        request_voice.request_voice_fn(answer) #request Azure TTS to for answer
         #     update_progress_bar(70), print_log_label("got voice")
         #     play_audio_fn("response")
             
