@@ -275,8 +275,8 @@ image_1 = canvas.create_image(
 image_image_2 = PhotoImage(
     file=relative_to_assets("image_2.png"))
 image_2 = canvas.create_image(
-    959.0,
-    400.0,
+    962.0,
+    504.0,
     image=image_image_2
 )
 
