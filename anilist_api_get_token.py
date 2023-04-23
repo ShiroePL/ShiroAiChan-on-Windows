@@ -1,7 +1,9 @@
 import requests
 import webbrowser
 from api_keys import client_id, client_secret
-# Replace these with your own values
+
+# this needs to be done by hand, and i cant get access token from api, it is on browser
+
 redirect_uri = 'https://anilist.co/api/v2/oauth/pin'
 
 # Step 1: Obtain the authorization URL
@@ -25,6 +27,8 @@ response = requests.post(token_url, data=token_data)
 response.raise_for_status()
 token_json = response.json()
 access_token = token_json['access_token']
-print(f'Access Token: {access_token}')
+print(f'Access Token: {access_token}') # this doesnt work, becouse you cant get token from API
+
+#!!! manualy change access_token in api_keys.py !!!
 
 # Now you can use this access_token to make authenticated requests to AniList API
