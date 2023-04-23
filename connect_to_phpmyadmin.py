@@ -14,6 +14,12 @@ def add_pair_to_general_table(question, answer):
     global conn
     cursor = conn.cursor()
 
+    # Check if table exists, if not create it
+    cursor.execute("SHOW TABLES LIKE 'chatgpt_api'")
+    result = cursor.fetchone()
+    if not result:
+        cursor.execute("CREATE TABLE chatgpt_api (id INT AUTO_INCREMENT PRIMARY KEY, Question TEXT, Answer TEXT, added_time DATETIME)")
+
     # Prepare SQL query to INSERT a record into the database
     sql = "INSERT INTO chatgpt_api (Question, Answer, added_time) VALUES (%s, %s, NOW())"
 
@@ -32,6 +38,12 @@ def send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_token
     """Send the usage of the chatgpt api to the database"""
     global conn
     cursor = conn.cursor()
+
+    # Check if table exists, if not create it
+    cursor.execute("SHOW TABLES LIKE 'chatgpt_api_usage'")
+    result = cursor.fetchone()
+    if not result:
+        cursor.execute("CREATE TABLE chatgpt_api_usage (id INT AUTO_INCREMENT PRIMARY KEY, prompt_tokens INT, completion_tokens INT, total_tokens INT, added_time DATETIME)")
 
     # Prepare SQL query to INSERT a record into the database
     sql = "INSERT INTO chatgpt_api_usage (prompt_tokens, completion_tokens, total_tokens, added_time) VALUES (%s, %s, %s, NOW())"
@@ -57,6 +69,7 @@ def send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_token
     # Commit your changes in the database
     conn.commit()
     cursor.close()
+
    
 
 
@@ -71,7 +84,7 @@ def check_user_in_database(name):
         print(f"Table for user {name} already exists.")
     else:
         # Create the user's table if it doesn't exist yet
-        sql = f"CREATE TABLE {name} (id INT AUTO_INCREMENT PRIMARY KEY, role VARCHAR(50), content VARCHAR(1000), added_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+        sql = f"CREATE TABLE {name} (id INT AUTO_INCREMENT PRIMARY KEY, role VARCHAR(50), content VARCHAR(4000), added_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
         cursor.execute(sql)
 
         # Insert the initial messages into the user's table
