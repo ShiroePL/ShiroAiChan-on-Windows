@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from fastapi import File, UploadFile
 from fastapi.responses import FileResponse
 
+import connect_to_phpmyadmin
 import shiro_on_android
 app = FastAPI()
 
@@ -11,6 +12,18 @@ app = FastAPI()
 class QuestionWithUser(BaseModel):
     question: str
     username: str
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+
+@app.get("/chat_history/{name}")
+async def get_chat_history(name: str):
+    messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
+    return {"messages": messages}
+
 
 @app.get("/audio/{audio_file_name}")
 async def get_audio(audio_file_name: str):
@@ -26,9 +39,9 @@ async def question(payload: QuestionWithUser):
 
     answer = shiro_on_android.voice_control(question_text, username)
     # Process the question and username as needed
-    done_answer = f"Hello, {username}! This is a test answer for your question: {answer}"
+    done_answer = f" {answer}"
     return {"answer": done_answer}
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="10.147.17.21", port=8000)
+    #uvicorn.run(app, host="10.147.17.21", port=8000)
