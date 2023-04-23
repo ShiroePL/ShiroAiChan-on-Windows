@@ -131,7 +131,7 @@ Page(page: $page, perPage: 10) {
         'seasonYear': media["seasonYear"],
         'episodes': media["episodes"] or 0,
         'isFavourite': media["isFavourite"],
-        'description': media["description"].replace("<br><br>", '<br>').replace("'", '"'),
+        #'description': media["description"].replace("<br><br>", '<br>').replace("'", '"'),
         'english': (title["english"].replace("'", '"') if title["english"] is not None else "no english title"),
         'romaji': title["romaji"].replace("'", '"')
       }
@@ -154,17 +154,17 @@ def find_anime_by_id(anime_list, anime_id):
 if __name__ == "__main__":
     
     #change_episodes_watched(6164, 6)
-    result = get_10_newest_anime()
-    search_id = 127550
-    found_anime = find_anime_by_id(result, search_id)
+    # result = get_10_newest_anime()
+    # search_id = 127550
+    # found_anime = find_anime_by_id(result, search_id)
     
-    if found_anime:
-        print(f"Found anime with ID {search_id}:")
-        print(found_anime)
-    else:
-        print(f"Anime with ID {search_id} not found in the list.")
+    # if found_anime:
+    #     print(f"Found anime with ID {search_id}:")
+    #     print(found_anime)
+    # else:
+    #     print(f"Anime with ID {search_id} not found in the list.")
     
 
 
-    print(result)
+    # print(result)
     pass

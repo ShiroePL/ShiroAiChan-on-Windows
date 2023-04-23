@@ -28,6 +28,7 @@ import string
 import keyboard
 from tkinter.font import Font
 import pygame
+import anilist_api_requests
 
 
 OUTPUT_PATH = Path(__file__).parent
@@ -42,6 +43,7 @@ api = None
 global stop_listening_flag
 stop_listening_flag = False
 global recording_key
+anime_list_question = False
 recording_key = False
 default_user = "normal"
 font_family = "Baloo Bhai 2 SemiBold"
@@ -178,6 +180,7 @@ def display_messages_from_database_only(messages):
 def voice_control(input_text=None):
     global stop_listening_flag
     global running
+    global anime_list_question
     stop_listening_flag = False
     global current_answer_index
 
@@ -245,21 +248,117 @@ def voice_control(input_text=None):
             question = profanity.censor(answer)
 
         if question:
-
+                # check if question was asked using voice or input
             if input_text is None:
                 update_progress_bar(30), print_log_label("transcribed.")
             else:
                 update_progress_bar(30), print_log_label("question given in input.")
 
-
+                # end if user wants to exit
             if cleaned_question in ("bye bye shiro", "exit program", "bye bye shira"):
                 beep = "cute_beep"  # NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
                 play_audio_fn(beep)
                 sys.exit()
-            else:
+
+            elif cleaned_question in ("show me what i watched lately"):
+                    # use api to anilist and start process
+                anime_list = anilist_api_requests.get_10_newest_anime()
+                question = f"Madrus: I will give you list of my 10 most recent watched anime from site AniList. Here is list of dictionaries: {anime_list}. Now I would like you to answer me in this format: You will start from simple sentence like: okay, here it is. ' romaji_title:<title>, id:<id>, watched_episodes:<progress>/<all_episodes>.' For example: 'title:Attack on Titan, id:16498, watched_episodes:7/25'. "
+                #print("question from user:" + question)
+                messages.append({"role": "user", "content": question})
+
+                # send to open ai for answer
+                update_progress_bar(40), print_log_label("sending to openAI...")
+                answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+                print_response_label(answer)
+
+                #   FOR ARROWS TO PREVIOUS ANSWERS
+                add_answer_to_history(answer)
+                current_answer_index = len(answer_history) - 1
+                    # END OF ARROWS TO PREVIOUS ANSWERS
+                update_progress_bar(60), print_log_label("got answer")
+
+                if choice == "Yes": #IF YES THEN WITH VOICE
+                    request_voice.request_voice_fn(answer) #request Azure TTS to for answer
+                    update_progress_bar(70), print_log_label("got voice")
+                    play_audio_fn("response")
+
+                print("ShiroAi-chan: " + answer)
+                
+                update_progress_bar(80), print_log_label("saving to DB...")
+                connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
+                connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
+                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
+                print("---------------------------------")
+  
+
+                beep = "cute_beep" #END OF ANSWER
+                play_audio_fn(beep)
+
+                    #show history in text widget
+                update_progress_bar(90), print_log_label("showing in text box...")
+                #show_history_from_db_widget.delete('1.0', 'end')
+                display_messages_from_database_only(take_history_from_database())
+                
+
+                running = False
+                anime_list_question = True
+
+                update_progress_bar(100), print_log_label("showed, done")
+
+            elif anime_list_question == True:
+                    # make shiro find me id of anime
+                
+                question = f"Madrus: {question}. I would like you to answer me giving me ONLY THIS: ' id:<id>, episodes:<episodes>'. Nothing more  of anime that fits what I said in first sentence."
+                #print("question from user:" + question)
+                messages.append({"role": "user", "content": question})
+
+                # send to open ai for answer
+                update_progress_bar(40), print_log_label("sending to openAI...")
+                answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+                print_response_label(answer)
+
+                #   FOR ARROWS TO PREVIOUS ANSWERS
+                add_answer_to_history(answer)
+                current_answer_index = len(answer_history) - 1
+                    # END OF ARROWS TO PREVIOUS ANSWERS
+                update_progress_bar(60), print_log_label("got answer")
+
+                if choice == "Yes": #IF YES THEN WITH VOICE
+                    request_voice.request_voice_fn(answer) #request Azure TTS to for answer
+                    update_progress_bar(70), print_log_label("got voice")
+                    play_audio_fn("response")
+
+                print("ShiroAi-chan: " + answer)
+                
+                update_progress_bar(80), print_log_label("saving to DB...")
+                connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
+                connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
+                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
+                print("---------------------------------")
+  
+
+                beep = "cute_beep" #END OF ANSWER
+                play_audio_fn(beep)
+
+                    #show history in text widget
+                update_progress_bar(90), print_log_label("showing in text box...")
+                #show_history_from_db_widget.delete('1.0', 'end')
+                display_messages_from_database_only(take_history_from_database())
+                
+
+                running = False
+                
+
+                update_progress_bar(100), print_log_label("converted, done")
+
+                anime_list_question = False
+
+            else: # continue if user does not want to exit
+                
                 # to database
                 question = f"Madrus: {question}"
-                print("question variable:" + question)
+                print("question from user:" + question)
                 messages.append({"role": "user", "content": question})
                 
                     # send to open ai for answer
@@ -267,10 +366,12 @@ def voice_control(input_text=None):
                 print("messages: " + str(messages))
                 answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
                 print_response_label(answer)
+                
                     # FOR ARROWS TO PREVIOUS ANSWERS
                 add_answer_to_history(answer)
                 current_answer_index = len(answer_history) - 1
                     # END OF ARROWS TO PREVIOUS ANSWERS
+
                 update_progress_bar(60), print_log_label("got answer") 
 
                 if choice == "Yes": #IF YES THEN WITH VOICE
