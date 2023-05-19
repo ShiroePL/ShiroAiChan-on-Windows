@@ -28,7 +28,7 @@ import string
 import keyboard
 from tkinter.font import Font
 import pygame
-import anilist_api_requests
+import anilist.anilist_api_requests as anilist_api_request
 
 
 OUTPUT_PATH = Path(__file__).parent
