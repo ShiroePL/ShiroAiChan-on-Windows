@@ -2,6 +2,9 @@ import requests
 from api_keys import access_token
 import json
 
+
+
+
 def change_anime_status(ANIME_ID: int, NEW_STATUS: str):
   """Update the status of an anime"""
   headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
@@ -73,15 +76,17 @@ def change_episodes_watched(ANIME_ID: int, EPISODES_WATCHED: int):
 
 
 def get_10_newest_anime():
-  """Get the 10 newest anime"""
+  """Get the 10 newest anime formatted for prompt"""
   
   variables_in_api = {
     'page' : 1
     }
   
+  formatted_10_list = ""
+
   api_request = '''
-  query ($page: Int) {
-Page(page: $page, perPage: 10) {
+    query ($page: Int) {
+    Page(page: $page, perPage: 10) {
     pageInfo {
     perPage
     }
@@ -96,16 +101,16 @@ Page(page: $page, perPage: 10) {
         english
         }
         
-        description
-        seasonYear
+        
+        
         episodes
-        isFavourite
+        
     }
-    notes
+    
     }
-}
-}
-  '''
+    }
+    }
+    '''
   url = 'https://graphql.anilist.co'
 
   response = requests.post(url, json={'query': api_request, 'variables': variables_in_api})
@@ -115,6 +120,7 @@ Page(page: $page, perPage: 10) {
   parsed_json = json.loads(response.text)
 
   newest_10_anime = []
+  
   j = 0
   for j in range(len(parsed_json["data"]["Page"]["mediaList"])):
 
@@ -127,18 +133,23 @@ Page(page: $page, perPage: 10) {
         'mediaId': media_list["mediaId"],
         'progress': media_list["progress"],
         'updatedAt': media_list["updatedAt"],
-        'notes': media_list["notes"],
-        'seasonYear': media["seasonYear"],
         'episodes': media["episodes"] or 0,
-        'isFavourite': media["isFavourite"],
         #'description': media["description"].replace("<br><br>", '<br>').replace("'", '"'),
         'english': (title["english"].replace("'", '"') if title["english"] is not None else "no english title"),
         'romaji': title["romaji"].replace("'", '"')
       }
 
     newest_10_anime.append(anime_dict)
+   # print("anime_dict: ", anime_dict)
+    #format for less tokens for prompt
+  for anime in newest_10_anime:
+    title = anime['romaji'].replace('’', "'")
+    title = anime['romaji'].replace('"', "'")
+    formatted_10_list += f"\nromaji_title:{title}, id:{anime['mediaId']}, watched_episodes:{anime['progress']}/{anime['episodes']} "
 
-  return newest_10_anime
+    
+
+  return formatted_10_list, newest_10_anime
 
 
 def find_anime_by_id(anime_list, anime_id):
@@ -154,10 +165,14 @@ def find_anime_by_id(anime_list, anime_id):
 if __name__ == "__main__":
     
     #change_episodes_watched(6164, 6)
-    result = get_10_newest_anime()
+    formatted_list, raw_list = get_10_newest_anime()
     search_id = 127550
-    found_anime = find_anime_by_id(result, search_id)
-    
+    found_anime = find_anime_by_id(raw_list, search_id)
+    print ("formatted list: ", formatted_list)
+    # for anime in result:
+    #     title = anime['romaji'].replace('’', "'")
+    #     title = anime['romaji'].replace('"', "'")
+    #     print(f"romaji_title:{title}, id:{anime['mediaId']}, watched_episodes:{anime['progress']}/{anime['episodes']}")
     if found_anime:
         print(f"Found anime with ID {search_id}:")
         print(found_anime)
