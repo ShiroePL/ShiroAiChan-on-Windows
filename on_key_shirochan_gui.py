@@ -28,7 +28,7 @@ import string
 import keyboard
 from tkinter.font import Font
 import pygame
-import anilist.anilist_api_requests as anilist_api_request
+import anilist.anilist_api_requests as anilist_api_requests
 
 
 OUTPUT_PATH = Path(__file__).parent
@@ -262,33 +262,29 @@ def voice_control(input_text=None):
 
             elif cleaned_question in ("show me what i watched lately"):
                     # use api to anilist and start process
-                anime_list = anilist_api_requests.get_10_newest_anime()
-                question = f"Madrus: I will give you list of my 10 most recent watched anime from site AniList. Here is list of dictionaries: {anime_list}. Now I would like you to answer me in this format: You will start from simple sentence like: okay, here it is. ' romaji_title:<title>, id:<id>, watched_episodes:<progress>/<all_episodes>.' For example: 'title:Attack on Titan, id:16498, watched_episodes:7/25'. "
+                anime_list, _ = anilist_api_requests.get_10_newest_anime() # i think it can be just anime_lise, 
+                question = f"Madrus: I will give you list of my 10 most recent watched anime from site AniList. Here is this list:{anime_list}. I want you to remember this because in next question I will ask you to update status or episode number of one anime."
                 #print("question from user:" + question)
                 messages.append({"role": "user", "content": question})
 
-                # send to open ai for answer
-                update_progress_bar(40), print_log_label("sending to openAI...")
-                answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
-                print_response_label(answer)
+                # send to open ai for answer !!!!!!!! I WONT SEND IT BECOUSE I ALREADY GOT IT FROM reformatting
+                answer = "Okay, I will remember it, Madrus. I'm waiting for your next question. Give it to me nyaa."
+                print_response_label(f"Here is your list of most recent watched anime.{anime_list}")
 
                 #   FOR ARROWS TO PREVIOUS ANSWERS
-                add_answer_to_history(answer)
+                add_answer_to_history(f"Here is your list of most recent watched anime.{anime_list}")
                 current_answer_index = len(answer_history) - 1
                     # END OF ARROWS TO PREVIOUS ANSWERS
                 update_progress_bar(60), print_log_label("got answer")
 
                 if choice == "Yes": #IF YES THEN WITH VOICE
-                    request_voice.request_voice_fn(answer) #request Azure TTS to for answer
+                    request_voice.request_voice_fn("Here is your list of most recent watched anime.") #request Azure TTS to for answer
                     update_progress_bar(70), print_log_label("got voice")
                     play_audio_fn("response")
 
-                print("ShiroAi-chan: " + answer)
-                
+      
                 update_progress_bar(80), print_log_label("saving to DB...")
                 connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
-                connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
-                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
                 print("---------------------------------")
   
 
@@ -302,20 +298,21 @@ def voice_control(input_text=None):
                 
 
                 running = False
-                anime_list_question = True
+                anime_list_question = True # entering anime list mode for next question to update anime
 
                 update_progress_bar(100), print_log_label("showed, done")
 
-            elif anime_list_question == True:
+            elif anime_list_question == True: # she is in animelist mode, so she rebebmers list i gave her 
                     # make shiro find me id of anime
                 
-                question = f"Madrus: {question}. I would like you to answer me giving me ONLY THIS: ' id:<id>, episodes:<episodes>'. Nothing more  of anime that fits what I said in first sentence."
+                question = f"Madrus: {question}. I would like you to answer me giving me ONLY THIS: ' title:<title>,id:<id>, episodes:<episodes>'. Nothing more."
                 #print("question from user:" + question)
                 messages.append({"role": "user", "content": question})
 
                 # send to open ai for answer
                 update_progress_bar(40), print_log_label("sending to openAI...")
                 answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+                # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@CHANGE THIS 
                 print_response_label(answer)
 
                 #   FOR ARROWS TO PREVIOUS ANSWERS
