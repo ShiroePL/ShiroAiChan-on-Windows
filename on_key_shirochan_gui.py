@@ -29,7 +29,7 @@ import keyboard
 from tkinter.font import Font
 import pygame
 import anilist.anilist_api_requests as anilist_api_requests
-
+import re
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
@@ -41,6 +41,7 @@ engine=pyttsx3.init()
 conn = None
 api = None
 global stop_listening_flag
+
 stop_listening_flag = False
 global recording_key
 anime_list_question = False
@@ -175,12 +176,56 @@ def display_messages_from_database_only(messages):
         
     show_history_from_db_widget.see('end')
 
+def button_show_anilist():
+    
+    global anime_list_question
+    anime_list, _ = anilist_api_requests.get_10_newest_anime() # i think it can be just anime_lise, 
+    question = f"Madrus: I will give you list of my 10 most recent watched anime from site AniList. Here is this list:{anime_list}. I want you to remember this because in next question I will ask you to update status or episode number of one anime."
+    #print("question from user:" + question)
+    name = table_name_input.get()
+    messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
+    messages.append({"role": "user", "content": question})
+
+    # send to open ai for answer !!!!!!!! I WONT SEND IT BECOUSE I ALREADY GOT IT FROM reformatting
+    answer = "Okay, I will remember it, Madrus. I'm waiting for your next question. Give it to me nyaa."
+    print_response_label(f"Here is your list of most recent watched anime.{anime_list}")
+
+    #   FOR ARROWS TO PREVIOUS ANSWERS
+    add_answer_to_history(f"Here is your list of most recent watched anime.{anime_list}")
+    current_answer_index = len(answer_history) - 1
+        # END OF ARROWS TO PREVIOUS ANSWERS
+    
+    choice = mute_or_unmute.get()
+    if choice == "Yes": #IF YES THEN WITH VOICE
+        request_voice.request_voice_fn("Here is your list of most recent watched anime.") #request Azure TTS to for answer
+        update_progress_bar(70), print_log_label("got voice")
+        play_audio_fn("response")
+
+
+    update_progress_bar(80), print_log_label("saving to DB...")
+    connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
+    print("---------------------------------")
+
+
+    beep = "cute_beep" #END OF ANSWER
+    play_audio_fn(beep)
+
+        #show history in text widget
+    update_progress_bar(90), print_log_label("showing in text box...")
+    #show_history_from_db_widget.delete('1.0', 'end')
+    display_messages_from_database_only(take_history_from_database())
+    
+
+    anime_list_question = True # entering anime list mode for next question to update anime
+
+    update_progress_bar(100), print_log_label("showed, done")
+
 
 
 def voice_control(input_text=None):
     global stop_listening_flag
     global running
-    global anime_list_question
+    
     stop_listening_flag = False
     global current_answer_index
 
@@ -197,7 +242,7 @@ def voice_control(input_text=None):
 
     
     while running:  # while running is true
-
+        global anime_list_question
         messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
 
         if input_text is None:
@@ -312,17 +357,40 @@ def voice_control(input_text=None):
                 # send to open ai for answer
                 update_progress_bar(40), print_log_label("sending to openAI...")
                 answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
-                # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@CHANGE THIS 
-                print_response_label(answer)
+                
+                    # START find ID and episodes number of updated anime
+                # The regex pattern
+                pattern = r"id:(\d+), episodes:(\d+)"
 
-                #   FOR ARROWS TO PREVIOUS ANSWERS
+                # Use re.search to find the pattern in the text
+                match = re.search(pattern, answer)
+
+                if match:
+                    # match.group(1) contains the id, match.group(2) contains the episodes number
+                    updated_id, updated_episodes = match.group(1), match.group(2)
+                    print(f"id: {updated_id}, episodes: {updated_episodes}")
+                else:
+                    print("No match found")
+                     # END find ID and episodes number of updated anime
+
+                print_response_label(answer) # CHANGE THIS TO MORE HUMAN LIKE
+
+                # send upgrade api do anilist 
+                update_progress_bar(50), print_log_label("sending to anilist...")
+                anilist_api_requests.change_episodes_watched(updated_id, updated_episodes) # send to anilist api
+                update_progress_bar(55), print_log_label("updated anilist database...")
+                # end anilist api
+
+
+
+                    # FOR ARROWS TO PREVIOUS ANSWERS
                 add_answer_to_history(answer)
                 current_answer_index = len(answer_history) - 1
                     # END OF ARROWS TO PREVIOUS ANSWERS
                 update_progress_bar(60), print_log_label("got answer")
 
                 if choice == "Yes": #IF YES THEN WITH VOICE
-                    request_voice.request_voice_fn(answer) #request Azure TTS to for answer
+                    request_voice.request_voice_fn(f"Done, updated it to {updated_episodes} episodes") #request Azure TTS to for answer
                     update_progress_bar(70), print_log_label("got voice")
                     play_audio_fn("response")
 
@@ -330,7 +398,6 @@ def voice_control(input_text=None):
                 
                 update_progress_bar(80), print_log_label("saving to DB...")
                 connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
-                connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
                 connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
                 print("---------------------------------")
   
@@ -347,7 +414,7 @@ def voice_control(input_text=None):
                 running = False
                 
 
-                update_progress_bar(100), print_log_label("converted, done")
+                update_progress_bar(100), print_log_label("updated on anilist")
 
                 anime_list_question = False
 
@@ -408,7 +475,9 @@ def voice_control(input_text=None):
     # Replace `print()` statements with `print_response()`
             # ...
 
-
+def button_update_anime_thread():
+    voice_thread = threading.Thread(target=button_show_anilist)
+    voice_thread.start()  
 
 def start_voice_control():
     global running
@@ -798,7 +867,7 @@ button_16 = Button(
     image=button_image_16,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("doesnt work for now"),
+    command=button_update_anime_thread,
     relief="flat"
 )
 button_16.place(
@@ -808,7 +877,7 @@ button_16.place(
     height=42.0
 )
 
-tooltip = ToolTip(button_16, "Stop Shiro from talking. now doesnt work")
+tooltip = ToolTip(button_16, "It shows my recent anime watched list")
 
 entry_image_1 = PhotoImage(
     file=relative_to_assets("entry_1.png"))

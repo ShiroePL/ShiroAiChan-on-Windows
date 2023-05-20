@@ -306,9 +306,25 @@ def get_all_descriptions():
     cursor.close()
     return descriptions
 
+def test_sql():
+    # Connect to the database
+    cursor = conn.cursor()
 
+    # Retrieve all rows from the 'all_descriptions' table
+    cursor.execute("SHOW CREATE TABLE anime_list;")
+    rows = cursor.fetchall()
+
+    # Convert the rows to a list of dictionaries
+    testing = []
+    for row in rows:
+        description = {"id": row[0], "description": row[1]}
+        testing.append(description)
+
+    # Close the cursor and return the list of descriptions
+    cursor.close()
+    return testing
 
 if __name__ == "__main__":
     #connect_to_azuredb_fn("User: What's your name?", "Oh? My name is in the title you dummy! I'm Shiro *smile*")
-    
+   # print (test_sql())
     pass

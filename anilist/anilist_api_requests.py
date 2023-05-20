@@ -11,8 +11,8 @@ def change_anime_status(ANIME_ID: int, NEW_STATUS: str):
 
   # Replace 'ANIME_ID' with the ID of the anime you want to update, and 'NEW_STATUS' with the desired status
       # for testing
-  ANIME_ID = 6164  # Replace this with the actual anime ID
-  NEW_STATUS = 'PAUSED'  # Replace this with the desired status (e.g., 'CURRENT', 'PLANNING', 'COMPLETED', 'DROPPED', 'PAUSED')
+#   ANIME_ID = 6164  # Replace this with the actual anime ID
+#   NEW_STATUS = 'PAUSED'  # Replace this with the desired status (e.g., 'CURRENT', 'PLANNING', 'COMPLETED', 'DROPPED', 'PAUSED')
 
   query = '''
   mutation ($id: Int, $status: MediaListStatus) {
@@ -46,8 +46,8 @@ def change_episodes_watched(ANIME_ID: int, EPISODES_WATCHED: int):
 
   # Replace 'ANIME_ID' with the ID of the anime you want to update, and 'NEW_STATUS' with the desired status
       # for testing
-  ANIME_ID = 6164  # Replace this with the actual anime ID
-  EPISODES_WATCHED = 6  # Replace this with the desired episodes watched
+#   ANIME_ID = 6164  # Replace this with the actual anime ID
+#   EPISODES_WATCHED = 6  # Replace this with the desired episodes watched
 
   query = '''
   mutation ($id: Int, $episodes: Int) {
@@ -164,22 +164,19 @@ def find_anime_by_id(anime_list, anime_id):
 
 if __name__ == "__main__":
     
-    #change_episodes_watched(6164, 6)
+    # change_episodes_watched(6164, 6)
+    # change_anime_status(6164, 'PAUSED')
     formatted_list, raw_list = get_10_newest_anime()
     search_id = 127550
     found_anime = find_anime_by_id(raw_list, search_id)
     print ("formatted list: ", formatted_list)
-    # for anime in result:
-    #     title = anime['romaji'].replace('’', "'")
-    #     title = anime['romaji'].replace('"', "'")
-    #     print(f"romaji_title:{title}, id:{anime['mediaId']}, watched_episodes:{anime['progress']}/{anime['episodes']}")
     if found_anime:
         print(f"Found anime with ID {search_id}:")
         print(found_anime)
     else:
         print(f"Anime with ID {search_id} not found in the list.")
     
-
+    
 
     # print(result)
     pass
