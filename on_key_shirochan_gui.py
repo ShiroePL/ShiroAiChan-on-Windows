@@ -44,7 +44,8 @@ global stop_listening_flag
 
 stop_listening_flag = False
 global recording_key
-anime_list_question = False
+anilist_mode = False
+content_type_mode =""
 recording_key = False
 default_user = "normal"
 font_family = "Baloo Bhai 2 SemiBold"
@@ -178,7 +179,7 @@ def display_messages_from_database_only(messages):
 
 def button_show_anilist():
     
-    global anime_list_question
+    global anilist_mode
     anime_list, _ = anilist_api_requests.get_10_newest_anime() # i think it can be just anime_lise, 
     question = f"Madrus: I will give you list of my 10 most recent watched anime from site AniList. Here is this list:{anime_list}. I want you to remember this because in next question I will ask you to update status or episode number of one anime."
     #print("question from user:" + question)
@@ -216,7 +217,7 @@ def button_show_anilist():
     display_messages_from_database_only(take_history_from_database())
     
 
-    anime_list_question = True # entering anime list mode for next question to update anime
+    anilist_mode = True # entering anime list mode for next question to update anime
 
     update_progress_bar(100), print_log_label("showed, done")
 
@@ -242,7 +243,8 @@ def voice_control(input_text=None):
 
     
     while running:  # while running is true
-        global anime_list_question
+        global anilist_mode
+        global content_type_mode
         messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
 
         if input_text is None:
@@ -305,25 +307,34 @@ def voice_control(input_text=None):
                 play_audio_fn(beep)
                 sys.exit()
 
-            elif cleaned_question in ("show me what i watched lately"):
-                    # use api to anilist and start process
-                anime_list, _ = anilist_api_requests.get_10_newest_anime() # i think it can be just anime_lise, 
-                question = f"Madrus: I will give you list of my 10 most recent watched anime from site AniList. Here is this list:{anime_list}. I want you to remember this because in next question I will ask you to update status or episode number of one anime."
+            elif cleaned_question in ("show me what i watched lately", "show me what i read lately"):
+
+                content_type = "anime" if "watched" in cleaned_question else "manga"
+
+                if content_type == "anime":
+                    list_content, _ = anilist_api_requests.get_10_newest_entries("ANIME") 
+                else:
+                    list_content, _ = anilist_api_requests.get_10_newest_entries("MANGA")  # assuming this method exists
+
+
+                    
+                 
+                question = f"Madrus: I will give you list of my 10 most recent watched/read {content_type} from site AniList. Here is this list:{list_content}. I want you to remember this because in next question I will ask you to update episodes/chapters of one of them."
                 #print("question from user:" + question)
                 messages.append({"role": "user", "content": question})
 
                 # send to open ai for answer !!!!!!!! I WONT SEND IT BECOUSE I ALREADY GOT IT FROM reformatting
                 answer = "Okay, I will remember it, Madrus. I'm waiting for your next question. Give it to me nyaa."
-                print_response_label(f"Here is your list of most recent watched anime.{anime_list}")
+                print_response_label(f"Here is your list of most recent anime/manga.{list_content}")
 
                 #   FOR ARROWS TO PREVIOUS ANSWERS
-                add_answer_to_history(f"Here is your list of most recent watched anime.{anime_list}")
+                add_answer_to_history(f"Here is your list of most recent anime/manga.{list_content}")
                 current_answer_index = len(answer_history) - 1
                     # END OF ARROWS TO PREVIOUS ANSWERS
                 update_progress_bar(60), print_log_label("got answer")
 
                 if choice == "Yes": #IF YES THEN WITH VOICE
-                    request_voice.request_voice_fn("Here is your list of most recent watched anime.") #request Azure TTS to for answer
+                    request_voice.request_voice_fn("Here is your list. *smile*") #request Azure TTS to for answer
                     update_progress_bar(70), print_log_label("got voice")
                     play_audio_fn("response")
 
@@ -343,14 +354,22 @@ def voice_control(input_text=None):
                 
 
                 running = False
-                anime_list_question = True # entering anime list mode for next question to update anime
-
+                anilist_mode = True # entering anilist mode for next question to update anime/manga
+                if content_type == "anime":
+                    content_type_mode = "anime"
+                else:
+                    content_type_mode = "manga"
                 update_progress_bar(100), print_log_label("showed, done")
 
-            elif anime_list_question == True: # she is in animelist mode, so she rebebmers list i gave her 
-                    # make shiro find me id of anime
+            elif anilist_mode == True: # she is in animelist mode, so she rebebmers list i gave her 
+                    # make shiro find me id of anime/manga
+
+                content_type = content_type_mode    
+                if content_type == "anime":
+                    question = f"Madrus: {question}. I would like you to answer me giving me ONLY THIS: ' title:<title>,id:<id>, episodes:<episodes>'. Nothing more."
+                else:
+                    question = f"Madrus: {question}. I would like you to answer me giving me ONLY THIS: ' title:<title>,id:<id>, chapters:<chapters>'. Nothing more."
                 
-                question = f"Madrus: {question}. I would like you to answer me giving me ONLY THIS: ' title:<title>,id:<id>, episodes:<episodes>'. Nothing more."
                 #print("question from user:" + question)
                 messages.append({"role": "user", "content": question})
 
@@ -360,24 +379,35 @@ def voice_control(input_text=None):
                 
                     # START find ID and episodes number of updated anime
                 # The regex pattern
-                pattern = r"id:(\d+), episodes:(\d+)"
+                if content_type == "anime":
+                    pattern = r"id:(\d+), episodes:(\d+)"
+                else:
+                    pattern = r"id:(\d+), chapters:(\d+)"   
 
                 # Use re.search to find the pattern in the text
                 match = re.search(pattern, answer)
 
                 if match:
                     # match.group(1) contains the id, match.group(2) contains the episodes number
-                    updated_id, updated_episodes = match.group(1), match.group(2)
-                    print(f"id: {updated_id}, episodes: {updated_episodes}")
+                    if content_type == "anime":
+                        updated_id, updated_episodes = match.group(1), match.group(2)
+                        print(f"id: {updated_id}, episodes: {updated_episodes}")
+                    else:
+                        updated_id, updated_chapters = match.group(1), match.group(2)
+                        print(f"id: {updated_id}, chapters: {updated_chapters}")    
                 else:
                     print("No match found")
-                     # END find ID and episodes number of updated anime
+                     # END find ID and episodes number of updated anime/manga
 
                 print_response_label(answer) # CHANGE THIS TO MORE HUMAN LIKE
 
                 # send upgrade api do anilist 
                 update_progress_bar(50), print_log_label("sending to anilist...")
-                anilist_api_requests.change_episodes_watched(updated_id, updated_episodes) # send to anilist api
+                if content_type == "anime":
+                    anilist_api_requests.change_progress(updated_id, updated_episodes,content_type) # send to anilist api
+                else:
+                    anilist_api_requests.change_progress(updated_id, updated_chapters,content_type)
+
                 update_progress_bar(55), print_log_label("updated anilist database...")
                 # end anilist api
 
@@ -390,7 +420,10 @@ def voice_control(input_text=None):
                 update_progress_bar(60), print_log_label("got answer")
 
                 if choice == "Yes": #IF YES THEN WITH VOICE
-                    request_voice.request_voice_fn(f"Done, updated it to {updated_episodes} episodes") #request Azure TTS to for answer
+                    if content_type == "anime":
+                        request_voice.request_voice_fn(f"Done, updated it to {updated_episodes} episodes") #request Azure TTS to for answer
+                    else:
+                        request_voice.request_voice_fn(f"Done, updated it to {updated_chapters} chapters")    
                     update_progress_bar(70), print_log_label("got voice")
                     play_audio_fn("response")
 
@@ -416,7 +449,8 @@ def voice_control(input_text=None):
 
                 update_progress_bar(100), print_log_label("updated on anilist")
 
-                anime_list_question = False
+                anilist_mode = False
+                content_type_mode =""
 
             else: # continue if user does not want to exit
                 

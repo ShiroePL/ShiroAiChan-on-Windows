@@ -104,9 +104,38 @@ def change_chapters_count(MANGA_ID: int, CHAPTERS_READ: int):
   else:
       print("Manga/Novel status updated successfully!")
 
+def change_progress(MEDIA_ID: int, PROGRESS: int, MEDIA_TYPE: str):
+  """Update the progress for a media. Media type can be 'anime' or 'manga'."""
+  headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
+
+  query = '''
+  mutation ($id: Int, $progress: Int) {
+    SaveMediaListEntry (mediaId: $id, progress: $progress) {
+      id
+      progress
+    }
+  }
+  '''
+
+  variables = {'id': MEDIA_ID, 'progress': PROGRESS}
+
+  response = requests.post('https://graphql.anilist.co', json={'query': query, 'variables': variables}, headers=headers)
+  if response.status_code != 200:
+      print(response.content)
+
+  response.raise_for_status()
+  data = response.json()
+
+  if 'errors' in data:
+      print(f"An error occurred: {data['errors']}")
+  else:
+      print(f"{MEDIA_TYPE.capitalize()} status updated successfully!")
+
+
 
 
 def get_10_newest_anime():
+  
   """Get the 10 newest anime formatted for prompt"""
   
   variables_in_api = {
