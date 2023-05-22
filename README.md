@@ -49,7 +49,11 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
   * I need to record some animations in [Vtube studio].
   * [to do next] And i will need to use some combination of Sentiment Analysis and key words combinations to get needed info to play appropriate animation. Azure or something.
 
-
+## to do 
+* [ ] i need to add button for inserting manga 10 list request like anime has
+* [ ] i want to add random questions from shiro when i dont ask her questions
+  * i think i will add buttons on/off that will start timer ( i thin it doesnt needs to be in main function, just new function)
+* [ ] make long therm memory function and think how it will be working
 ## Links 
 
 [ChatGPT API] : https://openai.com/blog/introducing-chatgpt-and-whisper-apis
