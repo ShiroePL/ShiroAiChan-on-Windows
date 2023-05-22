@@ -55,7 +55,8 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
   * [to do next] And i will need to use some combination of Sentiment Analysis and key words combinations to get needed info to play appropriate animation. Azure or something.
 * #### Brain
   * I want to implement classifications using chatGPT/google API that will analyze question and give category like: animelist, chat, song, etc ( for future use) 
-
+    * I think key word like : 'categorize' i want to update my manga list. 
+    * And she will then use categorization for question, sent to API het category, then use appropriate function that fits category.
 ## Links 
 
 [ChatGPT API] : https://openai.com/blog/introducing-chatgpt-and-whisper-apis
