@@ -43,17 +43,19 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
 
 
 #### To do but small steps:
-* #### Voice:
-  * I need to delete wav file after it's played because it's starting when I am starting [gradio].
+* #### Anilist
+  * I need to add button for inserting manga 10 list request like anime has\
+* #### random questions
+  * I want to add random questions from shiro when i don't ask her questions
+    * I think i will add buttons on/off that will start timer ( i thin it doesn't needs to be in main function, just new function)
+* #### Memory
+  * make long therm memory function and think how it will be working 
 * #### Look :star_struck:
   * I need to record some animations in [Vtube studio].
   * [to do next] And i will need to use some combination of Sentiment Analysis and key words combinations to get needed info to play appropriate animation. Azure or something.
+* #### Brain
+  * I want to implement classifications using chatGPT/google API that will analyze question and give category like: animelist, chat, song, etc ( for future use) 
 
-## to do 
-* [ ] i need to add button for inserting manga 10 list request like anime has
-* [ ] i want to add random questions from shiro when i dont ask her questions
-  * i think i will add buttons on/off that will start timer ( i thin it doesnt needs to be in main function, just new function)
-* [ ] make long therm memory function and think how it will be working
 ## Links 
 
 [ChatGPT API] : https://openai.com/blog/introducing-chatgpt-and-whisper-apis
