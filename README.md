@@ -44,10 +44,11 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
 
 #### To do but small steps:
 * #### Anilist
-  * I need to add button for inserting manga 10 list request like anime has\
+  * I need to add button for inserting manga 10 list request like anime has
+  * Maybe add pop up window that will show with better formatting the list
 * #### random questions
-  * I want to add random questions from shiro when i don't ask her questions
-    * I think i will add buttons on/off that will start timer ( i thin it doesn't needs to be in main function, just new function)
+  * I want to add random questions from shiro when I don't ask her questions
+    * I think i will add buttons on/off that will start timer ( I thin it doesn't needs to be in main function, just new function)
 * #### Memory
   * make long therm memory function and think how it will be working 
 * #### Look :star_struck:
