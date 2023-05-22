@@ -246,7 +246,7 @@ def voice_control(input_text=None):
         global anilist_mode
         global content_type_mode
         messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
-        memory_messages = connect_to_phpmyadmin.retrieve_chat_history_from_database("long_therm_memory")
+        #memory_messages = connect_to_phpmyadmin.retrieve_chat_history_from_database("long_therm_memory")
 
         if input_text is None:
             update_progress_bar(10), print_log_label("recording...")
@@ -308,53 +308,53 @@ def voice_control(input_text=None):
                 play_audio_fn(beep)
                 sys.exit()
 
-            elif cleaned_question in ("remember this"): # THIS IS MODULE TO SEND TEXT TO LONG TERM MEMORY
-                # to database
-                question = f"Madrus: {question}"
-                print("question from user:" + question)
-                memory_messages.append({"role": "user", "content": question})
+            # elif cleaned_question in ("remember this"): # THIS IS MODULE TO SEND TEXT TO LONG TERM MEMORY
+            #     # to database
+            #     question = f"Madrus: {question}"
+            #     print("question from user:" + question)
+            #     memory_messages.append({"role": "user", "content": question})
                 
-                    # send to open ai for answer
-                update_progress_bar(40), print_log_label("sending to openAI...")  
-                print("messages: " + str(memory_messages))
-                answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(memory_messages) 
-                print_response_label(answer)
+            #         # send to open ai for answer
+            #     update_progress_bar(40), print_log_label("sending to openAI...")  
+            #     print("messages: " + str(memory_messages))
+            #     answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(memory_messages) 
+            #     print_response_label(answer)
                 
-                    # FOR ARROWS TO PREVIOUS ANSWERS
-                add_answer_to_history(answer)
-                current_answer_index = len(answer_history) - 1
-                    # END OF ARROWS TO PREVIOUS ANSWERS
+            #         # FOR ARROWS TO PREVIOUS ANSWERS
+            #     add_answer_to_history(answer)
+            #     current_answer_index = len(answer_history) - 1
+            #         # END OF ARROWS TO PREVIOUS ANSWERS
 
-                update_progress_bar(60), print_log_label("got answer") 
+            #     update_progress_bar(60), print_log_label("got answer") 
 
-                if choice == "Yes": #IF YES THEN WITH VOICE
-                    request_voice.request_voice_fn(answer) #request Azure TTS to for answer
-                    update_progress_bar(70), print_log_label("got voice")
-                    play_audio_fn("response")
+            #     if choice == "Yes": #IF YES THEN WITH VOICE
+            #         request_voice.request_voice_fn(answer) #request Azure TTS to for answer
+            #         update_progress_bar(70), print_log_label("got voice")
+            #         play_audio_fn("response")
                     
 
-                print("ShiroAi-chan: " + answer)
+            #     print("ShiroAi-chan: " + answer)
                 
                 
-                if profanity.contains_profanity(answer) == True:
-                    answer = profanity.censor(answer)                    
-                update_progress_bar(80), print_log_label("saving to DB...")
-                connect_to_phpmyadmin.insert_message_to_database(name, question, answer, memory_messages) #insert to Azure DB to user table    
-                connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
-                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
-                print("---------------------------------")
+            #     if profanity.contains_profanity(answer) == True:
+            #         answer = profanity.censor(answer)                    
+            #     update_progress_bar(80), print_log_label("saving to DB...")
+            #     connect_to_phpmyadmin.insert_message_to_database(name, question, answer, memory_messages) #insert to Azure DB to user table    
+            #     connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
+            #     connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
+            #     print("---------------------------------")
 
-                beep = "cute_beep" #END OF ANSWER
-                play_audio_fn(beep)
+            #     beep = "cute_beep" #END OF ANSWER
+            #     play_audio_fn(beep)
 
-                    #show history in text widget
-                update_progress_bar(90), print_log_label("showing in text box...")
-                #show_history_from_db_widget.delete('1.0', 'end')
-                display_messages_from_database_only(take_history_from_database())
+            #         #show history in text widget
+            #     update_progress_bar(90), print_log_label("showing in text box...")
+            #     #show_history_from_db_widget.delete('1.0', 'end')
+            #     display_messages_from_database_only(take_history_from_database())
                 
 
-                running = False
-                update_progress_bar(100), print_log_label("saved to DB, done")
+            #     running = False
+            #     update_progress_bar(100), print_log_label("saved to DB, done")
 
             elif cleaned_question in ("show me my list of anime", "show me my list of manga"):
 
@@ -421,7 +421,7 @@ def voice_control(input_text=None):
                 
                 #print("question from user:" + question)
                 messages.append({"role": "user", "content": question})
-
+                
                 # send to open ai for answer
                 update_progress_bar(40), print_log_label("sending to openAI...")
                 answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
@@ -459,7 +459,8 @@ def voice_control(input_text=None):
 
                 update_progress_bar(55), print_log_label("updated anilist database...")
                 # end anilist api
-
+                
+                
 
 
                     # FOR ARROWS TO PREVIOUS ANSWERS
