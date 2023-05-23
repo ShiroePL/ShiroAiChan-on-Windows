@@ -234,16 +234,59 @@ questions = ['What is your favorite color?',
 timer_running = False
 timer_thread = None
 
-def ask_random_question():
-    question = random.choice(questions)
-    print(question)
+def ask_random_question(): # THIS SHIT IS FOR ASKING PROMPT
+#     question = f"Madrus: This is programmed functionality for you that is asking me questions from time to time. So ask me some question, can be random or based on what we talked before."
+#     name = table_name_input.get()
+#     tts_or_not = mute_or_unmute.get()
+#     messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
+#     messages.append({"role": "user", "content": question})
+#         # send to open ai for answer
+#     progress(40,"sending to openAI...") 
+# #print("messages: " + str(messages))
+#     answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+#     print_response_label(answer)
+
+#     # FOR ARROWS TO PREVIOUS ANSWERS
+#     add_answer_to_history(answer)
+#     current_answer_index = len(answer_history) - 1
+#     # END OF ARROWS TO PREVIOUS ANSWERS
+#     progress(60,"got answer") 
+    
+#     if tts_or_not == "Yes": #IF YES THEN WITH VOICE
+#         request_voice.request_voice_fn(answer) #request Azure TTS to for answer
+#         progress(70,"got voice")
+#         play_audio_fn("response")
+#     print("ShiroAi-chan: " + answer)
+
+#     if profanity.contains_profanity(answer) == True:
+#         answer = profanity.censor(answer)     
+
+#     progress(80,"saving to DB...")
+#     connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
+#     connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
+#     connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
+#     print("---------------------------------")
+
+#     beep = "cute_beep" #END OF ANSWER
+#     play_audio_fn(beep)
+
+#         #show history in text widget
+#     progress(90,"showing in text box...")
+#     #show_history_from_db_widget.delete('1.0', 'end')
+#     display_messages_from_database_only(take_history_from_database())
+    
+#     progress(100,"saved to DB, done")
+
+    print("asking random question")
 
 def timer_for_random_questions(interval=10):
+    """this is the timer that counts down and runs ask question function"""
     while timer_running:
         ask_random_question()
         time.sleep(interval)
 
 def start_timer(interval=10):
+    """starts timer for random questions in separate thread"""
     global timer_running
     global timer_thread
     timer_running = True
@@ -258,10 +301,21 @@ def stop_timer():
         timer_thread.join()
 
 def on_talk_or_not_change(*args):
+    """Callback for when the user changes talkative checkbox"""
     if talk_or_not.get() == "Yes":
-        start_timer(5)
+        start_timer(30)
     else:
         stop_timer()
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -351,53 +405,53 @@ def voice_control(input_text=None):
                 play_audio_fn(beep)
                 sys.exit()
 
-            elif cleaned_question in ("please remember this"): # THIS IS MODULE TO SEND TEXT TO LONG TERM MEMORY
-                # to database
-                question = f"Madrus: {question}"
-                print("question from user:" + question)
-                messages.append({"role": "user", "content": question})
+            # elif cleaned_question in ("please remember this"): # THIS IS MODULE TO SEND TEXT TO LONG TERM MEMORY
+            #     # to database
+            #     question = f"Madrus: {question}"
+            #     print("question from user:" + question)
+            #     messages.append({"role": "user", "content": question})
                 
-                    # send to open ai for answer
-                progress(40,"sending to openAI...")   
-                print("messages: " + str(messages))
-                answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
-                print_response_label(answer)
+            #         # send to open ai for answer
+            #     progress(40,"sending to openAI...")   
+            #     print("messages: " + str(messages))
+            #     answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+            #     print_response_label(answer)
                 
-                    # FOR ARROWS TO PREVIOUS ANSWERS
-                add_answer_to_history(answer)
-                current_answer_index = len(answer_history) - 1
-                    # END OF ARROWS TO PREVIOUS ANSWERS
+            #         # FOR ARROWS TO PREVIOUS ANSWERS
+            #     add_answer_to_history(answer)
+            #     current_answer_index = len(answer_history) - 1
+            #         # END OF ARROWS TO PREVIOUS ANSWERS
 
-                progress(60,"got answer")
+            #     progress(60,"got answer")
 
-                if tts_or_not == "Yes": #IF YES THEN WITH VOICE
-                    request_voice.request_voice_fn(answer) #request Azure TTS to for answer
-                    progress(70,"got voice")
-                    play_audio_fn("response")
+            #     if tts_or_not == "Yes": #IF YES THEN WITH VOICE
+            #         request_voice.request_voice_fn(answer) #request Azure TTS to for answer
+            #         progress(70,"got voice")
+            #         play_audio_fn("response")
                     
 
-                print("ShiroAi-chan: " + answer)
+            #     print("ShiroAi-chan: " + answer)
                 
                 
-                if profanity.contains_profanity(answer) == True:
-                    answer = profanity.censor(answer)                    
-                progress(80,"saving to DB...")
-                connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
-                connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
-                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
-                print("---------------------------------")
+            #     if profanity.contains_profanity(answer) == True:
+            #         answer = profanity.censor(answer)                    
+            #     progress(80,"saving to DB...")
+            #     connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
+            #     connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
+            #     connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
+            #     print("---------------------------------")
 
-                beep = "cute_beep" #END OF ANSWER
-                play_audio_fn(beep)
+            #     beep = "cute_beep" #END OF ANSWER
+            #     play_audio_fn(beep)
 
-                #show history in text widget
-                progress(90,"showing in text box...")
-                #show_history_from_db_widget.delete('1.0', 'end')
-                display_messages_from_database_only(take_history_from_database())
+            #     #show history in text widget
+            #     progress(90,"showing in text box...")
+            #     #show_history_from_db_widget.delete('1.0', 'end')
+            #     display_messages_from_database_only(take_history_from_database())
                 
 
-                running = False  
-                progress(100,"saved to DB, done")
+            #     running = False  
+            #     progress(100,"saved to DB, done")
             elif cleaned_question in ("show me my list of anime", "show me my list of manga"):
 
                 content_type = "anime" if "watched" in cleaned_question else "manga"
