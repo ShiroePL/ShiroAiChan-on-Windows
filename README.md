@@ -44,7 +44,6 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
 
 #### To do but small steps:
 * #### Anilist
-  * I need to add button for inserting manga 10 list request like anime has
   * Maybe add pop up window that will show with better formatting the list
 * #### random questions
   * I want to add random questions from shiro when I don't ask her questions
@@ -58,6 +57,8 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
   * I want to implement classifications using chatGPT/google API that will analyze question and give category like: animelist, chat, song, etc ( for future use) 
     * I think key word like : 'categorize' i want to update my manga list. 
     * And she will then use categorization for question, sent to API het category, then use appropriate function that fits category.
+* #### Uncategorize
+  
 ## Links 
 
 [ChatGPT API] : https://openai.com/blog/introducing-chatgpt-and-whisper-apis
