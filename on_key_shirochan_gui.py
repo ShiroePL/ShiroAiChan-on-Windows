@@ -165,6 +165,10 @@ def on_ctrl_press(event):
         stop_listening()
         recording_key = False
 
+def progress(percent: int, text: str):
+    """ Update progress bar percents and text"""
+    update_progress_bar(percent), print_log_label(text)
+
 
 def display_messages_from_database_only(messages):
     show_history_from_db_widget.delete('1.0', 'end')
@@ -202,8 +206,7 @@ def button_show_anilist():
         update_progress_bar(70), print_log_label("got voice")
         play_audio_fn("response")
 
-
-    update_progress_bar(80), print_log_label("saving to DB...")
+    progress(80,"saving to DB...")
     connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
     print("---------------------------------")
 
@@ -212,15 +215,12 @@ def button_show_anilist():
     play_audio_fn(beep)
 
         #show history in text widget
-    update_progress_bar(90), print_log_label("showing in text box...")
+    progress(90,"showing in text box...")
     #show_history_from_db_widget.delete('1.0', 'end')
     display_messages_from_database_only(take_history_from_database())
     
-
     anilist_mode = True # entering anime list mode for next question to update anime
-
-    update_progress_bar(100), print_log_label("showed, done")
-
+    progress(100,"showed, done")
 
 
 def voice_control(input_text=None):
@@ -246,10 +246,10 @@ def voice_control(input_text=None):
         global anilist_mode
         global content_type_mode
         messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
-        #memory_messages = connect_to_phpmyadmin.retrieve_chat_history_from_database("long_therm_memory")
+        #messages = connect_to_phpmyadmin.retrieve_chat_history_from_database("long_therm_memory")
 
         if input_text is None:
-            update_progress_bar(10), print_log_label("recording...")
+            progress(10,"recording...")
             print("started listening")
             beep = "cute_beep"  # started recording
             play_audio_fn(beep)
@@ -268,16 +268,16 @@ def voice_control(input_text=None):
                 if stop_listening_flag:
                     print("Stopped recording on user request via clicking button")
                     print("---------------------------------")
-                    update_progress_bar(0), print_log_label("stopped rec. test raz dwa trzy cztery")
+    
+                    progress(0,"stopped recording")
                     beep = "cute_beep"  # NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
                     play_audio_fn(beep)
                     break
                 with open(filename, "wb") as f:
                     f.write(audio.get_wav_data())
                 f.close()
-
-                update_progress_bar(20), print_log_label("transcribing...")  # recorded audio
-
+ 
+                progress(20,"transcribing...") # recorded audio
                 try:
                     print("---------------------------------")
 
@@ -292,81 +292,70 @@ def voice_control(input_text=None):
 
         cleaned_question = question.translate(str.maketrans("", "", string.punctuation)).strip().lower()
 
-        if profanity.contains_profanity(question) == True:  # dcensor question words for openAI send
-            question = profanity.censor(answer)
+        if profanity.contains_profanity(question):
+            question = profanity.censor(answer) # censor question words for openAI send
 
         if question:
                 # check if question was asked using voice or input
-            if input_text is None:
-                update_progress_bar(30), print_log_label("transcribed.")
-            else:
-                update_progress_bar(30), print_log_label("question given in input.")
-
+            progress(30,"transcribed.") if input_text is None else progress(30,"question given in input.")
                 # end if user wants to exit
             if cleaned_question in ("bye bye shiro", "exit program", "bye bye shira"):
                 beep = "cute_beep"  # NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
                 play_audio_fn(beep)
                 sys.exit()
 
-            # elif cleaned_question in ("remember this"): # THIS IS MODULE TO SEND TEXT TO LONG TERM MEMORY
-            #     # to database
-            #     question = f"Madrus: {question}"
-            #     print("question from user:" + question)
-            #     memory_messages.append({"role": "user", "content": question})
+            elif cleaned_question in ("please remember this"): # THIS IS MODULE TO SEND TEXT TO LONG TERM MEMORY
+                # to database
+                question = f"Madrus: {question}"
+                print("question from user:" + question)
+                messages.append({"role": "user", "content": question})
                 
-            #         # send to open ai for answer
-            #     update_progress_bar(40), print_log_label("sending to openAI...")  
-            #     print("messages: " + str(memory_messages))
-            #     answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(memory_messages) 
-            #     print_response_label(answer)
+                    # send to open ai for answer
+                progress(40,"sending to openAI...")   
+                print("messages: " + str(messages))
+                answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+                print_response_label(answer)
                 
-            #         # FOR ARROWS TO PREVIOUS ANSWERS
-            #     add_answer_to_history(answer)
-            #     current_answer_index = len(answer_history) - 1
-            #         # END OF ARROWS TO PREVIOUS ANSWERS
+                    # FOR ARROWS TO PREVIOUS ANSWERS
+                add_answer_to_history(answer)
+                current_answer_index = len(answer_history) - 1
+                    # END OF ARROWS TO PREVIOUS ANSWERS
 
-            #     update_progress_bar(60), print_log_label("got answer") 
+                progress(60,"got answer")
 
-            #     if choice == "Yes": #IF YES THEN WITH VOICE
-            #         request_voice.request_voice_fn(answer) #request Azure TTS to for answer
-            #         update_progress_bar(70), print_log_label("got voice")
-            #         play_audio_fn("response")
+                if choice == "Yes": #IF YES THEN WITH VOICE
+                    request_voice.request_voice_fn(answer) #request Azure TTS to for answer
+                    progress(70,"got voice")
+                    play_audio_fn("response")
                     
 
-            #     print("ShiroAi-chan: " + answer)
+                print("ShiroAi-chan: " + answer)
                 
                 
-            #     if profanity.contains_profanity(answer) == True:
-            #         answer = profanity.censor(answer)                    
-            #     update_progress_bar(80), print_log_label("saving to DB...")
-            #     connect_to_phpmyadmin.insert_message_to_database(name, question, answer, memory_messages) #insert to Azure DB to user table    
-            #     connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
-            #     connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
-            #     print("---------------------------------")
+                if profanity.contains_profanity(answer) == True:
+                    answer = profanity.censor(answer)                    
+                progress(80,"saving to DB...")
+                connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
+                connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
+                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
+                print("---------------------------------")
 
-            #     beep = "cute_beep" #END OF ANSWER
-            #     play_audio_fn(beep)
+                beep = "cute_beep" #END OF ANSWER
+                play_audio_fn(beep)
 
-            #         #show history in text widget
-            #     update_progress_bar(90), print_log_label("showing in text box...")
-            #     #show_history_from_db_widget.delete('1.0', 'end')
-            #     display_messages_from_database_only(take_history_from_database())
+                #show history in text widget
+                progress(90,"showing in text box...")
+                #show_history_from_db_widget.delete('1.0', 'end')
+                display_messages_from_database_only(take_history_from_database())
                 
 
-            #     running = False
-            #     update_progress_bar(100), print_log_label("saved to DB, done")
-
+                running = False  
+                progress(100,"saved to DB, done")
             elif cleaned_question in ("show me my list of anime", "show me my list of manga"):
 
                 content_type = "anime" if "watched" in cleaned_question else "manga"
 
-                if content_type == "anime":
-                    list_content, _ = anilist_api_requests.get_10_newest_entries("ANIME") 
-                else:
-                    list_content, _ = anilist_api_requests.get_10_newest_entries("MANGA")  # assuming this method exists
-
-
-                    
+                list_content, _ = anilist_api_requests.get_10_newest_entries("ANIME") if content_type == "anime" else anilist_api_requests.get_10_newest_entries("MANGA")  # assuming this method exists        
                  
                 question = f"Madrus: I will give you list of my 10 most recent watched/read {content_type} from site AniList. Here is this list:{list_content}. I want you to remember this because in next question I will ask you to update episodes/chapters of one of them."
                 #print("question from user:" + question)
@@ -380,125 +369,101 @@ def voice_control(input_text=None):
                 add_answer_to_history(f"Here is your list of most recent anime/manga.{list_content}")
                 current_answer_index = len(answer_history) - 1
                     # END OF ARROWS TO PREVIOUS ANSWERS
-                update_progress_bar(60), print_log_label("got answer")
+                #update_progress_bar(60), print_log_label("got answer")
+                progress(60,"got answer")
 
                 if choice == "Yes": #IF YES THEN WITH VOICE
                     request_voice.request_voice_fn("Here is your list. *smile*") #request Azure TTS to for answer
-                    update_progress_bar(70), print_log_label("got voice")
+                    progress(70,"got voice")
                     play_audio_fn("response")
 
-      
-                update_progress_bar(80), print_log_label("saving to DB...")
+                
+                progress(80,"saving to DB...")
                 connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
                 print("---------------------------------")
-  
 
                 beep = "cute_beep" #END OF ANSWER
                 play_audio_fn(beep)
-
                     #show history in text widget
-                update_progress_bar(90), print_log_label("showing in text box...")
+                
+                progress(90,"showing in text box...")
                 #show_history_from_db_widget.delete('1.0', 'end')
                 display_messages_from_database_only(take_history_from_database())
-                
-
+       
+                content_type_mode = "anime" if "watched" in cleaned_question else "manga" # i need this so in next question i know what to update (anime or manga)
                 running = False
                 anilist_mode = True # entering anilist mode for next question to update anime/manga
-                if content_type == "anime":
-                    content_type_mode = "anime"
-                else:
-                    content_type_mode = "manga"
-                update_progress_bar(100), print_log_label("showed, done")
 
-            elif anilist_mode == True: # she is in animelist mode, so she rebebmers list i gave her 
+                progress(100,"showed, done")
+            elif anilist_mode: # she is in animelist mode, so she rebebmers list i gave her 
                     # make shiro find me id of anime/manga
 
-                content_type = content_type_mode    
-                if content_type == "anime":
-                    question = f"Madrus: {question}. I would like you to answer me giving me ONLY THIS: ' title:<title>,id:<id>, episodes:<episodes>'. Nothing more."
-                else:
-                    question = f"Madrus: {question}. I would like you to answer me giving me ONLY THIS: ' title:<title>,id:<id>, chapters:<chapters>'. Nothing more."
-                
+                content_type = content_type_mode   
+
+                end_question = "I would like you to answer me giving me ONLY THIS: ' title:<title>,id:<id>,"
+                extra = " episodes:<episodes>'. Nothing more." if content_type == "anime" else " chapters:<chapters>'. Nothing more."
+                question = f"Madrus: {question}. {end_question}{extra}"
+
                 #print("question from user:" + question)
                 messages.append({"role": "user", "content": question})
                 
                 # send to open ai for answer
-                update_progress_bar(40), print_log_label("sending to openAI...")
+                progress(40,"sending to openAI...")
                 answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
                 
                     # START find ID and episodes number of updated anime
-                # The regex pattern
-                if content_type == "anime":
-                    pattern = r"id:(\d+), episodes:(\d+)"
-                else:
-                    pattern = r"id:(\d+), chapters:(\d+)"   
-
+                # The regex pattern             
+                pattern = r"id:(\d+), episodes:(\d+)" if content_type == "anime" else r"id:(\d+), chapters:(\d+)" 
                 # Use re.search to find the pattern in the text
                 match = re.search(pattern, answer)
 
                 if match:
                     # match.group(1) contains the id, match.group(2) contains the episodes number
-                    if content_type == "anime":
-                        updated_id, updated_episodes = match.group(1), match.group(2)
-                        print(f"id: {updated_id}, episodes: {updated_episodes}")
-                    else:
-                        updated_id, updated_chapters = match.group(1), match.group(2)
-                        print(f"id: {updated_id}, chapters: {updated_chapters}")    
+                    updated_id = match.group(1)
+                    updated_info = match.group(2)
+                    print(f"id: {updated_id}, {content_type}: {updated_info}")
                 else:
                     print("No match found")
-                     # END find ID and episodes number of updated anime/manga
+                # END find ID and episodes number of updated anime/manga
 
                 print_response_label(answer) # CHANGE THIS TO MORE HUMAN LIKE
 
                 # send upgrade api do anilist 
-                update_progress_bar(50), print_log_label("sending to anilist...")
-                if content_type == "anime":
-                    anilist_api_requests.change_progress(updated_id, updated_episodes,content_type) # send to anilist api
-                else:
-                    anilist_api_requests.change_progress(updated_id, updated_chapters,content_type)
-
-                update_progress_bar(55), print_log_label("updated anilist database...")
+                progress(50,"sending to anilist...")
+                anilist_api_requests.change_progress(updated_id, updated_info,content_type)
+                progress(55,"updated anilist database...")         
                 # end anilist api
                 
-                
-
-
                     # FOR ARROWS TO PREVIOUS ANSWERS
                 add_answer_to_history(answer)
                 current_answer_index = len(answer_history) - 1
                     # END OF ARROWS TO PREVIOUS ANSWERS
-                update_progress_bar(60), print_log_label("got answer")
+                progress(60,"got answer")
 
-                if choice == "Yes": #IF YES THEN WITH VOICE
-                    if content_type == "anime":
-                        request_voice.request_voice_fn(f"Done, updated it to {updated_episodes} episodes") #request Azure TTS to for answer
-                    else:
-                        request_voice.request_voice_fn(f"Done, updated it to {updated_chapters} chapters")    
-                    update_progress_bar(70), print_log_label("got voice")
+                if choice == "Yes":
+                    request_voice.request_voice_fn(f"Done, updated it to {updated_info} {content_type}")
+                    progress(70,"got voice")
                     play_audio_fn("response")
 
                 print("ShiroAi-chan: " + answer)
-                
-                update_progress_bar(80), print_log_label("saving to DB...")
+
+                # Save to database
+                progress(80,"saving to DB...")
                 connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
                 connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
                 print("---------------------------------")
   
-
                 beep = "cute_beep" #END OF ANSWER
                 play_audio_fn(beep)
 
                     #show history in text widget
-                update_progress_bar(90), print_log_label("showing in text box...")
+                progress(90,"showing in text box...")
                 #show_history_from_db_widget.delete('1.0', 'end')
                 display_messages_from_database_only(take_history_from_database())
-                
+   
+                progress(100,"updated on anilist")
 
                 running = False
-                
-
-                update_progress_bar(100), print_log_label("updated on anilist")
-
                 anilist_mode = False
                 content_type_mode =""
 
@@ -510,7 +475,7 @@ def voice_control(input_text=None):
                 messages.append({"role": "user", "content": question})
                 
                     # send to open ai for answer
-                update_progress_bar(40), print_log_label("sending to openAI...")  
+                progress(40,"sending to openAI...") 
                 print("messages: " + str(messages))
                 answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
                 print_response_label(answer)
@@ -520,11 +485,11 @@ def voice_control(input_text=None):
                 current_answer_index = len(answer_history) - 1
                     # END OF ARROWS TO PREVIOUS ANSWERS
 
-                update_progress_bar(60), print_log_label("got answer") 
+                progress(60,"got answer") 
 
                 if choice == "Yes": #IF YES THEN WITH VOICE
                     request_voice.request_voice_fn(answer) #request Azure TTS to for answer
-                    update_progress_bar(70), print_log_label("got voice")
+                    progress(70,"got voice")
                     play_audio_fn("response")
                     
 
@@ -533,7 +498,7 @@ def voice_control(input_text=None):
                 
                 if profanity.contains_profanity(answer) == True:
                     answer = profanity.censor(answer)                    
-                update_progress_bar(80), print_log_label("saving to DB...")
+                progress(80,"saving to DB...")
                 connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
                 connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
                 connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
@@ -543,13 +508,13 @@ def voice_control(input_text=None):
                 play_audio_fn(beep)
 
                     #show history in text widget
-                update_progress_bar(90), print_log_label("showing in text box...")
+                progress(90,"showing in text box...")
                 #show_history_from_db_widget.delete('1.0', 'end')
                 display_messages_from_database_only(take_history_from_database())
                 
 
                 running = False
-                update_progress_bar(100), print_log_label("saved to DB, done")
+                progress(100,"saved to DB, done")
                         
     
                     
@@ -960,8 +925,25 @@ button_16.place(
     width=42.0,
     height=42.0
 )
-
 tooltip = ToolTip(button_16, "It shows my recent anime watched list")
+
+
+button_image_17 = PhotoImage(
+    file=relative_to_assets("button_17.png"))
+button_17 = Button(
+    image=button_image_17,
+    borderwidth=0,
+    highlightthickness=0,
+    command=button_update_manga_thread,
+    relief="flat"
+)
+button_17.place(
+    x=66.0,
+    y=487.0,
+    width=42.0,
+    height=42.0
+)
+tooltip = ToolTip(button_16, "It shows my recent manga read list")
 
 entry_image_1 = PhotoImage(
     file=relative_to_assets("entry_1.png"))
