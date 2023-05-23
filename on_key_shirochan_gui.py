@@ -30,6 +30,8 @@ from tkinter.font import Font
 import pygame
 import anilist.anilist_api_requests as anilist_api_requests
 import re
+import timer
+import random
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
@@ -181,11 +183,12 @@ def display_messages_from_database_only(messages):
         
     show_history_from_db_widget.see('end')
 
-def button_show_anilist():
+def button_show_anilist(media_type: str):
     
     global anilist_mode
-    anime_list, _ = anilist_api_requests.get_10_newest_anime() # i think it can be just anime_lise, 
-    question = f"Madrus: I will give you list of my 10 most recent watched anime from site AniList. Here is this list:{anime_list}. I want you to remember this because in next question I will ask you to update status or episode number of one anime."
+    media_list, _ = anilist_api_requests.get_10_newest_entries(media_type) # i think it can be just anime_lise, 
+    chapters_or_episodes = "episodes" if media_type == "anime" else "chapters"
+    question = f"Madrus: I will give you list of my 10 most recent updated {media_type} from site AniList. Here is this list:{media_list}. I want you to remember this because in next question I will ask you to update {chapters_or_episodes} number of one {media_type}."
     #print("question from user:" + question)
     name = table_name_input.get()
     messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
@@ -193,16 +196,16 @@ def button_show_anilist():
 
     # send to open ai for answer !!!!!!!! I WONT SEND IT BECOUSE I ALREADY GOT IT FROM reformatting
     answer = "Okay, I will remember it, Madrus. I'm waiting for your next question. Give it to me nyaa."
-    print_response_label(f"Here is your list of most recent watched anime.{anime_list}")
+    print_response_label(f"Here is your list of most recent watched {media_type}.{media_list}")
 
     #   FOR ARROWS TO PREVIOUS ANSWERS
-    add_answer_to_history(f"Here is your list of most recent watched anime.{anime_list}")
+    add_answer_to_history(f"Here is your list of most recent watched {media_type}.{media_list}")
     current_answer_index = len(answer_history) - 1
         # END OF ARROWS TO PREVIOUS ANSWERS
     
-    choice = mute_or_unmute.get()
-    if choice == "Yes": #IF YES THEN WITH VOICE
-        request_voice.request_voice_fn("Here is your list of most recent watched anime.") #request Azure TTS to for answer
+    tts_or_not = mute_or_unmute.get()
+    if tts_or_not == "Yes": #IF YES THEN WITH VOICE
+        request_voice.request_voice_fn(f"Here is your list of most recent watched {media_type}.") #request Azure TTS to for answer
         update_progress_bar(70), print_log_label("got voice")
         play_audio_fn("response")
 
@@ -219,9 +222,51 @@ def button_show_anilist():
     #show_history_from_db_widget.delete('1.0', 'end')
     display_messages_from_database_only(take_history_from_database())
     
-    anilist_mode = True # entering anime list mode for next question to update anime
+    anilist_mode = True # entering anime list mode for next question to update anime/manga
     progress(100,"showed, done")
 
+######################################################################## RANDOM QUESTIONS FROM SHIRO
+
+questions = ['What is your favorite color?', 
+             'What is your favorite movie?', 
+             'What is your favorite food?']
+
+timer_running = False
+timer_thread = None
+
+def ask_random_question():
+    question = random.choice(questions)
+    print(question)
+
+def timer_for_random_questions(interval=10):
+    while timer_running:
+        ask_random_question()
+        time.sleep(interval)
+
+def start_timer(interval=10):
+    global timer_running
+    global timer_thread
+    timer_running = True
+    timer_thread = threading.Thread(target=timer_for_random_questions, args=(interval,))
+    timer_thread.start()
+
+def stop_timer():
+    global timer_running
+    global timer_thread
+    timer_running = False
+    if timer_thread is not None:
+        timer_thread.join()
+
+def on_talk_or_not_change(*args):
+    if talk_or_not.get() == "Yes":
+        start_timer(5)
+    else:
+        stop_timer()
+
+
+
+
+###########################################################################
 
 def voice_control(input_text=None):
     global stop_listening_flag
@@ -232,9 +277,11 @@ def voice_control(input_text=None):
 
     name = table_name_input.get()  # takes name from input
 
-    choice = mute_or_unmute.get()
+    tts_or_not = mute_or_unmute.get()
+    random_questions_mode = talk_or_not.get() # for iniciating random questions from shiro from time to time
+
     print("Your name?: " + name)
-    print("Do you want voice? You chose: " + choice)
+    print("Do you want voice? You chose: " + tts_or_not)
     print("say 'exit program' to exit the program")
 
 
@@ -323,7 +370,7 @@ def voice_control(input_text=None):
 
                 progress(60,"got answer")
 
-                if choice == "Yes": #IF YES THEN WITH VOICE
+                if tts_or_not == "Yes": #IF YES THEN WITH VOICE
                     request_voice.request_voice_fn(answer) #request Azure TTS to for answer
                     progress(70,"got voice")
                     play_audio_fn("response")
@@ -372,7 +419,7 @@ def voice_control(input_text=None):
                 #update_progress_bar(60), print_log_label("got answer")
                 progress(60,"got answer")
 
-                if choice == "Yes": #IF YES THEN WITH VOICE
+                if tts_or_not == "Yes": #IF YES THEN WITH VOICE
                     request_voice.request_voice_fn("Here is your list. *smile*") #request Azure TTS to for answer
                     progress(70,"got voice")
                     play_audio_fn("response")
@@ -440,7 +487,7 @@ def voice_control(input_text=None):
                     # END OF ARROWS TO PREVIOUS ANSWERS
                 progress(60,"got answer")
 
-                if choice == "Yes":
+                if tts_or_not == "Yes":
                     request_voice.request_voice_fn(f"Done, updated it to {updated_info} {content_type}")
                     progress(70,"got voice")
                     play_audio_fn("response")
@@ -487,7 +534,7 @@ def voice_control(input_text=None):
 
                 progress(60,"got answer") 
 
-                if choice == "Yes": #IF YES THEN WITH VOICE
+                if tts_or_not == "Yes": #IF YES THEN WITH VOICE
                     request_voice.request_voice_fn(answer) #request Azure TTS to for answer
                     progress(70,"got voice")
                     play_audio_fn("response")
@@ -524,9 +571,11 @@ def voice_control(input_text=None):
     # Replace `print()` statements with `print_response()`
             # ...
 
-def button_update_anime_thread():
-    voice_thread = threading.Thread(target=button_show_anilist)
+def button_update_anilist_thread(media_type: str):
+    """shows anime/manga in output box"""
+    voice_thread = threading.Thread(target=button_show_anilist(media_type))
     voice_thread.start()  
+
 
 def start_voice_control():
     global running
@@ -916,7 +965,7 @@ button_16 = Button(
     image=button_image_16,
     borderwidth=0,
     highlightthickness=0,
-    command=button_update_anime_thread,
+    command=lambda: button_update_anilist_thread("ANIME"),
     relief="flat"
 )
 button_16.place(
@@ -934,7 +983,7 @@ button_17 = Button(
     image=button_image_17,
     borderwidth=0,
     highlightthickness=0,
-    command=button_update_manga_thread,
+    command=lambda: button_update_anilist_thread("MANGA"),
     relief="flat"
 )
 button_17.place(
@@ -943,7 +992,7 @@ button_17.place(
     width=42.0,
     height=42.0
 )
-tooltip = ToolTip(button_16, "It shows my recent manga read list")
+tooltip = ToolTip(button_17, "It shows my recent manga read list")
 
 entry_image_1 = PhotoImage(
     file=relative_to_assets("entry_1.png"))
@@ -1013,13 +1062,22 @@ style.element_create("Custom.TRadiobutton.indicator", "image", normal_image,
                      ("selected", selected_image),
                      sticky="", padding=2)
 
-
+    # for TSS voice tts_or_not
 mute_or_unmute = tk.StringVar()
 mute_or_unmute.set("Yes")
 mute_or_unmute_yes = ttk.Radiobutton(root, text=" voice", variable=mute_or_unmute, value="Yes", style="Custom.TRadiobutton")
 mute_or_unmute_no = ttk.Radiobutton(root, text=" no voice", variable=mute_or_unmute, value="No", style="Custom.TRadiobutton")
 mute_or_unmute_yes.place(x=169, y=17)
 mute_or_unmute_no.place(x=169, y=50)
+
+    # for random speaking tts_or_not
+talk_or_not = tk.StringVar()
+talk_or_not.set("No")
+talk_or_not.trace("w", on_talk_or_not_change) #this is looking for changes of state
+talk_or_not_yes = ttk.Radiobutton(root, text=" talkative", variable=talk_or_not, value="Yes", style="Custom.TRadiobutton")
+talk_or_not_no = ttk.Radiobutton(root, text=" sleeping...", variable=talk_or_not, value="No", style="Custom.TRadiobutton")
+talk_or_not_yes.place(x=499, y=350)
+talk_or_not_no.place(x=499, y=383)
 
 #OMG RADIO BUTTONS ENDDD--------------------------------------------------------------------------------------------------
 
