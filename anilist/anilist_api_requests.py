@@ -216,6 +216,8 @@ def get_10_newest_entries(media_type: str):
   """Get the 10 newest anime/manga formatted for prompt
   type: 'ANIME' or 'MANGA'"""
   
+  episodes_or_chapters = None  # default value if media_type is neither ANIME nor MANGA
+
   if media_type == 'ANIME':
     episodes_or_chapters = 'episodes'
   elif media_type == 'MANGA':
