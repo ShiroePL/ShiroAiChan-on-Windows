@@ -227,18 +227,52 @@ def button_show_anilist(media_type: str):
     anilist_mode = True # entering anime list mode for next question to update anime/manga
     progress(100,"showed, done")
 
-######################################################################## RANDOM QUESTIONS FROM SHIRO
+######################################################################### RANDOM QUESTIONS FROM SHIRO ######################################################
 
-questions = ['What is your favorite color?', 
-             'What is your favorite movie?', 
-             'What is your favorite food?']
+questions = ['question 1111', 
+             'question 2222', 
+             'question 3333']
 
 timer_running = False
 timer_thread = None
 stop_event = threading.Event()
 
+
+
+
+def on_talk_or_not_change(*args):
+    """Callback for when the user changes talkative checkbox"""
+    if talk_or_not.get() == "Yes":
+        start_timer(100)
+    else:
+        stop_timer()
+
+def start_timer(interval=10):
+    """starts timer for random questions in separate thread"""
+    global timer_running
+    global timer_thread
+    timer_running = True
+    stop_event.clear()
+    timer_thread = threading.Thread(target=timer_for_random_questions, args=(interval,))
+    timer_thread.start()
+
+def stop_timer():
+    global timer_running
+    global timer_thread
+    timer_running = False
+    stop_event.set()
+    if timer_thread is not None:
+        timer_thread.join()
+
+def timer_for_random_questions(interval=10):
+    """this is the timer that counts down and runs ask question function"""
+    while timer_running:
+        ask_random_question()
+        stop_event.wait(interval)
+
+
 def ask_random_question(): # THIS SHIT IS FOR ASKING PROMPT
-    question = f"Madrus: This is programmed functionality for you that is asking me questions from time to time. So ask me some question, can be random or based on what we talked before."
+    question = f"Madrus: This is programmed functionality for you that is asking me questions from time to time. So ask me some question, can be random or based on what we talked before. But please make it short, not too long. And remember: if i will not say anything in answer to you(or this message will be repeated), ask me why i am not answering or am i still here."
     name = table_name_input.get()
     tts_or_not = mute_or_unmute.get()
     messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
@@ -282,40 +316,10 @@ def ask_random_question(): # THIS SHIT IS FOR ASKING PROMPT
 
     #print("asking random question")
 
-def timer_for_random_questions(interval=10):
-    """this is the timer that counts down and runs ask question function"""
-    while timer_running:
-        ask_random_question()
-        stop_event.wait(interval)
-
-def start_timer(interval=10):
-    """starts timer for random questions in separate thread"""
-    global timer_running
-    global timer_thread
-    timer_running = True
-    stop_event.clear()
-    timer_thread = threading.Thread(target=timer_for_random_questions, args=(interval,))
-    timer_thread.start()
-
-def stop_timer():
-    global timer_running
-    global timer_thread
-    timer_running = False
-    stop_event.set()
-    if timer_thread is not None:
-        timer_thread.join()
-
-def on_talk_or_not_change(*args):
-    """Callback for when the user changes talkative checkbox"""
-    if talk_or_not.get() == "Yes":
-        start_timer(100)
-    else:
-        stop_timer()
 
 
 
-
-###########################################################################
+##################################################################################################################################
 
 def voice_control(input_text=None):
     global stop_listening_flag
@@ -333,10 +337,8 @@ def voice_control(input_text=None):
     print("Do you want voice? You chose: " + tts_or_not)
     print("say 'exit program' to exit the program")
 
-
     connect_to_phpmyadmin.check_user_in_database(name)
     recognizer = sr.Recognizer()
-
     
     while running:  # while running is true
         global anilist_mode
@@ -364,7 +366,6 @@ def voice_control(input_text=None):
                 if stop_listening_flag:
                     print("Stopped recording on user request via clicking button")
                     print("---------------------------------")
-    
                     progress(0,"stopped recording")
                     beep = "cute_beep"  # NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
                     play_audio_fn(beep)
@@ -376,7 +377,6 @@ def voice_control(input_text=None):
                 progress(20,"transcribing...") # recorded audio
                 try:
                     print("---------------------------------")
-
                     question = transcribe_audio_question(question_file)
                 except Exception as e:
                     print("An error occurred: {}".format(e))
@@ -473,7 +473,6 @@ def voice_control(input_text=None):
                     progress(70,"got voice")
                     play_audio_fn("response")
 
-                
                 progress(80,"saving to DB...")
                 connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
                 print("---------------------------------")
@@ -581,19 +580,14 @@ def voice_control(input_text=None):
                 current_answer_index = len(answer_history) - 1
                     # END OF ARROWS TO PREVIOUS ANSWERS
 
-                progress(60,"got answer")
-
-                
+                progress(60,"got answer")   
 
                 if tts_or_not == "Yes": #IF YES THEN WITH VOICE
                     request_voice.request_voice_fn(answer) #request Azure TTS to for answer
                     progress(70,"got voice")
                     play_audio_fn("response")
                     
-                    
-
                 print("ShiroAi-chan: " + answer)
-                
                 
                 if profanity.contains_profanity(answer) == True:
                     answer = profanity.censor(answer)                    
@@ -611,11 +605,10 @@ def voice_control(input_text=None):
                 #show_history_from_db_widget.delete('1.0', 'end')
                 display_messages_from_database_only(take_history_from_database())
                 
-
                 running = False
                 progress(100,"saved to DB, done")
                         
-    
+        print("------END------")
                     
         
 
