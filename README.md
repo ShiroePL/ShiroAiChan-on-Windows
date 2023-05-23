@@ -58,6 +58,7 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
     * I think key word like : 'categorize' i want to update my manga list. 
     * And she will then use categorization for question, sent to API het category, then use appropriate function that fits category.
 * #### Uncategorize
+  * when i interrupt her TTS , picture with text bubble will appear near her head and say: Why are you interrupting me? :< 
   
 ## Links 
 
