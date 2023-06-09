@@ -14,7 +14,7 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
 ### GUI
 ![Screenshot](pictures/gui.png)
 
-## Some steps that she uses
+## What she uses?
 ### 1. Writing
 * She uses [ChatGPT API] to generate responses.
 
@@ -34,11 +34,6 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
 
 
 ### Instructions for me:
-
-
-
-
-### But how will it look from back side?
 
 
 
