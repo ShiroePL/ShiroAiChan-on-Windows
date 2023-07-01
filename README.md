@@ -37,7 +37,7 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
   * Tools for now are: 
     * show last 10 anime/manga list from Anilist for user. (also there are buttons for it)
     * you can tell her to update episodes/chapters, and she will send API to Anilist and update it for you :heart_eyes:
-    * search vector database
+    * search vector database. You can add full pdf books, or other documents, and ask questions to this documents, and she will take relevant parts from documents, and answer questions analyzing that parts.
   * to use tools, you can just start question with 'agent mode' or 'agent:' or check agent mode check.
 
 ### 6. Other functions:
