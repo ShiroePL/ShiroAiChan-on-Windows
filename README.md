@@ -14,25 +14,37 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
 ### GUI
 ![Screenshot](pictures/gui.png)
 
-## What she uses?
+## What she can do?
 ### 1. Writing
-* She uses [ChatGPT API] to generate responses.
+* She uses [ChatGPT API] to generate responses as AI neko girl.
 
 
 ### 2. Her memory :heart_eyes:
-* She uses MariaDB to store her memories. She can remember up to 4 last questions, more is too expensive using [ChatGPT API].
+* She uses MariaDB to store her memories. She can remember up to 4 last questions, more is too 
+* Vector database is in ChromaDB. It can store pdf's etc. It uses Huggingface Embeddings so it is free. GPU for adding to database, and then CPU for embedding questions.
 * Every 'persona' setting has its own table in database and can reset it with button.
+  
+### 3. Voice :microphone:
+*  Using Microsoft [Azure TTS], she can speak in cute voice.
+*  If she has too long answer, with button you can skip her talking.
 
-
-### 3. Give her voice! :microphone:
-*  Using Microsoft [Azure TTS], send API with generated prompts to get audio file.
-
-### 4. Communicate with her :speech_balloon:
+### 4. Communication with her :speech_balloon:
 * I am using open source Whisper Model from OpenAI to transcribe audio from microphone to text.
-* Also it's possible to just write in input and sent it to her.
+* Of corse, it's possible to just write in input and sent it to her.
 
+### 5. AI functions:
+* She uses langchain Agent to choose what Tool use.
+  * Tools for now are: 
+    * show last 10 anime/manga list from Anilist for user. (also there are buttons for it)
+    * you can tell her to update episodes/chapters, and she will send API to Anilist and update it for you :heart_eyes:
+    * search vector database
+  * to use tools, you can just start question with 'agent mode' or 'agent:' or check agent mode check.
 
+### 6. Other functions:
+* She has checkbox for random questions. If checked, she will use random timer and will be asking you questions to initialize conversation.
 
+### 7. Vtube Stuido (her look)
+* for now she can connect to Vtube Studio, and play animation. (but it is WIP, for now I tested with button that it works)
 ### Instructions for me:
 
 
@@ -40,18 +52,13 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
 #### To do but small steps:
 * #### Anilist
   * Maybe add pop up window that will show with better formatting the list
-* #### random questions
-  * I want to add random questions from shiro when I don't ask her questions
-    * I think i will add buttons on/off that will start timer ( I thin it doesn't needs to be in main function, just new function)
+
 * #### Memory
-  * make long therm memory function and think how it will be working 
+  * need to add tool for adding short info to vector DB
 * #### Look :star_struck:
   * I need to record some animations in [Vtube studio].
   * [to do next] And i will need to use some combination of Sentiment Analysis and key words combinations to get needed info to play appropriate animation. Azure or something.
-* #### Brain
-  * I want to implement classifications using chatGPT/google API that will analyze question and give category like: animelist, chat, song, etc ( for future use) 
-    * I think key word like : 'categorize' i want to update my manga list. 
-    * And she will then use categorization for question, sent to API het category, then use appropriate function that fits category.
+
 * #### Uncategorize
   * when i interrupt her TTS , picture with text bubble will appear near her head and say: Why are you interrupting me? :< 
   
