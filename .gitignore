@@ -18,7 +18,7 @@
 *.httr-oauth*
 #api klucze
 api_keys.py
-test_agent.py
+
 recording.wav
 # Private Node Modules
 node_modules/
