@@ -20,7 +20,7 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
 
 
 ### 2. Her memory :heart_eyes:
-* She uses MariaDB to store her memories. She can remember up to 4 last questions, more is too 
+* She uses MariaDB to store her memories. She can remember up to 4 last questions, more is more expensive.
 * Vector database is in ChromaDB. It can store pdf's etc. It uses Huggingface Embeddings so it is free. GPU for adding to database, and then CPU for embedding questions.
 * Every 'persona' setting has its own table in database and can reset it with button.
   
