@@ -18,6 +18,7 @@
 *.httr-oauth*
 #api klucze
 api_keys.py
+test_agent.py
 recording.wav
 # Private Node Modules
 node_modules/
@@ -34,6 +35,9 @@ sonar-project.properties
 *.tsv.gz
 *.xlsx
 .scannerwork
+
+langchain_database/db_na_large_viola1
+langchain_database/mydata
 
 # Mac/OSX
 .DS_Store
@@ -178,3 +182,4 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+test_agent.py
