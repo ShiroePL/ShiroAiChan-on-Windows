@@ -32,8 +32,8 @@ import anilist.anilist_api_requests as anilist_api_requests
 import re
 import timer
 import random
-from shiro_agent import CustomChatAgent
-
+from shiro_agent import CustomToolsAgent
+from langchain_database.answer_with_chromadb_huggingface_embedd import search_chroma_db
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
@@ -80,7 +80,23 @@ class ToolTip:
             self.tooltip = None
 
 
+def shiro_custom_tools_agent(query):
+    agent = CustomToolsAgent()
+    final_answer = agent.run(query)
+    #if final_answer == "Database":
+    # do something
+    #print("this is fiunal answer" + final_answer)
 
+    return final_answer
+
+def agent_shiro(query):
+    agent = CustomToolsAgent()
+    final_answer = agent.run(query)
+    
+    # do something
+    #print("this is fiunal answer" + final_answer)
+
+    return final_answer
 
 def transcribe_audio_question(filename):
     start_time = time.time()
@@ -135,14 +151,7 @@ def stop_audio():
     pygame.mixer.quit()
     print("Stopped Shiro :O")
             
-def agent_shiro(query):
-    agent = CustomChatAgent()
-    final_answer = agent.run(query)
-    
-    # do something
-    #print("this is fiunal answer" + final_answer)
 
-    return final_answer
 
 # ----------- START FUNCTIONS FOR THE arrows
 
@@ -237,6 +246,15 @@ def button_show_anilist(media_type: str): # THIS SHOULD JUST RUN VOICE CONTROL W
     anilist_mode = True # entering anime list mode for next question to update anime/manga
     content_type_mode = media_type # anime or manga
     progress(100,"showed, done")
+
+
+def exit_anilist_mode():
+    global anilist_mode
+    anilist_mode = False
+    print("--------------------")
+    print("exited anilist mode")
+    print("--------------------")
+    progress(100,"exited anilist mode")
 
 ######################################################################### RANDOM QUESTIONS FROM SHIRO ######################################################
 timer_running = False
@@ -333,8 +351,10 @@ def voice_control(input_text=None):
 
     name = table_name_input.get()  # takes name from input
 
-    tts_or_not = mute_or_unmute.get()
-    
+    tts_or_not = mute_or_unmute.get() # takes tts mode from checkbox
+    agent_mode_variable = agent_mode.get() # takes agent mode from checkbox
+
+
         # hold random questions if i am conversing so she will not ask me in the middle of conversation
     if talk_or_not.get() == "Yes":
         talk_or_not.set("No")
@@ -402,7 +422,7 @@ def voice_control(input_text=None):
 
                         # CHECK IF IT IS AGENT MODE @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         
-        if cleaned_question.startswith("agent:"):
+        if cleaned_question.startswith("agent:") or agent_mode_variable == "Yes" or cleaned_question.startswith("agent mode"):
             print("wejscie w if od agenta ")
             progress(10,"entering agent mode...")
             cleaned_question = cleaned_question.replace("agent:", "").strip()
@@ -421,12 +441,45 @@ def voice_control(input_text=None):
                 beep = "cute_beep"  # NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
                 play_audio_fn(beep)
                 sys.exit()
+
+
+            elif cleaned_question in ("stop:"):
+                exit_anilist_mode()
+                running = False
+
             # if cleaned_question in ("agent:"):
             #     cleaned_question = cleaned_question.replace("agent:", "").strip()
             #     agent_reply = agent_shiro(cleaned_question)
             # elif cleaned_question in ("please remember this"): # THIS IS MODULE TO SEND TEXT TO LONG TERM MEMORY
             #     # to database
-            elif "anime" in agent_reply or "manga" in agent_reply:
+           # elif anilist_mode.get() == "Yes" and content_type_mode_variable.get() == "Yes":
+            elif "database_search" in agent_reply:
+                answer = search_chroma_db(cleaned_question)
+
+                progress(60,"got answer")
+                print_response_label(answer)
+                
+                    # FOR ARROWS TO PREVIOUS ANSWERS
+                add_answer_to_history(answer)
+                current_answer_index = len(answer_history) - 1
+                    # END OF ARROWS TO PREVIOUS ANSWERS
+                if tts_or_not == "Yes": #IF YES THEN WITH VOICE
+                    request_voice.request_voice_fn("Here is your list. *smile*") #request Azure TTS to for answer
+                    progress(70,"got voice")
+                    play_audio_fn("response")
+
+                beep = "cute_beep" #END OF ANSWER
+                play_audio_fn(beep)
+                    #show history in text widget
+                
+                progress(90,"showing in text box...")
+                #show_history_from_db_widget.delete('1.0', 'end')
+                display_messages_from_database_only(take_history_from_database())
+
+                running = False
+                progress(100,"showed, done")
+                
+            elif "show_anime_list" in agent_reply or "show_manga_list" in agent_reply:
             
                 content_type = "anime" if "anime" in agent_reply else "manga"
                 #content_type = agent_reply
@@ -542,6 +595,7 @@ def voice_control(input_text=None):
                 running = False
                 anilist_mode = False
                 content_type_mode =""
+                progress(100,"exited animelist mode")
 
             else: # continue if user does not want to exit
                 
@@ -1073,6 +1127,24 @@ button_17.place(
 )
 tooltip = ToolTip(button_17, "It shows my recent manga read list")
 
+button_image_18 = PhotoImage(
+    file=relative_to_assets("stop_speaking.png"))
+button_18 = Button(
+    image=button_image_18,
+    borderwidth=0,
+    highlightthickness=0,
+    command=exit_anilist_mode,
+    relief="flat"
+)
+button_18.place(
+    x=12.0,
+    y=487.0,
+    width=42.0,
+    height=42.0
+)
+tooltip = ToolTip(button_18, "Exit anime list mode and return to chat mode OR WRITE stop: IN CHAT")
+
+
 entry_image_1 = PhotoImage(
     file=relative_to_assets("entry_1.png"))
 entry_bg_1 = canvas.create_image(
@@ -1157,6 +1229,15 @@ talk_or_not_yes = ttk.Radiobutton(root, text=" talkative", variable=talk_or_not,
 talk_or_not_no = ttk.Radiobutton(root, text=" sleeping...", variable=talk_or_not, value="No", style="Custom.TRadiobutton")
 talk_or_not_yes.place(x=499, y=350)
 talk_or_not_no.place(x=499, y=383)
+
+   # AGENT MODE OR NOT
+agent_mode = tk.StringVar()
+agent_mode.set("No")
+agent_mode.trace("w", on_talk_or_not_change) #this is looking for changes of state
+agent_mode_yes = ttk.Radiobutton(root, text=" agent mode ON", variable=agent_mode, value="Yes", style="Custom.TRadiobutton")
+agent_mode_no = ttk.Radiobutton(root, text=" normal mode", variable=agent_mode, value="No", style="Custom.TRadiobutton")
+agent_mode_yes.place(x=499, y=630)
+agent_mode_no.place(x=499, y=663)
 
 #OMG RADIO BUTTONS ENDDD--------------------------------------------------------------------------------------------------
 
