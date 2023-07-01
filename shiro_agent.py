@@ -8,7 +8,7 @@ import re
 from getpass import getpass
 import threading
 # moja testowa
-class CustomChatAgent:
+class CustomToolsAgent:
     def __init__(self):
         # Define your functions
         def test_query():
@@ -18,21 +18,28 @@ class CustomChatAgent:
         def test_query_thread():
             audio_thread = threading.Thread(target=test_query)
             audio_thread.start()
-        def fake_function():
+        def fake_function_anime():
+            return "show me my list of anime"
+        def fake_function_manga():
             return "show me my list of manga"
-        
         # Define which tools the agent can use to answer user queries
         tools = [
             Tool(
-                name="manga",
-                func=fake_function,
+                name="show_manga_list",
+                func=fake_function_manga,
                 description="useful for when you need to answer questions related to manga",
                 return_direct=True,
             ),
             Tool(
-                name="anime",
-                func=fake_function,
+                name="show_anime_list",
+                func=fake_function_anime,
                 description="useful for when you need to answer questions related to anime",
+                return_direct=True,
+            ),
+            Tool(
+                name="database_search",
+                func=fake_function_anime,
+                description="useful for when you need to answer questions related to database knowledge, like books or something",
                 return_direct=True,
             ),
         ]
