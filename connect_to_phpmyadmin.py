@@ -259,7 +259,7 @@ def update_character_description(name, new_description):
     else:
         return False # Return False if the update was not successful
 
-
+    
 def show_character_description(name):
     """Show character description from database."""
     # Connect to the database
