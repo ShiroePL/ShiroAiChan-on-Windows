@@ -34,6 +34,7 @@ import timer
 import random
 from shiro_agent import CustomToolsAgent
 from langchain_database.answer_with_chromadb_huggingface_embedd import search_chroma_db
+from langchain_database.test_wszystkiego import add_event_from_shiro
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
@@ -447,6 +448,45 @@ def voice_control(input_text=None):
                 exit_anilist_mode()
                 running = False
 
+            elif cleaned_question.lower().startswith("plan:"):
+                query = cleaned_question.replace("plan:", "").strip()
+
+                messages.append({"role": "user", "content": query})
+                    # use chain to add event to calendar
+                answer, prompt_tokens, completion_tokens, total_tokens, formatted_query_to_calendar = add_event_from_shiro(query)
+
+
+                progress(60,"event added")
+                print_response_label("I added event with this info: \n" + formatted_query_to_calendar)
+                
+                    # FOR ARROWS TO PREVIOUS ANSWERS
+                add_answer_to_history(answer)
+                current_answer_index = len(answer_history) - 1
+                    # END OF ARROWS TO PREVIOUS ANSWERS
+
+                if tts_or_not == "Yes": #IF YES THEN WITH VOICE
+                    request_voice.request_voice_fn("I added event. *smile*") #request Azure TTS to for answer
+                    progress(70,"got voice")
+                    play_audio_fn("response")
+
+                beep = "cute_beep" #END OF ANSWER
+                play_audio_fn(beep)
+                    #show history in text widget
+                
+                progress(90,"showing in text box...")
+                #show_history_from_db_widget.delete('1.0', 'end')
+                
+
+                connect_to_phpmyadmin.insert_message_to_database(name, query, answer, messages) #insert to Azure DB to user table    
+                connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
+                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to A DB with usage stats
+                
+                display_messages_from_database_only(take_history_from_database())
+                
+                progress(95,"addded tokens to db")
+                running = False
+                progress(100,"showed, done")    
+
             # if cleaned_question in ("agent:"):
             #     cleaned_question = cleaned_question.replace("agent:", "").strip()
             #     agent_reply = agent_shiro(cleaned_question)
@@ -478,7 +518,7 @@ def voice_control(input_text=None):
 
                 running = False
                 progress(100,"showed, done")
-                
+
             elif "show_anime_list" in agent_reply or "show_manga_list" in agent_reply:
             
                 content_type = "anime" if "anime" in agent_reply else "manga"
@@ -629,7 +669,7 @@ def voice_control(input_text=None):
                 progress(80,"saving to DB...")
                 connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
                 connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
-                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
+                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to A DB with usage stats
                 print("---------------------------------")
 
                 beep = "cute_beep" #END OF ANSWER
@@ -795,7 +835,13 @@ image_2 = canvas.create_image(
     image=image_image_2
 )
 
-
+image_image_dont_mute_me = PhotoImage(
+    file=relative_to_assets("dont_mute_me.png"))
+image_dont_mute_me = canvas.create_image(
+    965.0,
+    100.0,
+    image=image_image_dont_mute_me
+)
 
 
 canvas.create_text(
@@ -1074,7 +1120,7 @@ button_15.place(
 tooltip = ToolTip(button_15, "Send text message to Shiro")
 
 button_image_speaking = PhotoImage(
-    file=relative_to_assets("stop_speaking.png"))
+    file=relative_to_assets("button_19.png"))
 button_stop_speaking = Button(
     image=button_image_speaking,
     borderwidth=0,
@@ -1083,8 +1129,8 @@ button_stop_speaking = Button(
     relief="flat"
 )
 button_stop_speaking.place(
-    x=570.0,
-    y=536.0,
+    x=509.0,
+    y=459.0,
     width=42.0,
     height=42.0
 )
@@ -1121,14 +1167,14 @@ button_17 = Button(
 )
 button_17.place(
     x=66.0,
-    y=487.0,
+    y=491.0,
     width=42.0,
     height=42.0
 )
 tooltip = ToolTip(button_17, "It shows my recent manga read list")
 
 button_image_18 = PhotoImage(
-    file=relative_to_assets("stop_speaking.png"))
+    file=relative_to_assets("button_18.png"))
 button_18 = Button(
     image=button_image_18,
     borderwidth=0,
