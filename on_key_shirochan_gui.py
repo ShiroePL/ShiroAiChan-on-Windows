@@ -342,6 +342,92 @@ def ask_random_question(): # THIS SHIT IS FOR ASKING PROMPT
 
 ##################################################################################################################################
 
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!REPETITIVE PART OF VOICE CONTROL FUNCTIONS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+def repetitive_part_of_voice_control_functions_tokens(name, question, answer,messages, prompt_tokens, completion_tokens, total_tokens):
+    global tts_or_not
+    global agent_mode
+    tts_or_not = mute_or_unmute.get()
+
+    
+
+        # FOR ARROWS TO PREVIOUS ANSWERS
+    add_answer_to_history(answer)
+    current_answer_index = len(answer_history) - 1
+        # END OF ARROWS TO PREVIOUS ANSWERS
+
+    if tts_or_not == "Yes": #IF YES THEN WITH VOICE
+        request_voice.request_voice_fn("I added event. *smile*") #request Azure TTS to for answer
+        progress(70,"got voice")
+        play_audio_fn("response")
+
+    beep = "cute_beep" #END OF ANSWER
+    play_audio_fn(beep)
+        #show history in text widget
+    
+    progress(90,"showing in text box...")
+    #show_history_from_db_widget.delete('1.0', 'end')
+    
+
+    connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
+    connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
+    connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to A DB with usage stats
+    
+    display_messages_from_database_only(take_history_from_database())
+
+    progress(95,"addded tokens to db")
+    
+
+def repetitive_part_of_voice_control_functions(name, question, answer,messages):
+    global tts_or_not
+    global agent_mode
+    tts_or_not = mute_or_unmute.get()
+
+    
+
+        # FOR ARROWS TO PREVIOUS ANSWERS
+    add_answer_to_history(answer)
+    current_answer_index = len(answer_history) - 1
+        # END OF ARROWS TO PREVIOUS ANSWERS
+
+    if tts_or_not == "Yes": #IF YES THEN WITH VOICE
+        request_voice.request_voice_fn("I added event. *smile*") #request Azure TTS to for answer
+        progress(70,"got voice")
+        play_audio_fn("response")
+
+    beep = "cute_beep" #END OF ANSWER
+    play_audio_fn(beep)
+        #show history in text widget
+    
+    progress(90,"showing in text box...")
+    #show_history_from_db_widget.delete('1.0', 'end')
+    
+
+    connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
+    connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
+    
+    
+    display_messages_from_database_only(take_history_from_database())
+
+    progress(95,"addded tokens to db")
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!END OF REPETITIVE PART OF FUNCTIONS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 def voice_control(input_text=None):
     global stop_listening_flag
     global running
@@ -421,8 +507,7 @@ def voice_control(input_text=None):
 
         cleaned_question = question.translate(str.maketrans("", "", punctuation_without_colon)).strip().lower()
 
-                        # CHECK IF IT IS AGENT MODE @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        
+                # CHECK IF IT IS AGENT MODE @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if cleaned_question.startswith("agent:") or agent_mode_variable == "Yes" or cleaned_question.startswith("agent mode"):
             print("wejscie w if od agenta ")
             progress(10,"entering agent mode...")
@@ -448,7 +533,7 @@ def voice_control(input_text=None):
                 exit_anilist_mode()
                 running = False
 
-            elif cleaned_question.lower().startswith("plan:"):
+            elif cleaned_question.lower().startswith("plan:") or "add_event_to_calendar" in agent_reply:
                 query = cleaned_question.replace("plan:", "").strip()
 
                 messages.append({"role": "user", "content": query})
@@ -459,31 +544,9 @@ def voice_control(input_text=None):
                 progress(60,"event added")
                 print_response_label("I added event with this info: \n" + formatted_query_to_calendar)
                 
-                    # FOR ARROWS TO PREVIOUS ANSWERS
-                add_answer_to_history(answer)
-                current_answer_index = len(answer_history) - 1
-                    # END OF ARROWS TO PREVIOUS ANSWERS
-
-                if tts_or_not == "Yes": #IF YES THEN WITH VOICE
-                    request_voice.request_voice_fn("I added event. *smile*") #request Azure TTS to for answer
-                    progress(70,"got voice")
-                    play_audio_fn("response")
-
-                beep = "cute_beep" #END OF ANSWER
-                play_audio_fn(beep)
-                    #show history in text widget
-                
-                progress(90,"showing in text box...")
-                #show_history_from_db_widget.delete('1.0', 'end')
-                
-
-                connect_to_phpmyadmin.insert_message_to_database(name, query, answer, messages) #insert to Azure DB to user table    
-                connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
-                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to A DB with usage stats
-                
-                display_messages_from_database_only(take_history_from_database())
-                
-                progress(95,"addded tokens to db")
+ 
+                repetitive_part_of_voice_control_functions_tokens(name, query, answer, messages, prompt_tokens, completion_tokens, total_tokens)
+               
                 running = False
                 progress(100,"showed, done")    
 
@@ -493,28 +556,17 @@ def voice_control(input_text=None):
             # elif cleaned_question in ("please remember this"): # THIS IS MODULE TO SEND TEXT TO LONG TERM MEMORY
             #     # to database
            # elif anilist_mode.get() == "Yes" and content_type_mode_variable.get() == "Yes":
-            elif "database_search" in agent_reply:
-                answer = search_chroma_db(cleaned_question)
+            elif cleaned_question.lower().startswith("db:") or "database_search" in agent_reply:
+                query = cleaned_question.replace("db:", "").strip()
+                messages.append({"role": "user", "content": query})
+                answer = search_chroma_db(query)
+                
 
                 progress(60,"got answer")
                 print_response_label(answer)
                 
-                    # FOR ARROWS TO PREVIOUS ANSWERS
-                add_answer_to_history(answer)
-                current_answer_index = len(answer_history) - 1
-                    # END OF ARROWS TO PREVIOUS ANSWERS
-                if tts_or_not == "Yes": #IF YES THEN WITH VOICE
-                    request_voice.request_voice_fn("Here is your list. *smile*") #request Azure TTS to for answer
-                    progress(70,"got voice")
-                    play_audio_fn("response")
-
-                beep = "cute_beep" #END OF ANSWER
-                play_audio_fn(beep)
-                    #show history in text widget
+                repetitive_part_of_voice_control_functions(name, cleaned_question, answer, messages)
                 
-                progress(90,"showing in text box...")
-                #show_history_from_db_widget.delete('1.0', 'end')
-                display_messages_from_database_only(take_history_from_database())
 
                 running = False
                 progress(100,"showed, done")
@@ -667,7 +719,7 @@ def voice_control(input_text=None):
                 if profanity.contains_profanity(answer) == True:
                     answer = profanity.censor(answer)                    
                 progress(80,"saving to DB...")
-                connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
+                connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to DB to user table    
                 connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
                 connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to A DB with usage stats
                 print("---------------------------------")
