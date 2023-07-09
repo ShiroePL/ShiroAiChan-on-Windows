@@ -39,8 +39,9 @@ from langchain_database.test_wszystkiego import add_event_from_shiro
 
 import connect_to_phpmyadmin
 import shiro_on_android
+content_type_mode =""
 app = FastAPI()
-
+anilist_mode = False
 
 
 class QuestionWithUser(BaseModel):
@@ -101,8 +102,9 @@ def main_function(question, checkbox, name="normal"):
     connect_to_phpmyadmin.check_user_in_database(name)
     messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
     global anilist_mode
+    
     global content_type_mode
-
+    global content_type_mode
     
     # Get all punctuation but leave colon ':'
     punctuation_without_colon = "".join([ch for ch in string.punctuation if ch != ":"])
@@ -149,7 +151,8 @@ def main_function(question, checkbox, name="normal"):
         query = cleaned_question.replace("db:", "").strip()
         messages.append({"role": "user", "content": query})
         answer = search_chroma_db(query)
-        
+
+        request_voice.request_voice_fn(answer)
         print("got answer from db" + answer)
         
         connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
@@ -171,22 +174,73 @@ def main_function(question, checkbox, name="normal"):
         answer = "Okay, I will remember it, Madrus. I'm waiting for your next question. Give it to me nyaa."
         answer_to_app = f"Here is your list of most recent anime/manga.{list_content}" # this goes 
 
-      
+        print("requested list: \n" + answer_to_app)
         request_voice.request_voice_fn("Here is your list. *smile*") #request Azure TTS to for answer
            
         
         connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
         print("---------------------------------")
 
-        
+        content_type_mode = content_type # i need this so in next question i know what to update (anime or manga)
+        anilist_mode = True # entering anilist mode for next question to update anime/manga
         return answer_to_app
-        #content_type_mode = content_type # i need this so in next question i know what to update (anime or manga)
-        
-        #anilist_mode = True # entering anilist mode for next question to update anime/manga
-
         
 
+        
+    elif anilist_mode: # she is in animelist mode, so she rebebmers list i gave her 
+        answer_to_app = "exited animelist mode"
+                    # make shiro find me id of anime/manga
+        if not question.lower().startswith("stop:"): # this is so if i showed list but i DON'T want to update it
+            
+            content_type = content_type_mode   
+            chapters_or_episodes = "episodes" if content_type == "anime" else "chapters"
 
+            end_question = "I would like you to answer me giving me ONLY THIS: ' title:<title>,id:<id>,"
+            extra = " episodes:<episodes>'. Nothing more." if content_type == "anime" else " chapters:<chapters>'. Nothing more."
+            question = f"Madrus: {question}. {end_question}{extra}"
+
+            #print("question from user:" + question)
+            messages.append({"role": "user", "content": question})
+            
+            # send to open ai for answer
+           
+            answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+            print("answer from OpenAI: " + answer)
+                # START find ID and episodes number of updated anime
+            # The regex pattern             
+            pattern = r"id:\s*(\d+),\s*episodes:\s*(\d+)" if content_type == "anime" else r"id:\s*(\d+),\s*chapters:\s*(\d+)"
+ 
+            # Use re.search to find the pattern in the text
+            match = re.search(pattern, answer)
+            
+
+            if match:
+                # match.group(1) contains the id, match.group(2) contains the episodes number
+                updated_id = match.group(1)
+                
+                updated_info = match.group(2)
+                print(f"reformatted request: id:{updated_id}, type:{content_type}: ep/chap{updated_info}")
+
+                anilist_api_requests.change_progress(updated_id, updated_info,content_type)
+
+                request_voice.request_voice_fn(f"Done, updated it to {updated_info} {chapters_or_episodes}")
+
+                    # Save to database 
+                connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
+                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
+                print("---------saved to db-------------")
+                answer_to_app = f"Done, updated it to {updated_info} {chapters_or_episodes}"
+            else:
+                print("No match found")
+                request_voice.request_voice_fn("Sorry, I couldn't understand your request.")
+                answer_to_app = "Sorry, I couldn't understand your request."
+            # END find ID and episodes number of updated anime/manga
+
+        anilist_mode = False
+        content_type_mode =""
+        
+        print("exited animelist mode")
+        return answer_to_app
 
     else: # normal question and answer mode
         # to database
