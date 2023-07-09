@@ -62,7 +62,7 @@ My personal Ai assistant ShiroAi-chan. I wanted to create AI girl from a long ti
 
 * #### Uncategorize
   * when i interrupt her TTS , picture with text bubble will appear near her head and say: Why are you interrupting me? :< 
-  
+  * retrieve information about events for specified days.! THIS NEEDS TO BE ADDED!!
 ## Links 
 
 [ChatGPT API] : https://openai.com/blog/introducing-chatgpt-and-whisper-apis
