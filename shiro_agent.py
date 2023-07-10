@@ -42,6 +42,18 @@ class CustomToolsAgent:
                 description="useful for when you need to answer questions related to database knowledge, like books or something",
                 return_direct=True,
             ),
+            Tool(
+                name="add_event_to_calendar",
+                func=fake_function_anime,
+                description="useful for when you need to answer questions related to adding event to calendar",
+                return_direct=True,
+            ),
+            Tool(
+                name="retrieve_event_from_calendar",
+                func=fake_function_anime,
+                description="useful for when you need to answer questions related to retrieving event from calendar(when user asks you about schedule for the day)",
+                return_direct=True,
+            ),
         ]
 
         # Set up the base template
