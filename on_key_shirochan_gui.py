@@ -34,7 +34,7 @@ import timer
 import random
 from shiro_agent import CustomToolsAgent
 from langchain_database.answer_with_chromadb_huggingface_embedd import search_chroma_db
-from langchain_database.test_wszystkiego import add_event_from_shiro
+from langchain_database.test_wszystkiego import add_event_from_shiro, retrieve_plans_for_days
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
@@ -201,7 +201,7 @@ def display_messages_from_database_only(messages):
         content = message['content']
         show_history_from_db_widget.insert(tk.END, f"Role: {role}\n", 'center')
         show_history_from_db_widget.tag_configure('center', justify='center')
-        show_history_from_db_widget.insert(tk.END, f"{content}\n\n", 'center')
+        show_history_from_db_widget.insert(tk.END, f"{content}", 'center')
         
     show_history_from_db_widget.see('end')
 
@@ -533,29 +533,54 @@ def voice_control(input_text=None):
                 exit_anilist_mode()
                 running = False
 
-            elif cleaned_question.lower().startswith("plan:") or "add_event_to_calendar" in agent_reply:
+            elif cleaned_question.lower().startswith("plan:") or "add_event_to_calendar" in agent_reply or "retrieve_event_from_calendar" in agent_reply:
                 query = cleaned_question.replace("plan:", "").strip()
 
                 messages.append({"role": "user", "content": query})
-                    # use chain to add event to calendar
-                answer, prompt_tokens, completion_tokens, total_tokens, formatted_query_to_calendar = add_event_from_shiro(query)
 
+                
+                # use chain to add event to calendar
+                answer, prompt_tokens, completion_tokens, total_tokens, formatted_query_to_calendar = add_event_from_shiro(query)
 
                 progress(60,"event added")
                 print_response_label("I added event with this info: \n" + formatted_query_to_calendar)
-                
- 
+
                 repetitive_part_of_voice_control_functions_tokens(name, query, answer, messages, prompt_tokens, completion_tokens, total_tokens)
-               
+        
                 running = False
                 progress(100,"showed, done")    
 
-            # if cleaned_question in ("agent:"):
-            #     cleaned_question = cleaned_question.replace("agent:", "").strip()
-            #     agent_reply = agent_shiro(cleaned_question)
-            # elif cleaned_question in ("please remember this"): # THIS IS MODULE TO SEND TEXT TO LONG TERM MEMORY
-            #     # to database
-           # elif anilist_mode.get() == "Yes" and content_type_mode_variable.get() == "Yes":
+            elif cleaned_question.lower().startswith("schedule:") or "retrieve_event_from_calendar" in agent_reply:
+                query = cleaned_question.replace("schedule:", "").strip()
+                query = "Madrus: " + query
+                messages.append({"role": "user", "content": query})
+
+                
+                # use chain to add event to calendar
+                answer, prompt_tokens, completion_tokens, total_tokens = retrieve_plans_for_days(query)
+
+                progress(60,"got schedule, adding personality...")
+
+                    # sending schedule to shiro to add personality to raw schedule
+                question = f"""can you summarize my plans ? what i have for that days. tell me like assistant tells plans for her boss when he has little time to listen. In 'your words', not just plain date's.  here is my plans: '{answer}"""
+                
+                messages.append({"role": "user", "content": question})
+                        
+                print("messages: " + str(messages))
+                personalized_answer, prompt_tokens2, completion_tokens2, total_tokens2 = chatgpt_api.send_to_openai(messages)
+
+                prompt_tokens = prompt_tokens + prompt_tokens2
+                completion_tokens = completion_tokens + completion_tokens2
+                total_tokens = total_tokens + total_tokens2
+
+                print_response_label(personalized_answer)
+                print("answer: " + answer)
+                repetitive_part_of_voice_control_functions_tokens(name, query, personalized_answer, messages, prompt_tokens, completion_tokens, total_tokens)
+        
+                running = False
+                progress(100,"showed, done")    
+
+
             elif cleaned_question.lower().startswith("db:") or "database_search" in agent_reply:
                 query = cleaned_question.replace("db:", "").strip()
                 messages.append({"role": "user", "content": query})
@@ -634,6 +659,9 @@ def voice_control(input_text=None):
                         # START find ID and episodes number of updated anime
                     # The regex pattern             
                     pattern = r"id:(\d+), episodes:(\d+)" if content_type == "anime" else r"id:(\d+), chapters:(\d+)" 
+                        #this should be better pattern, need to test it 
+                    #pattern = r"id:\s*(\d+),\s*episodes:\s*(\d+)" if content_type == "anime" else r"id:\s*(\d+),\s*chapters:\s*(\d+)"
+
                     # Use re.search to find the pattern in the text
                     match = re.search(pattern, answer)
 
@@ -1359,7 +1387,7 @@ filled_progress = canvas.create_image(0, 0, anchor=tk.NW)
 
 
 response_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
-                      bg='black', fg='#A8E1F6', font=(font_family, 14),  bd=0)
+                      bg='black', fg='#A8E1F6', font=(font_family, 19 * -1),  bd=0)
 response_widget.place(x=66, y=252, width=428, height=226)
 
 

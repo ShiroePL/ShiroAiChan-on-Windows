@@ -33,9 +33,10 @@ def chatgpt_calendar_planer(query):
 
 def chatgpt_calendar_schedule(query):
     template = f"""
-            I will give you a sentence about retrieving a schedule from a calendar for a specific date, along with a current timestamp (example: 2023-07-04 16:11:15.296367+00:00). I want you to extract the date for which the schedule needs to be retrieved.
-            I want you to give me the answer in this EXACT FORMAT: date: date
-            Information about date: The date is in EXACT FORMAT: YYYY-MM-DD ALWAYS INCLUDE YEAR, MONTH, AND DAY. Do not include the time in this case, as we are interested in the full day schedule.
+            I will give you a sentence about retrieving a schedule from a calendar for a specific date, along with a current timestamp (example: 2023-07-04 16:11:15.296367+00:00). I want you to extract start day and end day for which the schedule needs to be retrieved. When I mention "this week", consider it as the period from the current date to the end of the week (Sunday).
+            I want you to give me the answer in this EXACT FORMAT: start_date: start_date, end_date: end_date.
+            Information about start_date: The start_date in EXACT FORMAT: YYYY-MM-DD ALWAYS INCLUDE YEAR, MONTH, AND DAY. Do not include the time in this case, as we are interested in the full day schedule.
+            Information about end_date: The end_date in EXACT FORMAT: YYYY-MM-DD ALWAYS INCLUDE YEAR, MONTH, AND DAY. End date is last day for what user requested. 'this week' means last day is SUNDAY. Do not include the time in this case. 'TODAY' means end_date is same as start_date.
             GIVE ME ONLY INFORMATION THAT I GAVE YOU IN THE FINAL ANSWER FORMAT, NOTHING MORE.
             Begin!
             Question: {query}
@@ -44,6 +45,7 @@ def chatgpt_calendar_schedule(query):
 
     completion = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
+    #model="gpt-4",
     #temperature = 1,
     messages=[
             {"role": "system", "content": "You are a helpful assistant that do exactly what is it instructed to do. Complete the objective as best you can. Follow the exact format that is given to you."},
@@ -58,11 +60,10 @@ def chatgpt_calendar_schedule(query):
     return answer, prompt_tokens, completion_tokens, total_tokens
   
 
-
 if __name__ == "__main__":
     pass
 
-# answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_calendar_planer("remember that 13 July  i will be going on vacations for 5 days long, flying to tokyo .plane is at 8:00. today is : 2023-07-04 16:11:15.296367+00:00")
+# answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_calendar_schedule("what plans i have for today? today is : 2023-07-11 16:11:15.296367+00:00")
 # print(answer)
 # print(prompt_tokens)
 # print(completion_tokens)

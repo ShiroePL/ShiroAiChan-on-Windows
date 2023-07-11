@@ -1,10 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import caldav
 from icalendar import Calendar, Event
-from . import private_variables
+from . import private_variables #this works if function is used from shiros functions
+#import private_variables # this works if function is used from this file
 from datetime import datetime
 from pytz import utc
 import re
+
 
 # replace these with your Nextcloud server details
 url = private_variables.nextcloud_url
@@ -12,13 +14,13 @@ username = private_variables.username
 password = private_variables.password
 
 
-def add_event_to_calendar(query):
+def add_event_to_calendar(answer):
     # initialize the client
     client = caldav.DAVClient(url=url, username=username, password=password)
     # get the principal
     principal = client.principal()
 
-    answer = query
+    
 
     summary_match = re.search(r'(?<=summary: ).*?(?=description:|$)', answer, re.DOTALL)
     summary = summary_match.group().strip() if summary_match else "None"
@@ -73,10 +75,26 @@ def add_event_to_calendar(query):
         print("event added to calendar")
     return description, summary, dtstart, dtend
 
-def get_shedule_for_day(day:str):
-    """day format of string = "DD-MM-YY"""
-# replace these with your Nextcloud server details
+def get_schedule_for_day(answer_from_chatgpt):
+    """get schedule for specified days"""
+
+
+    #extract dates from answer
+    def extract_dates(text):
+        matches = re.findall(r'\d{4}-\d{2}-\d{2}', text)
+        return [datetime.strptime(match, '%Y-%m-%d') for match in matches]
     
+    dates = extract_dates(answer_from_chatgpt)
+
+    # Accessing dates
+    start_date = dates[0]
+    end_date = dates[1]
+
+    print("Start Date:", start_date)
+    print("End Date:", end_date)
+
+
+
     # initialize the client
     client = caldav.DAVClient(url=url, username=username, password=password)
 
@@ -89,20 +107,27 @@ def get_shedule_for_day(day:str):
         calendar = calendars[0]
         #testing
         # specify the date you are interested in
-        date = datetime(2023, 7, 5)
-        
+        # date = datetime(2023, 7, 11)
+        # end_date = datetime(2023, 7, 16)
         # get the events for that date
-        results = calendar.date_search(start=date, end=date + timedelta(days=1))
-
+        results = calendar.date_search(start=start_date, end=end_date + timedelta(days=1)) #timedelta is because without it, it gives one day less, it does not include the end date
+        formatted_result = ""
         # print event details
         for event in results:
             ical_event = Calendar.from_ical(event.data)
             for component in ical_event.walk():
                 if component.name == "VEVENT":
-                    print("Summary: ", component.get('summary'))
-                    print("Starts at: ", component.get('dtstart').dt)
-                    print("Ends at: ", component.get('dtend').dt)
-                    print("Description: ", component.get('description'))
+                    formatted_result += "Summary: " + str(component.get('summary')) + "\n"
+                    formatted_result += "Starts at: " + str(component.get('dtstart').dt) + "\n"
+                    formatted_result += "Ends at: " + str(component.get('dtend').dt) + "\n"
+                    formatted_result += "Description: " + str(component.get('description')) + "\n\n"
+
+        
+        
+    return formatted_result        
 
 if __name__ == "__main__":
+    # start_date = datetime(2023, 7, 11)
+    # end_date = datetime(2023, 7, 12)
+    # get_shedule_for_day(start_date, end_date)
     pass
