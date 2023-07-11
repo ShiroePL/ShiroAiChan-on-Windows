@@ -5,6 +5,7 @@ from . import private_variables
 from datetime import datetime
 from pytz import utc
 import re
+
 # replace these with your Nextcloud server details
 url = private_variables.nextcloud_url
 username = private_variables.username
@@ -19,16 +20,13 @@ def add_event_to_calendar(query):
 
     answer = query
 
-    # summary = re.search(r'summary: (.*)', answer).group(1)
-    # description = re.search(r'description: (.*)', answer).group(1)
-    # dtstart = datetime.strptime(re.search(r'date: (.*)', answer).group(1), '%Y-%m-%d %H:%M:%S')
-    # dtend = datetime.strptime(re.search(r'end_date: (.*)', answer).group(1), '%Y-%m-%d %H:%M:%S')
-
     summary_match = re.search(r'(?<=summary: ).*?(?=description:|$)', answer, re.DOTALL)
-    summary = summary_match.group().strip() if summary_match else None
+    summary = summary_match.group().strip() if summary_match else "None"
+    summary = re.sub(r'[.,]$', '', summary) # deletes . or , at the end of string
 
     description_match = re.search(r'(?<=description: ).*?(?=date:|$)', answer, re.DOTALL)
-    description = description_match.group().strip() if description_match else None
+    description = description_match.group().strip() if description_match else "None"
+    description = re.sub(r'[.,]$', '', description) # deletes . or , at the end of string
 
     dtstart_match = re.search(r'(?<=date: ).*?(?=end_date:|$)', answer, re.DOTALL)
     if dtstart_match:
@@ -41,8 +39,6 @@ def add_event_to_calendar(query):
         dtend_str = dtend_match.group().strip()
         dtend_str = dtend_str.rstrip(',')  # remove comma, if present
         dtend = datetime.strptime(dtend_str, '%Y-%m-%d %H:%M:%S')
-
-
 
 
     print("-----formated event info-----")
@@ -67,14 +63,9 @@ def add_event_to_calendar(query):
         event_event.add('summary', summary)
         event_event.add('dtstart', dtstart)
         event_event.add('dtend', dtend)
+        #if description != "None":
         event_event.add('description', description)
-        # event_event.add('summary', 'test summary')
-        # event_event.add('dtstart', datetime(2023, 7, 5, 11, 0, 0))
-        # event_event.add('dtend', datetime(2023, 7, 5, 16, 10, 0))
-        # event_event.add('description', 'This is a description of the event.')
-        event_event.add('dtstamp', datetime.now(utc))
-        
-        
+        event_event.add('dtstamp', datetime.now(utc)) 
         event.add_component(event_event)
         
         # add the event to the calendar
@@ -82,12 +73,10 @@ def add_event_to_calendar(query):
         print("event added to calendar")
     return description, summary, dtstart, dtend
 
-
 def get_shedule_for_day(day:str):
     """day format of string = "DD-MM-YY"""
 # replace these with your Nextcloud server details
     
-
     # initialize the client
     client = caldav.DAVClient(url=url, username=username, password=password)
 
@@ -98,7 +87,7 @@ def get_shedule_for_day(day:str):
     calendars = principal.calendars()
     if calendars:
         calendar = calendars[0]
-        
+        #testing
         # specify the date you are interested in
         date = datetime(2023, 7, 5)
         
