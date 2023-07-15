@@ -4,10 +4,8 @@ from icalendar import Calendar, Event
 from . import private_variables #this works if function is used from shiros functions
 #import private_variables # this works if function is used from this file
 from datetime import datetime
-from pytz import utc
 import re
-
-
+from pytz import utc
 # replace these with your Nextcloud server details
 url = private_variables.nextcloud_url
 username = private_variables.username
@@ -77,8 +75,6 @@ def add_event_to_calendar(answer):
 
 def get_schedule_for_day(answer_from_chatgpt):
     """get schedule for specified days"""
-
-
     #extract dates from answer
     def extract_dates(text):
         matches = re.findall(r'\d{4}-\d{2}-\d{2}', text)
@@ -93,8 +89,6 @@ def get_schedule_for_day(answer_from_chatgpt):
     print("Start Date:", start_date)
     print("End Date:", end_date)
 
-
-
     # initialize the client
     client = caldav.DAVClient(url=url, username=username, password=password)
 
@@ -105,14 +99,9 @@ def get_schedule_for_day(answer_from_chatgpt):
     calendars = principal.calendars()
     if calendars:
         calendar = calendars[0]
-        #testing
-        # specify the date you are interested in
-        # date = datetime(2023, 7, 11)
-        # end_date = datetime(2023, 7, 16)
-        # get the events for that date
         results = calendar.date_search(start=start_date, end=end_date + timedelta(days=1)) #timedelta is because without it, it gives one day less, it does not include the end date
         formatted_result = ""
-        # print event details
+         # print event details
         for event in results:
             ical_event = Calendar.from_ical(event.data)
             for component in ical_event.walk():
@@ -121,13 +110,11 @@ def get_schedule_for_day(answer_from_chatgpt):
                     formatted_result += "Starts at: " + str(component.get('dtstart').dt) + "\n"
                     formatted_result += "Ends at: " + str(component.get('dtend').dt) + "\n"
                     formatted_result += "Description: " + str(component.get('description')) + "\n\n"
-
-        
-        
-    return formatted_result        
-
+    return formatted_result
+   
 if __name__ == "__main__":
-    # start_date = datetime(2023, 7, 11)
-    # end_date = datetime(2023, 7, 12)
-    # get_shedule_for_day(start_date, end_date)
+    #start_date = datetime(2023, 7, 11)                 
+    #end_date = datetime(2023, 7, 16)
+    # formatted_result = get_schedule_for_day("start_date: 2023-07-11, end_date: 2023-07-12")
+    # print(formatted_result)
     pass
