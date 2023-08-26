@@ -36,7 +36,7 @@ while True:
     analyzing_fn(prompt, keywords)
 
 
-    
+
 
 
 #keywords = ["i" , "cry", "she", "he", "they", "we"]
