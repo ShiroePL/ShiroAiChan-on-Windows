@@ -14,19 +14,20 @@ from langchain.embeddings import HuggingFaceInstructEmbeddings
 def search_chroma_db(query):
     instructor_embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-large", 
                                                         model_kwargs={"device": "cpu"})
-    persist_directory = './langchain_database/db_na_large_viola1'
+    persist_directory = './langchain_database/db_shiro'
     embedding = instructor_embeddings
 
     vectordb2 = Chroma(persist_directory=persist_directory, 
                     embedding_function=embedding,
+                    collection_name="personal"
                     )
 
-    retriever = vectordb2.as_retriever(search_kwargs={"k": 7})
-
+    retriever = vectordb2.as_retriever(search_kwargs={"k": 4})
+    
     # Set up the turbo LLM
     turbo_llm = ChatOpenAI(
         temperature=1,
-        model_name='gpt-3.5-turbo-16k'
+        model_name='gpt-3.5-turbo'
     )
 
     # create the chain to answer questions 
@@ -39,13 +40,20 @@ def search_chroma_db(query):
     def process_llm_response(llm_response):
         #print(llm_response['result'])
         #print('full llm response:' + str(llm_response))
-        print('\n\nSources:')
-        for source in llm_response["source_documents"]:
-            print(source.metadata['source'])
+        #print('\n\nSources:')
+        # for source in llm_response["source_documents"]:
+        #     print(source.metadata['source'])
+        
         return llm_response['result']    
     llm_response = qa_chain(query)
+    print(str(llm_response))
     answer_from_database = process_llm_response(llm_response)
     #print(answer_from_database)
     return answer_from_database
 
-#search_chroma_db("Why Viola had stomach ache? What did mr fisalis to ease her pain?")
+# answer = search_chroma_db("what plants i like?")
+
+# print(answer)
+
+if __name__ == "__main__":
+    pass
