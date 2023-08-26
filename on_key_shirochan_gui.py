@@ -27,6 +27,7 @@ import random
 from shiro_agent import CustomToolsAgent
 from langchain_database.answer_with_chromadb_huggingface_embedd import search_chroma_db
 from langchain_database.test_wszystkiego import add_event_from_shiro, retrieve_plans_for_days
+from home_assistant import ha_api_requests
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
@@ -450,7 +451,30 @@ def voice_control(input_text=None):
                 repetitive_part_of_voice_control_functions_tokens(name, query, personalized_answer, messages, prompt_tokens, completion_tokens, total_tokens)
         
                 running = False
-                progress(100,"showed, done")    
+                progress(100,"showed, done")
+
+            elif cleaned_question.lower().startswith("ha:") or "home_assistant" in agent_reply:
+                query = cleaned_question.replace("ha:", "").strip()
+                
+
+                    # use function chain to add event to calendar
+                answer_from_ha = ha_api_requests.room_temp()
+                print("answer from api: " + answer_from_ha)
+                progress(60,"got temperature, adding personality...")
+                query2 = "Madrus: " + query + ". shiro: Retriving informations from her sensors... Done! Info from sensors:" + answer_from_ha + "°C. Weather outside: 25°C.| (please say °C in your answer) | Shiro:"
+                messages.append({"role": "user", "content": query2})
+                
+                print("messages: " + str(messages))
+
+                    # add personality to answer
+                personalized_answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages)
+
+                print_response_label(personalized_answer)
+                
+                repetitive_part_of_voice_control_functions_tokens(name, query, personalized_answer, messages, prompt_tokens, completion_tokens, total_tokens)
+        
+                running = False
+                progress(100,"showed, done")          
 
             elif cleaned_question.lower().startswith("db:") or "database_search" in agent_reply:
                 query = cleaned_question.replace("db:", "").strip()
@@ -464,6 +488,20 @@ def voice_control(input_text=None):
                 
                 running = False
                 progress(100,"showed, done")
+
+            # elif cleaned_question.lower().startswith("timer:") or "set_timer" in agent_reply:
+            #     query = cleaned_question.replace("timer:", "").strip()
+            #     messages.append({"role": "user", "content": query})
+                
+            #     # tu timer = costam
+                
+            #     progress(60,"got answer")
+            #     print_response_label(answer)
+                
+            #     repetitive_part_of_voice_control_functions(name, cleaned_question, answer, messages)
+                
+            #     running = False
+            #     progress(100,"showed, done")
 
             elif "show_anime_list" in agent_reply or "show_manga_list" in agent_reply or "showmangalist" in cleaned_question or "showanimelist" in cleaned_question:
                 if agent_reply == "":
