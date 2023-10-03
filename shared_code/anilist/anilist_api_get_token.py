@@ -1,6 +1,9 @@
 import requests
 import webbrowser
 from api_keys import client_id, client_secret
+from .. import api_keys
+client_id = api_keys.client_id
+client_secret = api_keys.client_secret
 
 # this needs to be done by hand, and i cant get access token from api, it is on browser
 

@@ -1,15 +1,15 @@
 from datetime import datetime, timedelta
 import caldav
 from icalendar import Calendar, Event
-from . import private_variables #this works if function is used from shiros functions
+from .. import api_keys #this works if function is used from shiros functions
 #import private_variables # this works if function is used from this file
 from datetime import datetime
 import re
 from pytz import utc
 # replace these with your Nextcloud server details
-url = private_variables.nextcloud_url
-username = private_variables.username
-password = private_variables.password
+url = api_keys.nextcloud_url
+username = api_keys.calendar_username
+password = api_keys.calendar_password
 
 
 def add_event_to_calendar(answer):
