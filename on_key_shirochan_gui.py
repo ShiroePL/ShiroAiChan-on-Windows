@@ -14,7 +14,7 @@ import pyaudio
 import connect_to_phpmyadmin
 import time
 from better_profanity import profanity
-import chatgpt_api
+import shared_code.chatgpt_api
 import request_voice_tts as request_voice
 import sys
 from db_config import conn
@@ -30,11 +30,13 @@ from tkinter.font import Font
 import pygame
 import shared_code.anilist.anilist_api_requests as anilist_api_requests
 import re
-import timer
+from datetime import datetime
 import random
-from shiro_agent import CustomToolsAgent
+
+from shared_code.shiro_agent import CustomToolsAgent
 from langchain_database.answer_with_chromadb_huggingface_embedd import search_chroma_db
 from shared_code.calendar_functions.test_wszystkiego import add_event_from_shiro, retrieve_plans_for_days
+from shared_code.home_assistant import ha_api_requests
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
@@ -303,7 +305,7 @@ def ask_random_question(): # THIS SHIT IS FOR ASKING PROMPT
         # send to open ai for answer
     progress(40,"sending to openAI...") 
 #print("messages: " + str(messages))
-    answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+    answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages) 
     print_response_label(answer)
 
     # FOR ARROWS TO PREVIOUS ANSWERS
@@ -550,12 +552,63 @@ def voice_control(input_text=None):
                 running = False
                 progress(100,"showed, done")    
 
-            # if cleaned_question in ("agent:"):
-            #     cleaned_question = cleaned_question.replace("agent:", "").strip()
-            #     agent_reply = agent_shiro(cleaned_question)
-            # elif cleaned_question in ("please remember this"): # THIS IS MODULE TO SEND TEXT TO LONG TERM MEMORY
-            #     # to database
-           # elif anilist_mode.get() == "Yes" and content_type_mode_variable.get() == "Yes":
+
+            elif cleaned_question.lower().startswith("schedule:") or "retrieve_event_from_calendar" in agent_reply:
+                query = cleaned_question.replace("schedule:", "").strip()
+                query = "Madrus: " + query
+                messages.append({"role": "user", "content": query})
+
+                # use function chain to add event to calendar
+                answer, prompt_tokens, completion_tokens, total_tokens = retrieve_plans_for_days(query)
+                progress(60,"retrived plans")
+
+                    # sending schedule to shiro to add personality to raw schedule
+                question = f"""can you summarize my plans ? what i have for that days. tell me like assistant tells plans for her boss when he has little time to listen. In 'your words', not just plain date's. and please order it by dates. here are my plans: '{answer}"""
+                
+                messages.append({"role": "user", "content": question})
+                        
+                print("messages: " + str(messages))
+                
+                personalized_answer, prompt_tokens2, completion_tokens2, total_tokens2 = shared_code.chatgpt_api.send_to_openai(messages)
+
+                prompt_tokens += prompt_tokens2
+                completion_tokens += completion_tokens2
+                total_tokens += total_tokens2
+
+                
+                print("answer: " + answer)
+                
+                print_response_label(personalized_answer)
+                
+                repetitive_part_of_voice_control_functions_tokens(name, query, personalized_answer, messages, prompt_tokens, completion_tokens, total_tokens)
+               
+                print("-----addded tokens to db--------")
+                progress(100,"showed, done")
+                
+            elif cleaned_question.lower().startswith("ha:") or "home_assistant" in agent_reply:
+                query = cleaned_question.replace("ha:", "").strip()
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S %A")
+                query = f"[current time: {current_time}] {query}"
+                # use function chain to add event to calendar
+                answer_from_ha = ha_api_requests.room_temp()
+                print("answer from api: " + answer_from_ha)
+
+                
+                query2 = f"[current time: {current_time}] Madrus: {query}. shiro: Retriving informations from her sensors... Done! Info from sensors:{answer_from_ha}°C. Weather outside: 25°C.| (please say °C in your answer) | Shiro:"
+                messages.append({"role": "user", "content": query2})
+                        
+                print("messages: " + str(messages))
+                
+                personalized_answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages)
+
+                print("answer: " + personalized_answer)
+                print_response_label(personalized_answer)
+                repetitive_part_of_voice_control_functions_tokens(name, query, personalized_answer, messages, prompt_tokens, completion_tokens, total_tokens)
+
+                print("-----addded tokens to db--------")
+                
+                progress(100,"showed, done")     
+            
             elif cleaned_question.lower().startswith("db:") or "database_search" in agent_reply:
                 query = cleaned_question.replace("db:", "").strip()
                 messages.append({"role": "user", "content": query})
@@ -629,7 +682,7 @@ def voice_control(input_text=None):
                     
                     # send to open ai for answer
                     progress(40,"sending to openAI...")
-                    answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+                    answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages) 
                     
                         # START find ID and episodes number of updated anime
                     # The regex pattern             
@@ -699,7 +752,7 @@ def voice_control(input_text=None):
                     # send to open ai for answer
                 progress(40,"sending to openAI...") 
                 print("messages: " + str(messages))
-                answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+                answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages) 
                 print_response_label(answer)
                 
                     # FOR ARROWS TO PREVIOUS ANSWERS

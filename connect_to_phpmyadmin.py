@@ -1,7 +1,5 @@
-import pyodbc
 import api_keys
-import discord
-from db_config import conn
+import pymysql
 from decimal import Decimal
 host = api_keys.host_name
 database = api_keys.db_name
@@ -11,7 +9,7 @@ password = api_keys.db_password
 
 def add_pair_to_general_table(question, answer):
     """Add a pair of question and answer to the general table in the database"""
-    global conn
+    conn = pymysql.connect(host=host, user=user, password=password, database=database)
     cursor = conn.cursor()
 
     # Check if table exists, if not create it
@@ -30,13 +28,14 @@ def add_pair_to_general_table(question, answer):
     conn.commit()
 
     cursor.close()
+    conn.close()  # Close the connection, dont lock database!
     print("Added pair to database")
     
         
     
 def send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens):
     """Send the usage of the chatgpt api to the database"""
-    global conn
+    conn = pymysql.connect(host=host, user=user, password=password, database=database)
     cursor = conn.cursor()
 
     # Check if table exists, if not create it
@@ -69,6 +68,7 @@ def send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_token
     # Commit your changes in the database
     conn.commit()
     cursor.close()
+    conn.close()  # Close the connection, dont lock database!
 
    
 
@@ -77,6 +77,7 @@ def send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_token
 def check_user_in_database(name):
     """Check if the user is already in the database and create new table if not"""
     # Connect to the database
+    conn = pymysql.connect(host=host, user=user, password=password, database=database)
     cursor = conn.cursor()
 
     # Check if the table already exists
@@ -118,12 +119,13 @@ def check_user_in_database(name):
     
     # Close the connection
     cursor.close()
+    conn.close()  # Close the connection, dont lock database!
     
 
 def retrieve_chat_history_from_database(name):
     """Retrieve all messages from the user's table and return them as messages"""
     # Connect to the database
-    global conn
+    conn = pymysql.connect(host=host, user=user, password=password, database=database)
     cursor = conn.cursor()
     messages = []
     
@@ -139,13 +141,16 @@ def retrieve_chat_history_from_database(name):
         for row in rows:
             message = {"role": row[0], "content": row[1]}
             messages.append(message) # add to messages list
+
+    cursor.close()
+    conn.close()  # Close the connection, dont lock database!
     return messages # Return the messages to the calling function
     
 
 def only_conversation_history_from_database(name):
     """Retrieve all messages from the user's table and return them as messages"""
     # Connect to the database
-    global conn
+    conn = pymysql.connect(host=host, user=user, password=password, database=database)
     cursor = conn.cursor()
     messages = []
 
@@ -162,6 +167,8 @@ def only_conversation_history_from_database(name):
         for row in rows:
             message = {"role": row[0], "content": row[1]}
             messages.append(message) # add to messages list
+    cursor.close()
+    conn.close()  # Close the connection, dont lock database!
     return messages # Return the messages to the calling function
 
 
@@ -170,7 +177,7 @@ def only_conversation_history_from_database(name):
 def insert_message_to_database(name, question, answer, messages):
     """Insert a message into the user's table."""
     # Connect to the database
-    global conn
+    conn = pymysql.connect(host=host, user=user, password=password, database=database)
     
     cursor = conn.cursor()
 
@@ -192,6 +199,7 @@ def insert_message_to_database(name, question, answer, messages):
     # Commit the changes and close the connection
     conn.commit()
     cursor.close()
+    conn.close()  # Close the connection, dont lock database!
 
 
 
@@ -199,7 +207,7 @@ def reset_chat_history(name):
     """Remove user table in database."""
     try:
         # Connect to the database
-        global conn
+        conn = pymysql.connect(host=host, user=user, password=password, database=database)
         
         cursor = conn.cursor()
 
@@ -215,6 +223,7 @@ def reset_chat_history(name):
         # Commit the changes and close the connection
         conn.commit()
         cursor.close()
+        conn.close()  # Close the connection, dont lock database!
 
     except Exception as e:
         print(e)
@@ -226,7 +235,7 @@ def update_character_description(name, new_description):
     """Update character description in database."""
     # Connect to the database
     # Connect to the database
-    global conn
+    conn = pymysql.connect(host=host, user=user, password=password, database=database)
     cursor = conn.cursor()
     
     # Check if the table is not empty
@@ -255,15 +264,19 @@ def update_character_description(name, new_description):
     
     # Check if the update was successful
     if cursor.rowcount > 0:
+        cursor.close()
+        conn.close()  # Close the connection, dont lock database!
         return True # Return True if the update was successful
     else:
+        cursor.close()
+        conn.close()  # Close the connection, dont lock database!
         return False # Return False if the update was not successful
-
+    
     
 def show_character_description(name):
     """Show character description from database."""
     # Connect to the database
-    global conn
+    conn = pymysql.connect(host=host, user=user, password=password, database=database)
     cursor = conn.cursor()
     
     # Execute a SELECT COUNT(*) query to check if the table is empty
@@ -277,13 +290,15 @@ def show_character_description(name):
         if row: # If there is a row returned
             content = row[0] # Get the content of the message
             return content # Return the content to the calling function
-    
+    cursor.close()
+    conn.close()  # Close the connection, dont lock database!
     return None # Return None if there are no messages in the table
     
     
 def get_all_descriptions():
     """Retrieve all rows from the 'all_descriptions' table and return them as a list of dictionaries"""
     # Connect to the database
+    conn = pymysql.connect(host=host, user=user, password=password, database=database)
     cursor = conn.cursor()
 
     # Retrieve all rows from the 'all_descriptions' table
@@ -298,10 +313,12 @@ def get_all_descriptions():
 
     # Close the cursor and return the list of descriptions
     cursor.close()
+    conn.close()  # Close the connection, dont lock database!
     return descriptions
 
 def test_sql():
     # Connect to the database
+    conn = pymysql.connect(host=host, user=user, password=password, database=database)
     cursor = conn.cursor()
 
     # Retrieve all rows from the 'all_descriptions' table
@@ -316,6 +333,7 @@ def test_sql():
 
     # Close the cursor and return the list of descriptions
     cursor.close()
+    conn.close()  # Close the connection, dont lock database!
     return testing
 
 if __name__ == "__main__":
