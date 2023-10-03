@@ -1,10 +1,10 @@
 import requests
 import json
-from home_assistant.api_keys import weather_api
+from .. import api_keys
 #D:\111111.PROGRAMOWANIE\AI W PYTHONIE\shiro_on_streamlit
 def current_temperature():
    
-    API_KEY = weather_api
+    API_KEY = api_keys.weather_api
     CITY = "Warsaw,PL"
     BASE_URL = "http://api.openweathermap.org/data/2.5/weather?"
 

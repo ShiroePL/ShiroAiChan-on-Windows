@@ -1,5 +1,5 @@
 import requests
-import home_assistant.api_keys as api_keys
+from .. import api_keys
 
 # token = api_keys.token
 # server_ip = api_keys.server_ip
