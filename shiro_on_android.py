@@ -130,14 +130,14 @@ def display_messages_from_database_only(messages):
 
 
 
-def voice_control(question, name):
+def voice_control(question, name, agent_mode):
     global stop_listening_flag
     
     stop_listening_flag = False
 
     #choice = mute_or_unmute.get()
-
-    print("Your name?: " + name)
+    print("is chechbox/agent_mode clicked?: " + str(agent_mode))
+    print("Your na?: " + name)
     #print("Do you want voice? You chose: " + choice)
 
     connect_to_phpmyadmin.check_user_in_database(name)

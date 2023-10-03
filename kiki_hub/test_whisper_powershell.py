@@ -1,6 +1,8 @@
 import requests
 import base64
 import time
+
+
 def transcribe_audio_question():
     #start timer
     start_time = time.time()
@@ -11,11 +13,11 @@ def transcribe_audio_question():
     response = requests.post("http://127.0.0.1:7860/run/predict", json={
         "data": [
             "transcribe",
-            "gpu",
+            "cpu",
             "en",
-            "small.en",
-            {"name": "recording.wav", "data": f"data:audio/wav;base64,{audio_data}"},
-            {"name": "recording.wav", "data": f"data:audio/wav;base64,{audio_data}"}
+            "tiny.en",
+            {"name": "response.wav", "data": f"data:audio/wav;base64,{audio_data}"},
+            {"name": "response.wav", "data": f"data:audio/wav;base64,{audio_data}"}
         ]
     }).json()
 

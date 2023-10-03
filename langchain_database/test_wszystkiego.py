@@ -1,5 +1,5 @@
 from datetime import datetime
-from . import chatgpt_calendar_prompts as chatgpt
+from .chatgpt_calendar_prompts import CalendarAssistant
 from . import calendar_api_test as cal
 
 def add_event_from_shiro(query:str):
@@ -11,7 +11,9 @@ def add_event_from_shiro(query:str):
 
     #print(query)
         #send query to chatgpt and get response in correct format
-    answer, prompt_tokens, completion_tokens, total_tokens = chatgpt.chatgpt_calendar_planer(query)
+    calendar_assistant = CalendarAssistant(model="gpt-3.5-turbo")
+    # print(assistant.chatgpt_calendar_planer("Add a meeting to my calendar next Monday at 10 AM"))
+    answer, prompt_tokens, completion_tokens, total_tokens = calendar_assistant.chatgpt_calendar_planer(query)
 
         # add event to calendar using api
     summary, description, dtstart, dtend = cal.add_event_to_calendar(answer)
@@ -22,7 +24,8 @@ def add_event_from_shiro(query:str):
 
 
 def retrieve_plans_for_days(query:str):
-    """Adds event to calendar from shiro gui 
+    """Adds event to calendar from shiro's gui.
+    This function first calls chatgpt to extract info from answer then calls calendar api to get schedule for specified days 
     returns:  answer, prompt_tokens, completion_tokens, total_tokens"""
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S %A")
     #print(current_time)
@@ -30,8 +33,8 @@ def retrieve_plans_for_days(query:str):
 
     #print(query)
         #send query to chatgpt and get response in correct format
-    
-    answer, prompt_tokens, completion_tokens, total_tokens = chatgpt.chatgpt_calendar_planer(query)
+    calendar_assistant = CalendarAssistant(model="gpt-4")
+    answer, prompt_tokens, completion_tokens, total_tokens = calendar_assistant.chatgpt_calendar_schedule(query)
         # add event to calendar using api
     formatted_result = cal.get_schedule_for_day(answer)
 

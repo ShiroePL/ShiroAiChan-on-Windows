@@ -1,16 +1,25 @@
-from shiro_agent import CustomChatAgent
+import tkinter
+def hideBG():
+    global state
+    if state == "Hidden":
+        background_label.pack()
+        state = "Showing"
 
-def main():
-    agent = CustomChatAgent()
-    final_answer = agent.run("show me manga list")
-    #if final_answer == "Database":
-    # do something
-    #print("this is fiunal answer" + final_answer)
-
-    return final_answer
-
-if __name__ == "__main__":
-    tocos = main()
-    print("to jest z returna z maina: " + tocos)
+    elif state == "Showing":
+        background_label.pack_forget()
+        state = "Hidden"
 
 
+
+
+window = tkinter.Tk()
+
+background_label = tkinter.Label(window, image=background_image)
+
+hideBttn = tkinter.Button(window, text="Hide Background", command=hideBG)
+state = "Showing"
+
+hideBttn.pack()
+background_label.pack()
+
+window.mainloop()

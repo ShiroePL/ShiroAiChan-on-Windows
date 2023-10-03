@@ -1,6 +1,6 @@
 import threading
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ALL, ttk
 import speech_recognition as sr
 import pyttsx3
 import time 
@@ -28,6 +28,7 @@ from shiro_agent import CustomToolsAgent
 from langchain_database.answer_with_chromadb_huggingface_embedd import search_chroma_db
 from langchain_database.test_wszystkiego import add_event_from_shiro, retrieve_plans_for_days
 from home_assistant import ha_api_requests
+from datetime import datetime
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
@@ -40,6 +41,7 @@ api = None
 global stop_listening_flag
 stop_listening_flag = False
 global recording_key
+state = ""
 anilist_mode = False
 content_type_mode =""
 recording_key = False
@@ -71,6 +73,9 @@ class ToolTip:
         if self.tooltip:
             self.tooltip.destroy()
             self.tooltip = None
+
+
+
 
 def agent_shiro(query):
     agent = CustomToolsAgent()
@@ -188,6 +193,11 @@ def exit_anilist_mode():
     progress(100,"exited anilist mode")
 
 ################################### RANDOM QUESTIONS FROM SHIRO ######################################################
+
+
+
+
+
 timer_running = False
 timer_thread = None
 stop_event = threading.Event()
@@ -199,6 +209,10 @@ def on_talk_or_not_change(*args):
     else:
         stop_timer()
 
+
+
+
+   
 def start_timer():
     """starts timer for random questions in separate thread"""
     global timer_running
@@ -454,14 +468,15 @@ def voice_control(input_text=None):
                 progress(100,"showed, done")
 
             elif cleaned_question.lower().startswith("ha:") or "home_assistant" in agent_reply:
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S %A")
                 query = cleaned_question.replace("ha:", "").strip()
+                query = f"[current time: {current_time}] {query}"
                 
-
                     # use function chain to add event to calendar
                 answer_from_ha = ha_api_requests.room_temp()
                 print("answer from api: " + answer_from_ha)
                 progress(60,"got temperature, adding personality...")
-                query2 = "Madrus: " + query + ". shiro: Retriving informations from her sensors... Done! Info from sensors:" + answer_from_ha + "°C. Weather outside: 25°C.| (please say °C in your answer) | Shiro:"
+                query2 = f"[current time: {current_time}] Madrus: {query}. shiro: Retriving informations from her sensors... Done! Info from sensors:{answer_from_ha}°C. Weather outside: 25°C.| (please say °C in your answer) | Shiro:"
                 messages.append({"role": "user", "content": query2})
                 
                 print("messages: " + str(messages))
@@ -645,8 +660,8 @@ def update_progress_bar(value):
     filled_width = int(value * progress_width / 100)
     filled_image_cropped = filled_image.crop((0, 0, filled_width, progress_height))
     filled_photo = ImageTk.PhotoImage(filled_image_cropped)
-    canvas.itemconfig(filled_progress, image=filled_photo)
-    canvas.image = filled_photo  # Keep a reference to the image object to prevent garbage collection
+    canvas2.itemconfig(filled_progress, image=filled_photo)
+    canvas2.image = filled_photo  # Keep a reference to the image object to prevent garbage collection
 
 def connect_to_vtube():
     global api
@@ -685,6 +700,7 @@ def hold_timer():
     print("Timer stopped after 20 seconds.")
     root.after(0, talk_or_not.set, "Yes")
 
+
 # GUI elements
 root = tk.Tk()
 root.title("ShiroAi-chan Control Panel")
@@ -692,7 +708,7 @@ keyboard.on_press_key("F10", on_ctrl_press)  # Replace "ctrl+alt" with the desir
 root.geometry("1200x800")
 root.configure(bg = "#4B98E0")
 
-canvas = Canvas(
+canvas = tk.Canvas(
     root,
     bg = "#4B98E0",
     height = 800,
@@ -720,13 +736,7 @@ image_2 = canvas.create_image(
     image=image_image_2
 )
 
-image_image_dont_mute_me = PhotoImage(
-    file=relative_to_assets("dont_mute_me.png"))
-image_dont_mute_me = canvas.create_image(
-    965.0,
-    100.0,
-    image=image_image_dont_mute_me
-)
+
 
 canvas.create_text(
     284.0,
@@ -1116,22 +1126,90 @@ selected_image = tk.PhotoImage(file=relative_to_assets("check.png"))
 style.element_create("Custom.TRadiobutton.indicator", "image", normal_image,
                      ("selected", selected_image),
                      sticky="", padding=2)
-    # for TSS voice tts_or_not
+
+
+    # for TSS voice tts_or_not# Create radio buttons
+# mute_or_unmute = tk.StringVar()
+# mute_or_unmute.set("No")
+
+# mute_or_unmute_yes = ttk.Radiobutton(root, text=" voice", variable=mute_or_unmute, value="Yes", style="Custom.TRadiobutton")
+# mute_or_unmute_no = ttk.Radiobutton(root, text=" no voice", variable=mute_or_unmute, value="No", style="Custom.TRadiobutton")
+
+# mute_or_unmute_yes.place(x=169, y=17)
+# mute_or_unmute_no.place(x=169, y=50)
+
+# # Listen for changes to mute_or_unmute variable
+# mute_or_unmute.trace_add("write", lambda *args: toggle_image(canvas, image_dont_mute_me))
+# #Create image on canvas
+# image_image_dont_mute_me = PhotoImage(file="assets/frame0/dont_mute_me.png")  # Replace this with your actual image path
+# image_dont_mute_me = canvas.create_image(965.0, 100.0, image=image_image_dont_mute_me)
+
+
+
+# Create image on canvas
+image_image_dont_mute_me = PhotoImage(file="assets/frame0/dont_mute_me.png")  # Replace this with your actual image path
+image_dont_mute_me = canvas.create_image(965.0, 100.0, image=image_image_dont_mute_me, tags="my_image11")
+# Initialize global state variable
+#
+def hide_mute_or_not(*args):
+    global mute_or_unmute
+    """Callback for when the user changes talkative checkbox"""
+    if mute_or_unmute.get() == "No":
+        print("Setting image to normal (visible)")
+        canvas.itemconfig("my_image11", state='normal')
+        state = "Showing"
+    elif mute_or_unmute.get() == "Yes":
+        print("Setting image to hidden")
+        canvas.itemconfig("my_image11", state='hidden')
+        state = "Hidden"
+    canvas.update()
+
+
+# Create Radiobuttons with placement and custom style
 mute_or_unmute = tk.StringVar()
 mute_or_unmute.set("No")
+mute_or_unmute.trace("w", hide_mute_or_not) #this is looking for changes of state
 mute_or_unmute_yes = ttk.Radiobutton(root, text=" voice", variable=mute_or_unmute, value="Yes", style="Custom.TRadiobutton")
 mute_or_unmute_no = ttk.Radiobutton(root, text=" no voice", variable=mute_or_unmute, value="No", style="Custom.TRadiobutton")
+
 mute_or_unmute_yes.place(x=169, y=17)
 mute_or_unmute_no.place(x=169, y=50)
+
+
+#canvas.itemconfig("my_image11", state='hidden')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     # for random speaking tts_or_not
 talk_or_not = tk.StringVar()
 talk_or_not.set("No")
 talk_or_not.trace("w", on_talk_or_not_change) #this is looking for changes of state
+
 talk_or_not_yes = ttk.Radiobutton(root, text=" talkative", variable=talk_or_not, value="Yes", style="Custom.TRadiobutton")
 talk_or_not_no = ttk.Radiobutton(root, text=" sleeping...", variable=talk_or_not, value="No", style="Custom.TRadiobutton")
 talk_or_not_yes.place(x=499, y=350)
 talk_or_not_no.place(x=499, y=383)
+
+
+
+
 
    # AGENT MODE OR NOT
 agent_mode = tk.StringVar()
@@ -1151,11 +1229,11 @@ filled_image = Image.open("./assets/frame0/image_4.png")
 progress_width, progress_height = background_image.size
 background_photo = ImageTk.PhotoImage(background_image)
 
-canvas = tk.Canvas(root, width=progress_width, height=progress_height,bg="black", highlightthickness=0, bd=0, relief='ridge')
-canvas.place(x=543, y=136)
+canvas2 = tk.Canvas(root, width=progress_width, height=progress_height,bg="black", highlightthickness=0, bd=0, relief='ridge')
+canvas2.place(x=543, y=136)
 
-background_progress = canvas.create_image(0, 0, anchor=tk.NW, image=background_photo)
-filled_progress = canvas.create_image(0, 0, anchor=tk.NW)
+background_progress = canvas2.create_image(0, 0, anchor=tk.NW, image=background_photo)
+filled_progress = canvas2.create_image(0, 0, anchor=tk.NW)
 # END PROGRESS BARRRRRRRRRRRRRRRRRRRR OMGGGGGGGGGGGGGGG
 
 response_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
