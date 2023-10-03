@@ -1,18 +1,18 @@
 import threading
 import tkinter as tk
-from tkinter import ALL, ttk
+from tkinter import ttk
 import speech_recognition as sr
 import pyttsx3
 import time 
 import kiki_hub.request_whisper as request_whisper
 import base64
 import requests
-import shared_code.connect_to_phpmyadmin
+import shared_code.connect_to_phpmyadmin as connect_to_phpmyadmin
 from better_profanity import profanity
 import shared_code.chatgpt_api
 import kiki_hub.request_voice_tts as request_voice
 import sys
-from tkinter import Canvas, Entry, Button, PhotoImage
+from tkinter import Entry, Button, PhotoImage
 from pathlib import Path
 from ctypes import windll
 from vtube_studio_api import VTubeStudioAPI
@@ -473,7 +473,7 @@ def voice_control(input_text=None):
                 
                     # use function chain to add event to calendar
                 answer_from_ha = ha_api_requests.room_temp()
-                outside_temperature = ha_api_requests.open_weather_api()
+                outside_temperature = open_weather_api.current_temperature()
                 print("answer from api: " + answer_from_ha)
                 progress(60,"got temperature, adding personality...")
                 query2 = f"[current time: {current_time}] Madrus: {query}. shiro: Retriving informations from her sensors... Done! Info from sensors:{answer_from_ha}°C. Weather outside: {outside_temperature}°C.| (please say °C in your answer) | Shiro:"
