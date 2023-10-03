@@ -1,46 +1,37 @@
 import threading
-# Add your other imports here
-# ...
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ALL, ttk
 import speech_recognition as sr
 import pyttsx3
 import time 
 import kiki_hub.request_whisper as request_whisper
 import base64
 import requests
-import wave
-import pyaudio
 import connect_to_phpmyadmin
 import time
 from better_profanity import profanity
-import shared_code.chatgpt_api
-import request_voice_tts as request_voice
+import chatgpt_api
+import kiki_hub.request_voice_tts as request_voice
 import sys
-from db_config import conn
-from tkinter import scrolledtext
-from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
+from tkinter import Canvas, Entry, Button, PhotoImage
 from pathlib import Path
 from ctypes import windll
 from vtube_studio_api import VTubeStudioAPI
 from PIL import Image, ImageTk
 import string
 import keyboard
-from tkinter.font import Font
 import pygame
 import shared_code.anilist.anilist_api_requests as anilist_api_requests
 import re
-from datetime import datetime
 import random
-
-from shared_code.shiro_agent import CustomToolsAgent
+from shiro_agent import CustomToolsAgent
 from langchain_database.answer_with_chromadb_huggingface_embedd import search_chroma_db
 from shared_code.calendar_functions.test_wszystkiego import add_event_from_shiro, retrieve_plans_for_days
 from shared_code.home_assistant import ha_api_requests
+from datetime import datetime
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
-
 windll.shcore.SetProcessDpiAwareness(1) #make window sharp on high dpi screens
 
 # Initialize the question to speech engine 
@@ -48,18 +39,19 @@ engine=pyttsx3.init()
 conn = None
 api = None
 global stop_listening_flag
-
 stop_listening_flag = False
 global recording_key
+state = ""
 anilist_mode = False
 content_type_mode =""
 recording_key = False
 hold_random_timer = 0
 default_user = "normal"
 font_family = "Baloo Bhai 2 SemiBold"
-answer_history = [] #for the history of answers
+answer_history = [] #for local history of answers
 
 class ToolTip:
+    """This class is for displaying text when hovering on icons in Tkinter GUI."""
     def __init__(self, widget, text):
         self.widget = widget
         self.text = text
@@ -83,27 +75,17 @@ class ToolTip:
             self.tooltip = None
 
 
-def shiro_custom_tools_agent(query):
-    agent = CustomToolsAgent()
-    final_answer = agent.run(query)
-    #if final_answer == "Database":
-    # do something
-    #print("this is fiunal answer" + final_answer)
 
-    return final_answer
 
 def agent_shiro(query):
     agent = CustomToolsAgent()
     final_answer = agent.run(query)
-    
-    # do something
-    #print("this is fiunal answer" + final_answer)
-
     return final_answer
 
 def transcribe_audio_question(filename):
+    """Transcribe the given audio from microphone on Windows using local Whisper model."""
     start_time = time.time()
-    # Load audio file as base64 encoded string
+        # Load audio file as base64 encoded string
     with open(f"./kiki_hub/{filename}.wav", "rb") as audio_file:
         audio_data = base64.b64encode(audio_file.read()).decode("utf-8")
 
@@ -126,8 +108,8 @@ def transcribe_audio_question(filename):
     print("-------")
     return question
 
-
 def print_response_label(response):
+    """Print the response to the response text widget in Tkinter GUI."""
     response_widget.delete('1.0', 'end')
     response_widget.insert(tk.END, f"{response}", 'center')
     response_widget.tag_configure('center', justify='center')
@@ -154,10 +136,7 @@ def stop_audio():
     pygame.mixer.quit()
     print("Stopped Shiro :O")
             
-
-
-# ----------- START FUNCTIONS FOR THE arrows
-
+# ----------- START FUNCTIONS FOR THE arrows-----------
 def add_answer_to_history(answer):
     answer_history.append(answer)
 
@@ -175,12 +154,11 @@ def show_next_answer():
         current_answer_index += 1
         display_answer(answer_history[current_answer_index])
 
-
 def display_answer(answer):
     # Update your GUI element (e.g., a Label) that displays the answer
     print_response_label(answer)
 
-# ----------- END FUNCTIONS FOR THE arrows
+# ----------- END FUNCTIONS FOR THE arrows---------
 
 def on_ctrl_press(event):
     global recording_key
@@ -195,61 +173,16 @@ def progress(percent: int, text: str):
     """ Update progress bar percents and text"""
     update_progress_bar(percent), print_log_label(text)
 
-
 def display_messages_from_database_only(messages):
     show_history_from_db_widget.delete('1.0', 'end')
     for message in messages:
         role = message['role']
         content = message['content']
-        show_history_from_db_widget.insert(tk.END, f"Role: {role}\n", 'center')
+        show_history_from_db_widget.insert(tk.END, f"\nRole: {role}\n", 'center')
         show_history_from_db_widget.tag_configure('center', justify='center')
-        show_history_from_db_widget.insert(tk.END, f"{content}\n\n", 'center')
+        show_history_from_db_widget.insert(tk.END, f"{content}", 'center')
         
     show_history_from_db_widget.see('end')
-
-def button_show_anilist(media_type: str): # THIS SHOULD JUST RUN VOICE CONTROL WITH PREDEFINED TEXT FROM INPUT, this is stupid to have it like this
-    global content_type_mode
-    global anilist_mode
-    media_list, _ = anilist_api_requests.get_10_newest_entries(media_type) # i think it can be just anime_lise, 
-    chapters_or_episodes = "episodes" if media_type == "anime" else "chapters"
-    question = f"Madrus: I will give you list of my 10 most recent updated {media_type} from site AniList. Here is this list:{media_list}. I want you to remember this because in next question I will ask you to update {chapters_or_episodes} number of one {media_type}."
-    #print("question from user:" + question)
-    name = table_name_input.get()
-    messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
-    messages.append({"role": "user", "content": question})
-
-    # send to open ai for answer !!!!!!!! I WONT SEND IT BECOUSE I ALREADY GOT IT FROM reformatting
-    answer = "Okay, I will remember it, Madrus. I'm waiting for your next question. Give it to me nyaa."
-    print_response_label(f"Here is your list of most recent watched {media_type}.{media_list}")
-
-    #   FOR ARROWS TO PREVIOUS ANSWERS
-    add_answer_to_history(f"Here is your list of most recent watched {media_type}.{media_list}")
-    current_answer_index = len(answer_history) - 1
-        # END OF ARROWS TO PREVIOUS ANSWERS
-    
-    tts_or_not = mute_or_unmute.get()
-    if tts_or_not == "Yes": #IF YES THEN WITH VOICE
-        request_voice.request_voice_fn(f"Here is your list of most recent watched {media_type}.") #request Azure TTS to for answer
-        update_progress_bar(70), print_log_label("got voice")
-        play_audio_fn("response")
-
-    progress(80,"saving to DB...")
-    connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
-    print("---------------------------------")
-
-
-    beep = "cute_beep" #END OF ANSWER
-    play_audio_fn(beep)
-
-        #show history in text widget
-    progress(90,"showing in text box...")
-    #show_history_from_db_widget.delete('1.0', 'end')
-    display_messages_from_database_only(take_history_from_database())
-    
-    anilist_mode = True # entering anime list mode for next question to update anime/manga
-    content_type_mode = media_type # anime or manga
-    progress(100,"showed, done")
-
 
 def exit_anilist_mode():
     global anilist_mode
@@ -259,7 +192,12 @@ def exit_anilist_mode():
     print("--------------------")
     progress(100,"exited anilist mode")
 
-######################################################################### RANDOM QUESTIONS FROM SHIRO ######################################################
+################################### RANDOM QUESTIONS FROM SHIRO ######################################################
+
+
+
+
+
 timer_running = False
 timer_thread = None
 stop_event = threading.Event()
@@ -271,6 +209,10 @@ def on_talk_or_not_change(*args):
     else:
         stop_timer()
 
+
+
+
+   
 def start_timer():
     """starts timer for random questions in separate thread"""
     global timer_running
@@ -295,161 +237,110 @@ def timer_for_random_questions():
         interval = random.randint(200, 300)  # Random interval between _ and _ seconds
         stop_event.wait(interval)
 
-
 def ask_random_question(): # THIS SHIT IS FOR ASKING PROMPT
+    print("-----START asking random question-----")
+
     question = f"Madrus: This is programmed functionality for you that is asking me questions from time to time. So ask me some question, can be random or based on what we talked before. But please make it short, not too long. And remember: if i will not say anything in answer to you(or this message will be repeated), ask me why i am not answering or am i still here."
     name = table_name_input.get()
-    tts_or_not = mute_or_unmute.get()
     messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
     messages.append({"role": "user", "content": question})
-        # send to open ai for answer
+        
     progress(40,"sending to openAI...") 
-#print("messages: " + str(messages))
-    answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages) 
+        # send to open ai for answer
+    answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
     print_response_label(answer)
 
-    # FOR ARROWS TO PREVIOUS ANSWERS
-    add_answer_to_history(answer)
-    current_answer_index = len(answer_history) - 1
-    # END OF ARROWS TO PREVIOUS ANSWERS
-    progress(60,"got answer") 
-    
-    if tts_or_not == "Yes": #IF YES THEN WITH VOICE
-        request_voice.request_voice_fn(answer) #request Azure TTS to for answer
-        progress(70,"got voice")
-        play_audio_fn("response")
-    print("ShiroAi-chan: " + answer)
+    repetitive_part_of_voice_control_functions_tokens(name, question, answer, messages, prompt_tokens, completion_tokens, total_tokens)  
+    progress(100,"asking random question...")
 
-    if profanity.contains_profanity(answer) == True:
-        answer = profanity.censor(answer)     
-
-    progress(80,"saving to DB...")
-    connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
-    connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
-    connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
-    print("---------------------------------")
-
-    beep = "cute_beep" #END OF ANSWER
-    play_audio_fn(beep)
-
-        #show history in text widget
-    progress(90,"showing in text box...")
-    #show_history_from_db_widget.delete('1.0', 'end')
-    display_messages_from_database_only(take_history_from_database())
-    
-    progress(100,"saved to DB, done")
-
-    #print("asking random question")
-
+    print("-----END asking random question-----")
 
 ##################################################################################################################################
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!REPETITIVE PART OF VOICE CONTROL FUNCTIONS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-def repetitive_part_of_voice_control_functions_tokens(name, question, answer,messages, prompt_tokens, completion_tokens, total_tokens):
+def repetitive_part_of_voice_control_functions_tokens(name, question, answer,messages, prompt_tokens, completion_tokens, total_tokens, answer_for_tts = None):
     global tts_or_not
     global agent_mode
     tts_or_not = mute_or_unmute.get()
-
-    
 
         # FOR ARROWS TO PREVIOUS ANSWERS
     add_answer_to_history(answer)
     current_answer_index = len(answer_history) - 1
         # END OF ARROWS TO PREVIOUS ANSWERS
 
-    if tts_or_not == "Yes": #IF YES THEN WITH VOICE
-        request_voice.request_voice_fn("I added event. *smile*") #request Azure TTS to for answer
+    if tts_or_not == "Yes":
+        # If answer_for_tts is provided, use it. If not, use 'answer' as before.
+        request_voice.request_voice_fn(answer if answer_for_tts is None else answer_for_tts)
         progress(70,"got voice")
-        play_audio_fn("response")
+        
 
-    beep = "cute_beep" #END OF ANSWER
-    play_audio_fn(beep)
+    
         #show history in text widget
     
     progress(90,"showing in text box...")
     #show_history_from_db_widget.delete('1.0', 'end')
-    
 
     connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
     connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
     connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to A DB with usage stats
     
     display_messages_from_database_only(take_history_from_database())
+    if tts_or_not == "Yes":
+        play_audio_fn("response")
+        beep = "cute_beep" #END OF ANSWER
+        play_audio_fn(beep)
 
     progress(95,"addded tokens to db")
     
-
-def repetitive_part_of_voice_control_functions(name, question, answer,messages):
+def repetitive_part_of_voice_control_functions(name, question, answer,messages, answer_for_tts = None):
     global tts_or_not
     global agent_mode
     tts_or_not = mute_or_unmute.get()
-
-    
 
         # FOR ARROWS TO PREVIOUS ANSWERS
     add_answer_to_history(answer)
     current_answer_index = len(answer_history) - 1
         # END OF ARROWS TO PREVIOUS ANSWERS
-
-    if tts_or_not == "Yes": #IF YES THEN WITH VOICE
-        request_voice.request_voice_fn("I added event. *smile*") #request Azure TTS to for answer
+    print("answer_for_tts: ",answer_for_tts)
+    if tts_or_not == "Yes":
+        # If answer_for_tts is provided, use it. If not, use 'answer' as before.
+        request_voice.request_voice_fn(answer if answer_for_tts is None else answer_for_tts)
         progress(70,"got voice")
-        play_audio_fn("response")
 
-    beep = "cute_beep" #END OF ANSWER
-    play_audio_fn(beep)
+  
         #show history in text widget
     
     progress(90,"showing in text box...")
     #show_history_from_db_widget.delete('1.0', 'end')
     
-
     connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
     connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
     
-    
     display_messages_from_database_only(take_history_from_database())
-
+    if tts_or_not == "Yes":
+        play_audio_fn("response")
+        beep = "cute_beep" #END OF ANSWER
+        play_audio_fn(beep)
     progress(95,"addded tokens to db")
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!END OF REPETITIVE PART OF FUNCTIONS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 
 def voice_control(input_text=None):
     global stop_listening_flag
     global running
     global hold_random_timer
-    
     stop_listening_flag = False
     global current_answer_index
 
     name = table_name_input.get()  # takes name from input
-
     tts_or_not = mute_or_unmute.get() # takes tts mode from checkbox
     agent_mode_variable = agent_mode.get() # takes agent mode from checkbox
-
 
         # hold random questions if i am conversing so she will not ask me in the middle of conversation
     if talk_or_not.get() == "Yes":
         talk_or_not.set("No")
         print("----checkbox putted on SLEEPING----")
     
-
     print("Your name?: " + name)
     print("Do you want voice? You chose: " + tts_or_not)
     print("say 'exit program' to exit the program")
@@ -462,9 +353,8 @@ def voice_control(input_text=None):
         global content_type_mode
         messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
         agent_reply = ''
-        #messages = connect_to_phpmyadmin.retrieve_chat_history_from_database("long_therm_memory")
 
-        if input_text is None:
+        if input_text is None: #if input text is none then listen to microphone input
             progress(10,"recording...")
             print("started listening")
             beep = "cute_beep"  # started recording
@@ -502,14 +392,12 @@ def voice_control(input_text=None):
             question = input_text
             input_text = None
 
-        # The rest of the code remains the same
-
         # Get all punctuation but leave colon ':'
         punctuation_without_colon = "".join([ch for ch in string.punctuation if ch != ":"])
 
         cleaned_question = question.translate(str.maketrans("", "", punctuation_without_colon)).strip().lower()
 
-                # CHECK IF IT IS AGENT MODE @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                # CHECK IF IT IS AGENT MODE 
         if cleaned_question.startswith("agent:") or agent_mode_variable == "Yes" or cleaned_question.startswith("agent mode"):
             print("wejscie w if od agenta ")
             progress(10,"entering agent mode...")
@@ -526,10 +414,9 @@ def voice_control(input_text=None):
             progress(30,"transcribed.") if input_text is None else progress(30,"question given in input.")
                 # end if user wants to exit
             if cleaned_question in ("bye bye shiro", "exit program", "bye bye shira"):
-                beep = "cute_beep"  # NEEEEEEEEEEEEEEESD TO FIND ANOTHER SOUND
+                beep = "cute_beep"  # NEEEEEEEEEEEEEEED TO FIND ANOTHER SOUND
                 play_audio_fn(beep)
                 sys.exit()
-
 
             elif cleaned_question in ("stop:"):
                 exit_anilist_mode()
@@ -537,21 +424,19 @@ def voice_control(input_text=None):
 
             elif cleaned_question.lower().startswith("plan:") or "add_event_to_calendar" in agent_reply:
                 query = cleaned_question.replace("plan:", "").strip()
-
                 messages.append({"role": "user", "content": query})
-                    # use chain to add event to calendar
-                answer, prompt_tokens, completion_tokens, total_tokens, formatted_query_to_calendar = add_event_from_shiro(query)
 
+                # use chain to add event to calendar
+                answer, prompt_tokens, completion_tokens, total_tokens, formatted_query_to_calendar = add_event_from_shiro(query)
 
                 progress(60,"event added")
                 print_response_label("I added event with this info: \n" + formatted_query_to_calendar)
-                
- 
-                repetitive_part_of_voice_control_functions_tokens(name, query, answer, messages, prompt_tokens, completion_tokens, total_tokens)
-               
+                answer_for_tts = "I added event with provided informations."
+
+                repetitive_part_of_voice_control_functions_tokens(name, query, answer, messages, prompt_tokens, completion_tokens, total_tokens, answer_for_tts)
+        
                 running = False
                 progress(100,"showed, done")    
-
 
             elif cleaned_question.lower().startswith("schedule:") or "retrieve_event_from_calendar" in agent_reply:
                 query = cleaned_question.replace("schedule:", "").strip()
@@ -560,7 +445,8 @@ def voice_control(input_text=None):
 
                 # use function chain to add event to calendar
                 answer, prompt_tokens, completion_tokens, total_tokens = retrieve_plans_for_days(query)
-                progress(60,"retrived plans")
+
+                progress(60,"got schedule, adding personality...")
 
                     # sending schedule to shiro to add personality to raw schedule
                 question = f"""can you summarize my plans ? what i have for that days. tell me like assistant tells plans for her boss when he has little time to listen. In 'your words', not just plain date's. and please order it by dates. here are my plans: '{answer}"""
@@ -568,106 +454,94 @@ def voice_control(input_text=None):
                 messages.append({"role": "user", "content": question})
                         
                 print("messages: " + str(messages))
-                
-                personalized_answer, prompt_tokens2, completion_tokens2, total_tokens2 = shared_code.chatgpt_api.send_to_openai(messages)
+                personalized_answer, prompt_tokens2, completion_tokens2, total_tokens2 = chatgpt_api.send_to_openai(messages)
 
                 prompt_tokens += prompt_tokens2
                 completion_tokens += completion_tokens2
                 total_tokens += total_tokens2
 
-                
-                print("answer: " + answer)
-                
                 print_response_label(personalized_answer)
-                
+                print("answer: " + answer)
                 repetitive_part_of_voice_control_functions_tokens(name, query, personalized_answer, messages, prompt_tokens, completion_tokens, total_tokens)
-               
-                print("-----addded tokens to db--------")
+        
+                running = False
                 progress(100,"showed, done")
-                
+
             elif cleaned_question.lower().startswith("ha:") or "home_assistant" in agent_reply:
-                query = cleaned_question.replace("ha:", "").strip()
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S %A")
+                query = cleaned_question.replace("ha:", "").strip()
                 query = f"[current time: {current_time}] {query}"
-                # use function chain to add event to calendar
+                
+                    # use function chain to add event to calendar
                 answer_from_ha = ha_api_requests.room_temp()
                 print("answer from api: " + answer_from_ha)
-
-                
+                progress(60,"got temperature, adding personality...")
                 query2 = f"[current time: {current_time}] Madrus: {query}. shiro: Retriving informations from her sensors... Done! Info from sensors:{answer_from_ha}°C. Weather outside: 25°C.| (please say °C in your answer) | Shiro:"
                 messages.append({"role": "user", "content": query2})
-                        
+                
                 print("messages: " + str(messages))
-                
-                personalized_answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages)
 
-                print("answer: " + personalized_answer)
+                    # add personality to answer
+                personalized_answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages)
+
                 print_response_label(personalized_answer)
-                repetitive_part_of_voice_control_functions_tokens(name, query, personalized_answer, messages, prompt_tokens, completion_tokens, total_tokens)
-
-                print("-----addded tokens to db--------")
                 
-                progress(100,"showed, done")     
-            
+                repetitive_part_of_voice_control_functions_tokens(name, query, personalized_answer, messages, prompt_tokens, completion_tokens, total_tokens)
+        
+                running = False
+                progress(100,"showed, done")          
+
             elif cleaned_question.lower().startswith("db:") or "database_search" in agent_reply:
                 query = cleaned_question.replace("db:", "").strip()
                 messages.append({"role": "user", "content": query})
                 answer = search_chroma_db(query)
                 
-
                 progress(60,"got answer")
                 print_response_label(answer)
                 
                 repetitive_part_of_voice_control_functions(name, cleaned_question, answer, messages)
                 
-
                 running = False
                 progress(100,"showed, done")
 
-            elif "show_anime_list" in agent_reply or "show_manga_list" in agent_reply:
-            
-                content_type = "anime" if "anime" in agent_reply else "manga"
-                #content_type = agent_reply
-                list_content, _ = anilist_api_requests.get_10_newest_entries("ANIME") if content_type == "anime" else anilist_api_requests.get_10_newest_entries("MANGA")  # assuming this method exists        
+            # elif cleaned_question.lower().startswith("timer:") or "set_timer" in agent_reply:
+            #     query = cleaned_question.replace("timer:", "").strip()
+            #     messages.append({"role": "user", "content": query})
+                
+            #     # tu timer = costam
+                
+            #     progress(60,"got answer")
+            #     print_response_label(answer)
+                
+            #     repetitive_part_of_voice_control_functions(name, cleaned_question, answer, messages)
+                
+            #     running = False
+            #     progress(100,"showed, done")
+
+            elif "show_anime_list" in agent_reply or "show_manga_list" in agent_reply or "showmangalist" in cleaned_question or "showanimelist" in cleaned_question:
+                if agent_reply == "":
+                    content_type = "anime" if "showanimelist" in cleaned_question else "manga"
+                else:
+                    content_type = "anime" if "anime" in agent_reply else "manga"
+
+                list_content, _ = anilist_api_requests.get_10_newest_entries("ANIME") if content_type == "anime" else anilist_api_requests.get_10_newest_entries("MANGA")  
                  
                 question = f"Madrus: I will give you list of my 10 most recent watched/read {content_type} from site AniList. Here is this list:{list_content}. I want you to remember this because in next question I will ask you to update episodes/chapters of one of them."
-                #print("question from user:" + question)
                 messages.append({"role": "user", "content": question})
 
-                # send to open ai for answer !!!!!!!! I WONT SEND IT BECOUSE I ALREADY GOT IT FROM reformatting
+                # send to open ai for answer !!!!!!!! I WONT SEND IT BECAUSE I ALREADY GOT IT FROM reformatting
                 answer = "Okay, I will remember it, Madrus. I'm waiting for your next question. Give it to me nyaa."
-                print_response_label(f"Here is your list of most recent anime/manga.{list_content}")
+                print_response_label(f"Here is your list of most recent {content_type}.{list_content}")
 
-                #   FOR ARROWS TO PREVIOUS ANSWERS
-                add_answer_to_history(f"Here is your list of most recent anime/manga.{list_content}")
-                current_answer_index = len(answer_history) - 1
-                    # END OF ARROWS TO PREVIOUS ANSWERS
-                #update_progress_bar(60), print_log_label("got answer")
-                progress(60,"got answer")
-
-                if tts_or_not == "Yes": #IF YES THEN WITH VOICE
-                    request_voice.request_voice_fn("Here is your list. *smile*") #request Azure TTS to for answer
-                    progress(70,"got voice")
-                    play_audio_fn("response")
-
-                progress(80,"saving to DB...")
-                connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
-                print("---------------------------------")
-
-                beep = "cute_beep" #END OF ANSWER
-                play_audio_fn(beep)
-                    #show history in text widget
+                repetitive_part_of_voice_control_functions(name, question, answer, messages, f"Here is your list of most recent {content_type}")
                 
-                progress(90,"showing in text box...")
-                #show_history_from_db_widget.delete('1.0', 'end')
-                display_messages_from_database_only(take_history_from_database())
-       
                 content_type_mode = content_type # i need this so in next question i know what to update (anime or manga)
                 running = False
                 anilist_mode = True # entering anilist mode for next question to update anime/manga
-
+                
                 progress(100,"showed, done")
-            elif anilist_mode: # she is in animelist mode, so she rebebmers list i gave her 
+
+            elif anilist_mode: # she is in animelist mode, so she remembers list i gave her 
                     # make shiro find me id of anime/manga
                 if not question.lower().startswith("stop:"): # this is so if i showed list but i DON'T want to update it
                    
@@ -677,28 +551,29 @@ def voice_control(input_text=None):
                     extra = " episodes:<episodes>'. Nothing more." if content_type == "anime" else " chapters:<chapters>'. Nothing more."
                     question = f"Madrus: {question}. {end_question}{extra}"
 
-                    #print("question from user:" + question)
                     messages.append({"role": "user", "content": question})
                     
                     # send to open ai for answer
                     progress(40,"sending to openAI...")
-                    answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages) 
+                    answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
                     
-                        # START find ID and episodes number of updated anime
+                        #----- START find ID and episodes number of updated anime/manga-----
                     # The regex pattern             
-                    pattern = r"id:(\d+), episodes:(\d+)" if content_type == "anime" else r"id:(\d+), chapters:(\d+)" 
+                    #pattern = r"id:(\d+), episodes:(\d+)" if content_type == "anime" else r"id:(\d+), chapters:(\d+)" 
+                        #this should be better pattern, need to test it 
+                    pattern = r"id:\s*(\d+),\s*episodes:\s*(\d+)" if content_type == "anime" else r"id:\s*(\d+),\s*chapters:\s*(\d+)"
+
                     # Use re.search to find the pattern in the text
                     match = re.search(pattern, answer)
 
                     if match:
                         # match.group(1) contains the id, match.group(2) contains the episodes number
                         updated_id = match.group(1)
-                        
                         updated_info = match.group(2)
                         print(f"id: {updated_id}, {content_type}: {updated_info}")
                     else:
                         print("No match found")
-                    # END find ID and episodes number of updated anime/manga
+                        #----- END find ID and episodes number of updated anime/manga-----
 
                     print_response_label(answer) # CHANGE THIS TO MORE HUMAN LIKE
 
@@ -707,33 +582,8 @@ def voice_control(input_text=None):
                     anilist_api_requests.change_progress(updated_id, updated_info,content_type)
                     progress(55,"updated anilist database...")         
                     # end anilist api
-                    
-                        # FOR ARROWS TO PREVIOUS ANSWERS
-                    add_answer_to_history(answer)
-                    current_answer_index = len(answer_history) - 1
-                        # END OF ARROWS TO PREVIOUS ANSWERS
-                    progress(60,"got answer")
-
-                    if tts_or_not == "Yes":
-                        request_voice.request_voice_fn(f"Done, updated it to {updated_info} {content_type}")
-                        progress(70,"got voice")
-                        play_audio_fn("response")
-
-                    print("ShiroAi-chan: " + answer)
-
-                    # Save to database
-                    progress(80,"saving to DB...")
-                    connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
-                    connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to Azure DB with usage stats
-                    print("---------------------------------")
-    
-                    beep = "cute_beep" #END OF ANSWER
-                    play_audio_fn(beep)
-
-                        #show history in text widget
-                    progress(90,"showing in text box...")
-                    #show_history_from_db_widget.delete('1.0', 'end')
-                    display_messages_from_database_only(take_history_from_database())
+                    tts_answer = f"Okay, I updated {content_type} to {updated_info} episodes" if content_type == "anime" else f"Okay, I updated {content_type} to {updated_info} chapters"
+                    repetitive_part_of_voice_control_functions_tokens(name, question, answer, messages, prompt_tokens, completion_tokens, total_tokens, tts_answer)
     
                     progress(100,"updated on anilist")
 
@@ -743,7 +593,7 @@ def voice_control(input_text=None):
                 progress(100,"exited animelist mode")
 
             else: # continue if user does not want to exit
-                
+                print("cleanded question to to: " + cleaned_question)
                 # to database
                 question = f"Madrus: {question}"
                 print("question from user:" + question)
@@ -752,38 +602,10 @@ def voice_control(input_text=None):
                     # send to open ai for answer
                 progress(40,"sending to openAI...") 
                 print("messages: " + str(messages))
-                answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages) 
+                answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
                 print_response_label(answer)
                 
-                    # FOR ARROWS TO PREVIOUS ANSWERS
-                add_answer_to_history(answer)
-                current_answer_index = len(answer_history) - 1
-                    # END OF ARROWS TO PREVIOUS ANSWERS
-
-                progress(60,"got answer")   
-
-                if tts_or_not == "Yes": #IF YES THEN WITH VOICE
-                    request_voice.request_voice_fn(answer) #request Azure TTS to for answer
-                    progress(70,"got voice")
-                    play_audio_fn("response")
-                    
-                print("ShiroAi-chan: " + answer)
-                
-                if profanity.contains_profanity(answer) == True:
-                    answer = profanity.censor(answer)                    
-                progress(80,"saving to DB...")
-                connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to DB to user table    
-                connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
-                connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to A DB with usage stats
-                print("---------------------------------")
-
-                beep = "cute_beep" #END OF ANSWER
-                play_audio_fn(beep)
-
-                    #show history in text widget
-                progress(90,"showing in text box...")
-                #show_history_from_db_widget.delete('1.0', 'end')
-                display_messages_from_database_only(take_history_from_database())
+                repetitive_part_of_voice_control_functions_tokens(name, question, answer, messages, prompt_tokens, completion_tokens, total_tokens)
                 
                 running = False
                 progress(100,"saved to DB, done")
@@ -799,25 +621,12 @@ def voice_control(input_text=None):
             print_active_threads()                   
         print("------END------")
                     
-        
-
-           
-    # Replace `print()` statements with `print_response()`
-            # ...
 def print_active_threads():
     threads = threading.enumerate()
     for thread in threads:
         print(thread)
 
-
-def button_update_anilist_thread(media_type: str):
-    """shows anime/manga in output box"""
-    voice_thread = threading.Thread(target=button_show_anilist(media_type))
-    voice_thread.start()  
-
-
 def play_audio_thread(response: str):
-    
     audio_thread = threading.Thread(target=play_audio_fn(response))
     audio_thread.start()
 
@@ -833,18 +642,14 @@ def start_voice_control_input(text):
     voice_thread = threading.Thread(target=voice_control, args=(text,))
     voice_thread.start()    
 
-
 def stop_listening():
     global running
     global stop_listening_flag
     stop_listening_flag = True
     running = False #will cut off the while loop in voice control
 
-    
-
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
-
 
 def on_closing():
     if api:
@@ -855,8 +660,8 @@ def update_progress_bar(value):
     filled_width = int(value * progress_width / 100)
     filled_image_cropped = filled_image.crop((0, 0, filled_width, progress_height))
     filled_photo = ImageTk.PhotoImage(filled_image_cropped)
-    canvas.itemconfig(filled_progress, image=filled_photo)
-    canvas.image = filled_photo  # Keep a reference to the image object to prevent garbage collection
+    canvas2.itemconfig(filled_progress, image=filled_photo)
+    canvas2.image = filled_photo  # Keep a reference to the image object to prevent garbage collection
 
 def connect_to_vtube():
     global api
@@ -874,44 +679,36 @@ def take_history_from_database():
 
 def display_all_descriptions():
     """Display all descriptions from the 'all_descriptions' table in a Tkinter window"""
-    
-    # Retrieve all descriptions from the 'all_descriptions' table
     descriptions = connect_to_phpmyadmin.get_all_descriptions()
     response_widget.delete('1.0', 'end')
-    # Display the descriptions in the Text widget
+        # Display the descriptions in the Text widget
     for description in descriptions:
         response_widget.insert(tk.END, f"{description['id']}: {description['description']}\n")
         response_widget.insert(tk.END, "\n")
-
 
 def hold_timer():
     # Start the timer
     start_time = time.time()
 
     while True:
-        # Calculate elapsed time
+            # Calculate elapsed time
         elapsed_time = time.time() - start_time
-
-        # If elapsed time is 20 seconds or more, break the loop
+            # If elapsed time is 20 seconds or more, break the loop
         if elapsed_time >= 20:
             break
 
     print("Timer stopped after 20 seconds.")
     root.after(0, talk_or_not.set, "Yes")
-    #talk_or_not.set("Yes")
+
 
 # GUI elements
 root = tk.Tk()
 root.title("ShiroAi-chan Control Panel")
-#audio_player = AudioPlayer('response')
-
 keyboard.on_press_key("F10", on_ctrl_press)  # Replace "ctrl+alt" with the desired key combination
-
-
 root.geometry("1200x800")
 root.configure(bg = "#4B98E0")
 
-canvas = Canvas(
+canvas = tk.Canvas(
     root,
     bg = "#4B98E0",
     height = 800,
@@ -922,7 +719,6 @@ canvas = Canvas(
 )
 
 canvas.place(x = 0, y = 0)
-
 
 image_image_1 = PhotoImage(
     file=relative_to_assets("image_1.png"))
@@ -940,13 +736,6 @@ image_2 = canvas.create_image(
     image=image_image_2
 )
 
-image_image_dont_mute_me = PhotoImage(
-    file=relative_to_assets("dont_mute_me.png"))
-image_dont_mute_me = canvas.create_image(
-    965.0,
-    100.0,
-    image=image_image_dont_mute_me
-)
 
 
 canvas.create_text(
@@ -974,7 +763,6 @@ button_1.place(
     height=55.0
 )
 
-#tet2sss
 button_image_2 = PhotoImage(
     file=relative_to_assets("button_2.png"))
 button_2 = Button(
@@ -1006,7 +794,6 @@ button_3.place(
     width=131.0,
     height=47.0
 )
-
 
 button_image_4 = PhotoImage(
     file=relative_to_assets("button_4.png"))
@@ -1056,11 +843,6 @@ button_6.place(
     height=47.0
 )
 
-
-
-
-
-
 left_arrow_img = PhotoImage(
     file=relative_to_assets("button_7.png"))
 left_arrow = Button(
@@ -1093,7 +875,6 @@ right_arrow.place(
     height=36.0
 )
 
-
 button_image_9 = PhotoImage(
     file=relative_to_assets("button_9.png"))
 button_9 = Button(
@@ -1109,7 +890,6 @@ button_9.place(
     width=42.0,
     height=42.0
 )
-
 tooltip = ToolTip(button_9, "Show persona description for current table.")
 
 button_image_10 = PhotoImage(
@@ -1127,9 +907,7 @@ button_10.place(
     width=45.0,
     height=42.0
 )
-
 tooltip = ToolTip(button_10, "Show all descriptions of persona.")
-
 
 button_image_11 = PhotoImage(
     file=relative_to_assets("button_11.png"))
@@ -1146,9 +924,7 @@ button_11.place(
     width=42.0,
     height=42.0
 )
-
 tooltip = ToolTip(button_11, "Clean text box on the right")
-
 
 button_image_12 = PhotoImage(
     file=relative_to_assets("button_12.png"))
@@ -1165,9 +941,7 @@ button_12.place(
     width=42.0,
     height=42.0
 )
-
 tooltip = ToolTip(button_12, "Clean text box below.")
-
 
 button_image_13 = PhotoImage(
     file=relative_to_assets("button_13.png"))
@@ -1184,9 +958,7 @@ button_13.place(
     width=42.0,
     height=42.0
 )
-
 tooltip = ToolTip(button_13, "Insert new description to current table.")
-
 
 button_image_14 = PhotoImage(
     file=relative_to_assets("button_14.png"))
@@ -1203,7 +975,6 @@ button_14.place(
     width=42.0,
     height=42.0
 )
-
 tooltip = ToolTip(button_14, "Show history of chat in current table.")
 
 button_image_15 = PhotoImage(
@@ -1221,7 +992,6 @@ button_15.place(
     width=42.0,
     height=42.0
 )
-
 tooltip = ToolTip(button_15, "Send text message to Shiro")
 
 button_image_speaking = PhotoImage(
@@ -1239,9 +1009,7 @@ button_stop_speaking.place(
     width=42.0,
     height=42.0
 )
-
 tooltip = ToolTip(button_stop_speaking, "Stops shiro from speaking")
-
 
 button_image_16 = PhotoImage(
     file=relative_to_assets("button_16.png"))
@@ -1249,7 +1017,7 @@ button_16 = Button(
     image=button_image_16,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: button_update_anilist_thread("ANIME"),
+    command=lambda: start_voice_control_input("show_anime_list"),
     relief="flat"
 )
 button_16.place(
@@ -1260,14 +1028,13 @@ button_16.place(
 )
 tooltip = ToolTip(button_16, "It shows my recent anime watched list")
 
-
 button_image_17 = PhotoImage(
     file=relative_to_assets("button_17.png"))
 button_17 = Button(
     image=button_image_17,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: button_update_anilist_thread("MANGA"),
+    command=lambda: start_voice_control_input("show_manga_list"),
     relief="flat"
 )
 button_17.place(
@@ -1295,7 +1062,6 @@ button_18.place(
 )
 tooltip = ToolTip(button_18, "Exit anime list mode and return to chat mode OR WRITE stop: IN CHAT")
 
-
 entry_image_1 = PhotoImage(
     file=relative_to_assets("entry_1.png"))
 entry_bg_1 = canvas.create_image(
@@ -1303,7 +1069,6 @@ entry_bg_1 = canvas.create_image(
     52.0,
     image=entry_image_1
 )
-
 
 image_image_5 = PhotoImage(
     file=relative_to_assets("image_5.png"))
@@ -1358,28 +1123,93 @@ style.map("Custom.TRadiobutton", background=[("active", "#000000")])
 normal_image = tk.PhotoImage(file=relative_to_assets("black.png"))
 selected_image = tk.PhotoImage(file=relative_to_assets("check.png"))
 
-
-
 style.element_create("Custom.TRadiobutton.indicator", "image", normal_image,
                      ("selected", selected_image),
                      sticky="", padding=2)
 
-    # for TSS voice tts_or_not
+
+    # for TSS voice tts_or_not# Create radio buttons
+# mute_or_unmute = tk.StringVar()
+# mute_or_unmute.set("No")
+
+# mute_or_unmute_yes = ttk.Radiobutton(root, text=" voice", variable=mute_or_unmute, value="Yes", style="Custom.TRadiobutton")
+# mute_or_unmute_no = ttk.Radiobutton(root, text=" no voice", variable=mute_or_unmute, value="No", style="Custom.TRadiobutton")
+
+# mute_or_unmute_yes.place(x=169, y=17)
+# mute_or_unmute_no.place(x=169, y=50)
+
+# # Listen for changes to mute_or_unmute variable
+# mute_or_unmute.trace_add("write", lambda *args: toggle_image(canvas, image_dont_mute_me))
+# #Create image on canvas
+# image_image_dont_mute_me = PhotoImage(file="assets/frame0/dont_mute_me.png")  # Replace this with your actual image path
+# image_dont_mute_me = canvas.create_image(965.0, 100.0, image=image_image_dont_mute_me)
+
+
+
+# Create image on canvas
+image_image_dont_mute_me = PhotoImage(file="assets/frame0/dont_mute_me.png")  # Replace this with your actual image path
+image_dont_mute_me = canvas.create_image(965.0, 100.0, image=image_image_dont_mute_me, tags="my_image11")
+# Initialize global state variable
+#
+def hide_mute_or_not(*args):
+    global mute_or_unmute
+    """Callback for when the user changes talkative checkbox"""
+    if mute_or_unmute.get() == "No":
+        print("Setting image to normal (visible)")
+        canvas.itemconfig("my_image11", state='normal')
+        state = "Showing"
+    elif mute_or_unmute.get() == "Yes":
+        print("Setting image to hidden")
+        canvas.itemconfig("my_image11", state='hidden')
+        state = "Hidden"
+    canvas.update()
+
+
+# Create Radiobuttons with placement and custom style
 mute_or_unmute = tk.StringVar()
 mute_or_unmute.set("No")
+mute_or_unmute.trace("w", hide_mute_or_not) #this is looking for changes of state
 mute_or_unmute_yes = ttk.Radiobutton(root, text=" voice", variable=mute_or_unmute, value="Yes", style="Custom.TRadiobutton")
 mute_or_unmute_no = ttk.Radiobutton(root, text=" no voice", variable=mute_or_unmute, value="No", style="Custom.TRadiobutton")
+
 mute_or_unmute_yes.place(x=169, y=17)
 mute_or_unmute_no.place(x=169, y=50)
+
+
+#canvas.itemconfig("my_image11", state='hidden')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     # for random speaking tts_or_not
 talk_or_not = tk.StringVar()
 talk_or_not.set("No")
 talk_or_not.trace("w", on_talk_or_not_change) #this is looking for changes of state
+
 talk_or_not_yes = ttk.Radiobutton(root, text=" talkative", variable=talk_or_not, value="Yes", style="Custom.TRadiobutton")
 talk_or_not_no = ttk.Radiobutton(root, text=" sleeping...", variable=talk_or_not, value="No", style="Custom.TRadiobutton")
 talk_or_not_yes.place(x=499, y=350)
 talk_or_not_no.place(x=499, y=383)
+
+
+
+
 
    # AGENT MODE OR NOT
 agent_mode = tk.StringVar()
@@ -1392,31 +1222,24 @@ agent_mode_no.place(x=499, y=663)
 
 #OMG RADIO BUTTONS ENDDD--------------------------------------------------------------------------------------------------
 
-
-
 # PROGRESS BARRRRRRRRRRRRRRRRRRRR OMGGGGGGGGGGGGGGG
 background_image = Image.open("./assets/frame0/image_3.png")
 filled_image = Image.open("./assets/frame0/image_4.png")
 
 progress_width, progress_height = background_image.size
-
 background_photo = ImageTk.PhotoImage(background_image)
 
-canvas = tk.Canvas(root, width=progress_width, height=progress_height,bg="black", highlightthickness=0, bd=0, relief='ridge')
-canvas.place(x=543, y=136)
+canvas2 = tk.Canvas(root, width=progress_width, height=progress_height,bg="black", highlightthickness=0, bd=0, relief='ridge')
+canvas2.place(x=543, y=136)
 
-background_progress = canvas.create_image(0, 0, anchor=tk.NW, image=background_photo)
-filled_progress = canvas.create_image(0, 0, anchor=tk.NW)
+background_progress = canvas2.create_image(0, 0, anchor=tk.NW, image=background_photo)
+filled_progress = canvas2.create_image(0, 0, anchor=tk.NW)
 # END PROGRESS BARRRRRRRRRRRRRRRRRRRR OMGGGGGGGGGGGGGGG
 
-
-
 response_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
-                      bg='black', fg='#A8E1F6', font=(font_family, 14),  bd=0)
+                      bg='black', fg='#A8E1F6', font=(font_family, 19 * -1),  bd=0)
 response_widget.place(x=66, y=252, width=428, height=226)
-
-
-            # i think i will change this to show_history_from_db_widget
+    # i think i will change this to show_history_from_db_widget
 log_label = tk.Label(
     root,
     text="",
@@ -1432,17 +1255,14 @@ log_label.place(
     x=543,
     y=158,
 )
-
 # Create the Text widget
 show_history_from_db_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
                       bg='black', fg='#78CBED', font=(font_family, 9),  bd=0)
 show_history_from_db_widget.place(x=66, y=587, width=428, height=198)
 show_history_from_db_widget.see('end')
 
-
 # Display the messages in the Text widget
 display_messages_from_database_only(take_history_from_database())
-
 show_history_from_db_widget.see('end')
 
 if hold_random_timer == 20000:
@@ -1452,14 +1272,9 @@ if hold_random_timer == 20000:
     print("checkbox putted on TALKATIVE")
     stop_timer()
     
-
 update_progress_bar(100)
 root.resizable(False, False)
 running = False
 thread_running = False
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
-
-
-
-
