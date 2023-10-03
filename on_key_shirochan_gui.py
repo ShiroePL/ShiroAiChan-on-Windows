@@ -24,8 +24,8 @@ import pygame
 import shared_code.anilist.anilist_api_requests as anilist_api_requests
 import re
 import random
-from shiro_agent import CustomToolsAgent
-from langchain_database.answer_with_chromadb_huggingface_embedd import search_chroma_db
+from shared_code.shiro_agent import CustomToolsAgent
+from shared_code.langchain_database.answer_with_chromadb_huggingface_embedd import search_chroma_db
 from shared_code.calendar_functions.test_wszystkiego import add_event_from_shiro, retrieve_plans_for_days
 from shared_code.home_assistant import ha_api_requests
 from datetime import datetime
