@@ -40,7 +40,7 @@ instructor_embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instruc
 
 # Embed and store the texts
 # Supplying a persist_directory will store the embeddings on disk
-persist_directory = './langchain_database/db_streamlit'
+persist_directory = './langchain_database/db_shiro'
 
 ## Here is the nmew embeddings being used
 embedding = instructor_embeddings
@@ -50,7 +50,7 @@ embedding = instructor_embeddings
 #                                  collection_name="misaki",
 #                                  persist_directory=persist_directory)
 
-texts1 = ["i like roses and sunflowers"]
+texts1 = ["today i have to go to the market and buy stuff to my bathroom"]
 vectordb = Chroma.from_texts(texts=texts1, 
                                  embedding=embedding,
                                  metadatas=[{"added_date": datetime.datetime.now().isoformat()}],
@@ -61,5 +61,5 @@ vectordb = Chroma.from_texts(texts=texts1,
 vectordb.persist()
 
 
-# if __name__ == "__main__":
-#    pass
+if __name__ == "__main__":
+   pass
