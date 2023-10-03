@@ -1,48 +1,24 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from fastapi import File, UploadFile
 from fastapi.responses import FileResponse
-import tkinter as tk
-from tkinter import ttk
-import speech_recognition as sr
-import pyttsx3
-import time 
-import kiki_hub.request_whisper as request_whisper
-import base64
-import requests
-import wave
-import pyaudio
+import logging
 import connect_to_phpmyadmin
-import time
 from better_profanity import profanity
 import chatgpt_api
-import request_voice_tts as request_voice
-import sys
-from db_config import conn
-from tkinter import scrolledtext
-from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
-from pathlib import Path
-from ctypes import windll
-from vtube_studio_api import VTubeStudioAPI
-from PIL import Image, ImageTk
+import kiki_hub.request_voice_tts as request_voice
 import string
-import keyboard
-from tkinter.font import Font
-import pygame
-import shared_code.anilist.anilist_api_requests as anilist_api_requests
+import anilist.anilist_api_requests as anilist_api_requests
 import re
-import timer
-import random
 from shiro_agent import CustomToolsAgent
 from langchain_database.answer_with_chromadb_huggingface_embedd import search_chroma_db
 from langchain_database.test_wszystkiego import add_event_from_shiro
-
 import connect_to_phpmyadmin
-import shiro_on_android
+
 content_type_mode =""
 app = FastAPI()
 anilist_mode = False
 
+logging.basicConfig(filename='app.log', filemode='a', format='%(asctime)s - %(message)s', level=logging.INFO)
 
 class QuestionWithUser(BaseModel):
     question: str
@@ -65,6 +41,10 @@ def exit_anilist_mode():
     print("exited anilist mode")
     print("--------------------")
 
+
+@app.get("/health")
+def health_check():
+    return {"status": "Healthy"}
 
 
 @app.get("/chat_history/{name}")
@@ -174,13 +154,14 @@ def main_function(question, checkbox, name="normal"):
         answer = "Okay, I will remember it, Madrus. I'm waiting for your next question. Give it to me nyaa."
         answer_to_app = f"Here is your list of most recent anime/manga.{list_content}" # this goes 
 
+        logging.info("requested list: \n" + answer_to_app)
         print("requested list: \n" + answer_to_app)
         request_voice.request_voice_fn("Here is your list. *smile*") #request Azure TTS to for answer
            
         
         connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
-        print("---------------------------------")
-
+        print("------end of list function--------")
+        logging.info("-----end of list function------")
         content_type_mode = content_type # i need this so in next question i know what to update (anime or manga)
         anilist_mode = True # entering anilist mode for next question to update anime/manga
         return answer_to_app
@@ -245,12 +226,17 @@ def main_function(question, checkbox, name="normal"):
     else: # normal question and answer mode
         # to database
         question = f"Madrus: {question}"
+        logging.info("------normal q/a mode------")
+        logging.info("question from user:" + question)
+        print("------normal q/a mode------")
         print("question from user:" + question)
         messages.append({"role": "user", "content": question})
         
             # send to open ai for answer
+        logging.info("messages: " + str(messages))
         print("messages: " + str(messages))
         answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+        logging.info("answer from OpenAI: " + answer)
         print("ShiroAi-chan: " + answer)
          
         request_voice.request_voice_fn(answer) #request Azure TTS to for answer
@@ -261,16 +247,11 @@ def main_function(question, checkbox, name="normal"):
         connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to DB to user table    
         connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
         connect_to_phpmyadmin.send_chatgpt_usage_to_database(prompt_tokens, completion_tokens, total_tokens) #to A DB with usage stats
-        print("-----------saved to db ----------")
+        logging.info("------saved to db => end of q/a mode------")
+        print("------saved to db => end of q/a mode------")
         
         return answer
 
-
-
-
-
-
-
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="192.168.0.130", port=8000)
+    uvicorn.run(app, host="10.147.17.21", port=8000)

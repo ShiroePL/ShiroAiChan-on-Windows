@@ -1,7 +1,6 @@
 import discord
 import chatgpt_api
 import connect_to_phpmyadmin
-import play_audio as play_audio
 import request_voice_tts as request_voice
 from better_profanity import profanity
 import asyncio

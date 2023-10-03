@@ -1,5 +1,5 @@
 # Note: you need to be using OpenAI Python v0.27.0 for the code below to work
-
+import requests
 import openai
 def send_to_openai(messages):
     try:
@@ -30,6 +30,7 @@ def send_to_openai(messages):
             return "Request to OpenAI API timed out", 0, 0, 0
         else:
             return f"Error: {e.args[0]}", 0, 0, 0
+
 
 # prompt = "Viewer: Did you kiss Madrus?"
 #   #completion_tokens = result[2] or _,_,completion_tokens,_ = result if i would like ot take only one
