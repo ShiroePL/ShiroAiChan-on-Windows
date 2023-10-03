@@ -7,7 +7,7 @@ import time
 import kiki_hub.request_whisper as request_whisper
 import base64
 import requests
-import connect_to_phpmyadmin
+import shared_code.connect_to_phpmyadmin
 import time
 from better_profanity import profanity
 import shared_code.chatgpt_api
