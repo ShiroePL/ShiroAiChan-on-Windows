@@ -1,5 +1,4 @@
 import requests
-import json
 from .. import api_keys
 #D:\111111.PROGRAMOWANIE\AI W PYTHONIE\shiro_on_streamlit
 def current_temperature():
