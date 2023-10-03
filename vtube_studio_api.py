@@ -42,7 +42,7 @@ class VTubeStudioAPI:
             "data": {
                 "pluginName": "Shiro chan",
                 "pluginDeveloper": "Madrus",
-                "authenticationToken": "c7c5296f2450ca697726e8e05b257586ee7f550671c4b0b5ee2ed7c7ad4c6cbc"
+                "authenticationToken": "c7c5296f2450ca697726e8e05b257586ee7f550671c4b0b5ee2ed7c7ad4c6cbc" #this need to be changed to variable
             }
         }))
 
