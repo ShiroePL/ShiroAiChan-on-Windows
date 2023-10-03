@@ -28,7 +28,7 @@ import string
 import keyboard
 from tkinter.font import Font
 import pygame
-import anilist.anilist_api_requests as anilist_api_requests
+import shared_code.anilist.anilist_api_requests as anilist_api_requests
 import re
 import timer
 import random
