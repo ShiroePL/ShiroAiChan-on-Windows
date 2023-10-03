@@ -54,6 +54,18 @@ class CustomToolsAgent:
                 description="useful for when you need to answer questions related to retrieving event from calendar(when user asks you about schedule for the day)",
                 return_direct=True,
             ),
+            Tool(
+                name="set_timer",
+                func=fake_function_anime,
+                description="useful for when you need to answer questions related to setting timer",
+                return_direct=True,
+            ),
+            Tool(
+                name="home_assistant",
+                func=fake_function_anime,
+                description="useful for when you need to answer questions related to home assistant and home automation",
+                return_direct=True,
+            ),
         ]
 
         # Set up the base template

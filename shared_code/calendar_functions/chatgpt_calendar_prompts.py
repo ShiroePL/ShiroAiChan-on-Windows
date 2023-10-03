@@ -30,6 +30,20 @@ class CalendarAssistant:
             Begin!
             Question: {query}
             Answer:"""
+        template_refined = f"""I will provide a sentence about adding an event to a calendar, along with a current timestamp (e.g., 2023-07-04 16:11:15.296367+00:00). Your task is to extract the date of the event and its details.
+
+            Please use the EXACT following format for the answer:
+            summary: [summary], description: [description], date: [date], end_date: [end_date]
+
+            Summary: This is the main event title.
+            Description: Any additional details about the event not covered in the summary.
+            Date: Use the format YYYY-MM-DD HH:MM:SS. If no time is specified, default to 00:00:00.
+            End_date: If provided in the question, use that. For appointments, use an all-day event, starting at 00:00:00 and ending the next day at 00:00:00.
+            Ensure your answer only includes the requested details in the specified format.
+
+            Begin!
+            Question: {query}
+            Answer:"""
         return self._run_chatgpt(template)
 
     def chatgpt_calendar_schedule(self, query):
