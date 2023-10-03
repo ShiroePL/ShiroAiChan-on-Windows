@@ -10,7 +10,7 @@ import requests
 import connect_to_phpmyadmin
 import time
 from better_profanity import profanity
-import chatgpt_api
+import shared_code.chatgpt_api
 import kiki_hub.request_voice_tts as request_voice
 import sys
 from tkinter import Canvas, Entry, Button, PhotoImage
@@ -27,7 +27,7 @@ import random
 from shared_code.shiro_agent import CustomToolsAgent
 from shared_code.langchain_database.answer_with_chromadb_huggingface_embedd import search_chroma_db
 from shared_code.calendar_functions.test_wszystkiego import add_event_from_shiro, retrieve_plans_for_days
-from shared_code.home_assistant import ha_api_requests
+from shared_code.home_assistant import ha_api_requests, open_weather_api
 from datetime import datetime
 
 OUTPUT_PATH = Path(__file__).parent
@@ -247,7 +247,7 @@ def ask_random_question(): # THIS SHIT IS FOR ASKING PROMPT
         
     progress(40,"sending to openAI...") 
         # send to open ai for answer
-    answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+    answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages) 
     print_response_label(answer)
 
     repetitive_part_of_voice_control_functions_tokens(name, question, answer, messages, prompt_tokens, completion_tokens, total_tokens)  
@@ -454,7 +454,7 @@ def voice_control(input_text=None):
                 messages.append({"role": "user", "content": question})
                         
                 print("messages: " + str(messages))
-                personalized_answer, prompt_tokens2, completion_tokens2, total_tokens2 = chatgpt_api.send_to_openai(messages)
+                personalized_answer, prompt_tokens2, completion_tokens2, total_tokens2 = shared_code.chatgpt_api.send_to_openai(messages)
 
                 prompt_tokens += prompt_tokens2
                 completion_tokens += completion_tokens2
@@ -474,15 +474,16 @@ def voice_control(input_text=None):
                 
                     # use function chain to add event to calendar
                 answer_from_ha = ha_api_requests.room_temp()
+                outside_temperature = ha_api_requests.open_weather_api()
                 print("answer from api: " + answer_from_ha)
                 progress(60,"got temperature, adding personality...")
-                query2 = f"[current time: {current_time}] Madrus: {query}. shiro: Retriving informations from her sensors... Done! Info from sensors:{answer_from_ha}°C. Weather outside: 25°C.| (please say °C in your answer) | Shiro:"
+                query2 = f"[current time: {current_time}] Madrus: {query}. shiro: Retriving informations from her sensors... Done! Info from sensors:{answer_from_ha}°C. Weather outside: {outside_temperature}°C.| (please say °C in your answer) | Shiro:"
                 messages.append({"role": "user", "content": query2})
                 
                 print("messages: " + str(messages))
 
                     # add personality to answer
-                personalized_answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages)
+                personalized_answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages)
 
                 print_response_label(personalized_answer)
                 
@@ -555,7 +556,7 @@ def voice_control(input_text=None):
                     
                     # send to open ai for answer
                     progress(40,"sending to openAI...")
-                    answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+                    answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages) 
                     
                         #----- START find ID and episodes number of updated anime/manga-----
                     # The regex pattern             
@@ -602,7 +603,7 @@ def voice_control(input_text=None):
                     # send to open ai for answer
                 progress(40,"sending to openAI...") 
                 print("messages: " + str(messages))
-                answer, prompt_tokens, completion_tokens, total_tokens = chatgpt_api.send_to_openai(messages) 
+                answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages) 
                 print_response_label(answer)
                 
                 repetitive_part_of_voice_control_functions_tokens(name, question, answer, messages, prompt_tokens, completion_tokens, total_tokens)
