@@ -1,13 +1,11 @@
 import requests
-from api_keys import access_token
+from .. import api_keys
 import json
-
-
 
 
 def change_anime_status(ANIME_ID: int, NEW_STATUS: str):
   """Update the status of an anime"""
-  headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
+  headers = {'Authorization': f'Bearer {api_keys.access_token}', 'Content-Type': 'application/json'}
 
   # Replace 'ANIME_ID' with the ID of the anime you want to update, and 'NEW_STATUS' with the desired status
       # for testing
