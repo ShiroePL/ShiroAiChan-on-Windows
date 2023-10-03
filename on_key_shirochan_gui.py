@@ -34,7 +34,7 @@ import timer
 import random
 from shiro_agent import CustomToolsAgent
 from langchain_database.answer_with_chromadb_huggingface_embedd import search_chroma_db
-from langchain_database.test_wszystkiego import add_event_from_shiro
+from shared_code.calendar_functions.test_wszystkiego import add_event_from_shiro, retrieve_plans_for_days
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
