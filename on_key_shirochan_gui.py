@@ -8,7 +8,6 @@ import kiki_hub.request_whisper as request_whisper
 import base64
 import requests
 import shared_code.connect_to_phpmyadmin
-import time
 from better_profanity import profanity
 import shared_code.chatgpt_api
 import kiki_hub.request_voice_tts as request_voice
