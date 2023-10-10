@@ -24,7 +24,7 @@ import shared_code.anilist.anilist_api_requests as anilist_api_requests
 import re
 import random
 from shared_code.shiro_agent import CustomToolsAgent
-from shared_code.langchain_database.answer_with_chromadb_huggingface_embedd import search_chroma_db
+from shared_code.langchain_database.langchain_vector_db_queries import search_db_with_llm_response
 from shared_code.calendar_functions.test_wszystkiego import add_event_from_shiro, retrieve_plans_for_days
 from shared_code.home_assistant import ha_api_requests, open_weather_api
 from datetime import datetime
@@ -494,7 +494,7 @@ def voice_control(input_text=None):
             elif cleaned_question.lower().startswith("db:") or "database_search" in agent_reply:
                 query = cleaned_question.replace("db:", "").strip()
                 messages.append({"role": "user", "content": query})
-                answer = search_chroma_db(query)
+                answer = search_db_with_llm_response(query)
                 
                 progress(60,"got answer")
                 print_response_label(answer)
