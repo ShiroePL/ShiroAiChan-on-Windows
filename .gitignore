@@ -40,7 +40,7 @@ sonar-project.properties
 
 langchain_database/db_na_large_viola1
 langchain_database/mydata
-
+kiki_hub/whisper-webUI-cmbitton
 # Mac/OSX
 .DS_Store
 
