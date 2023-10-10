@@ -48,7 +48,7 @@ langchain_database/mydata
 *.pkl
 *.bin
 *.parquet
-
+*.pdf
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
