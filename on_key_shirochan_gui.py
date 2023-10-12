@@ -109,6 +109,7 @@ def transcribe_audio_question(filename):
 
 def print_response_label(response):
     """Print the response to the response text widget in Tkinter GUI."""
+    response_widget.configure(font=(font_family, 19 * -1))
     response_widget.delete('1.0', 'end')
     response_widget.insert(tk.END, f"{response}", 'center')
     response_widget.tag_configure('center', justify='center')
@@ -116,6 +117,52 @@ def print_response_label(response):
    
 def print_log_label(response):
     log_label.config(text=response)
+
+def reformat_list_output(data_str, type:str):
+    """Format the data as a table with 3 columns.
+
+    type is anime or manga"""
+    entries = data_str.split('\n')
+    table_data = []
+    pattern = r'^romaji_title:(.*), id:(\d+), read_chapters:(.*)$' if type == "manga" else r'^romaji_title:(.*), id:(\d+), watched_episodes:(.*)$'
+    
+    for entry in entries:
+        if entry.strip():  # Exclude empty strings
+            match = re.search(pattern, entry.strip())
+            if match:
+                title = match.group(1)
+                id_str = match.group(2)
+                read_chapters = match.group(3)
+                #table_data.append({"Title": title, "ID": id_str, "Read Chapters": read_chapters}) if type == "manga" else table_data.append({"Title": title, "ID": id_str, "Watched Episodes": read_chapters})
+                if type == "manga":
+                    table_data.append({"Title": title, "ID": id_str, "Read Chapters": read_chapters})
+                else:
+                    table_data.append({"Title": title, "ID": id_str, "Watched Episodes": read_chapters})
+
+    return table_data
+
+def print_anime_list(table_data):
+    """Print the response to the response text widget in Tkinter GUI."""
+    
+    # Build a formatted string from the table data
+    formatted_str = ""
+    for row in table_data:
+        formatted_str += f"Title: {row['Title']}\n"
+        formatted_str += f"ID: {row['ID']}\n"
+        if 'Read Chapters' in row:
+            formatted_str += f"Read Chapters: {row['Read Chapters']}\n"
+        else:
+            formatted_str += f"Watched Episodes: {row['Watched Episodes']}\n"
+        formatted_str += "-" * 40 + "\n"  # Separator
+    
+    # Display the formatted string in the Tkinter text widget
+    
+    
+    response_widget.configure(font=(font_family, 10))  # Update font to Helvetica, size 10
+    response_widget.delete('1.0', 'end')
+    response_widget.insert(tk.END, f"{formatted_str}", 'center')
+    response_widget.tag_configure('center', justify='center')
+    response_widget.insert(tk.END, "\n")
 
 def play_audio_fn(filename):
     pygame.mixer.init()
@@ -183,13 +230,31 @@ def display_messages_from_database_only(messages):
         
     show_history_from_db_widget.see('end')
 
-def exit_anilist_mode():
-    global anilist_mode
-    anilist_mode = False
-    print("--------------------")
-    print("exited anilist mode")
-    print("--------------------")
-    progress(100,"exited anilist mode")
+def show_room_temperature():
+    name = table_name_input.get()
+    messages = connect_to_phpmyadmin.retrieve_chat_history_from_database(name)
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S %A")
+    question = "can you show me my room temperature?"
+    query = f"[current time: {current_time}] {question}"
+    
+        # use function chain to add event to calendar
+    answer_from_ha = ha_api_requests.room_temp()
+    outside_temperature = open_weather_api.current_temperature()
+    print("answer from api: " + answer_from_ha)
+    progress(60,"got temperature, adding personality...")
+    query2 = f"[current time: {current_time}] Madrus: {query}. shiro: Retriving informations from her sensors... Done! Info from sensors:{answer_from_ha}°C. Weather outside: {outside_temperature}°C.| (please say °C in your answer) | Shiro:"
+    messages.append({"role": "user", "content": query2})
+    
+    print("messages: " + str(messages))
+
+        # add personality to answer
+    personalized_answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages)
+
+    print_response_label(personalized_answer)
+    
+    repetitive_part_of_voice_control_functions_tokens(name, query, personalized_answer, messages, prompt_tokens, completion_tokens, total_tokens)
+
+    progress(100,"showed, done")          
 
 ################################### RANDOM QUESTIONS FROM SHIRO ######################################################
 
@@ -285,7 +350,8 @@ def repetitive_part_of_voice_control_functions_tokens(name, question, answer,mes
     
     display_messages_from_database_only(take_history_from_database())
     if tts_or_not == "Yes":
-        play_audio_fn("response")
+        play_audio_thread("response")
+        #play_audio_fn("response")
         beep = "cute_beep" #END OF ANSWER
         play_audio_fn(beep)
 
@@ -317,7 +383,8 @@ def repetitive_part_of_voice_control_functions(name, question, answer,messages, 
     
     display_messages_from_database_only(take_history_from_database())
     if tts_or_not == "Yes":
-        play_audio_fn("response")
+        #play_audio_fn("response")
+        play_audio_thread("response")
         beep = "cute_beep" #END OF ANSWER
         play_audio_fn(beep)
     progress(95,"addded tokens to db")
@@ -334,6 +401,7 @@ def voice_control(input_text=None):
     name = table_name_input.get()  # takes name from input
     tts_or_not = mute_or_unmute.get() # takes tts mode from checkbox
     agent_mode_variable = agent_mode.get() # takes agent mode from checkbox
+    update_list_variable = update_list_checkbox.get() # takes update list mode from checkbox
 
         # hold random questions if i am conversing so she will not ask me in the middle of conversation
     if talk_or_not.get() == "Yes":
@@ -417,9 +485,6 @@ def voice_control(input_text=None):
                 play_audio_fn(beep)
                 sys.exit()
 
-            elif cleaned_question in ("stop:"):
-                exit_anilist_mode()
-                running = False
 
             elif cleaned_question.lower().startswith("plan:") or "add_event_to_calendar" in agent_reply:
                 query = cleaned_question.replace("plan:", "").strip()
@@ -466,7 +531,7 @@ def voice_control(input_text=None):
                 running = False
                 progress(100,"showed, done")
 
-            elif cleaned_question.lower().startswith("ha:") or "home_assistant" in agent_reply:
+            elif cleaned_question.lower().startswith("ha:") or "home_assistant" in agent_reply: # show room temperature
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S %A")
                 query = cleaned_question.replace("ha:", "").strip()
                 query = f"[current time: {current_time}] {query}"
@@ -504,19 +569,6 @@ def voice_control(input_text=None):
                 running = False
                 progress(100,"showed, done")
 
-            # elif cleaned_question.lower().startswith("timer:") or "set_timer" in agent_reply:
-            #     query = cleaned_question.replace("timer:", "").strip()
-            #     messages.append({"role": "user", "content": query})
-                
-            #     # tu timer = costam
-                
-            #     progress(60,"got answer")
-            #     print_response_label(answer)
-                
-            #     repetitive_part_of_voice_control_functions(name, cleaned_question, answer, messages)
-                
-            #     running = False
-            #     progress(100,"showed, done")
 
             elif "show_anime_list" in agent_reply or "show_manga_list" in agent_reply or "showmangalist" in cleaned_question or "showanimelist" in cleaned_question:
                 if agent_reply == "":
@@ -525,27 +577,40 @@ def voice_control(input_text=None):
                     content_type = "anime" if "anime" in agent_reply else "manga"
 
                 list_content, _ = anilist_api_requests.get_10_newest_entries("ANIME") if content_type == "anime" else anilist_api_requests.get_10_newest_entries("MANGA")  
-                 
-                question = f"Madrus: I will give you list of my 10 most recent watched/read {content_type} from site AniList. Here is this list:{list_content}. I want you to remember this because in next question I will ask you to update episodes/chapters of one of them."
-                messages.append({"role": "user", "content": question})
 
-                # send to open ai for answer !!!!!!!! I WONT SEND IT BECAUSE I ALREADY GOT IT FROM reformatting
-                answer = "Okay, I will remember it, Madrus. I'm waiting for your next question. Give it to me nyaa."
                 print_response_label(f"Here is your list of most recent {content_type}.{list_content}")
 
+                reformated_list = reformat_list_output(list_content, content_type)
+                print_anime_list(reformated_list)
+
+                print("lista: \n" + list_content) # for testing
+                answer = "Here is your list of most recent " + content_type + "." + list_content
                 repetitive_part_of_voice_control_functions(name, question, answer, messages, f"Here is your list of most recent {content_type}")
-                
-                content_type_mode = content_type # i need this so in next question i know what to update (anime or manga)
-                running = False
-                anilist_mode = True # entering anilist mode for next question to update anime/manga
+                   
+                running = False 
                 
                 progress(100,"showed, done")
 
-            elif anilist_mode: # she is in animelist mode, so she remembers list i gave her 
+            elif update_list_variable == "Yes": # she is in animelist mode, so she remembers list i gave her
                     # make shiro find me id of anime/manga
-                if not question.lower().startswith("stop:"): # this is so if i showed list but i DON'T want to update it
-                   
-                    content_type = content_type_mode   
+                if "manga" in question.lower() or "anime" in question.lower():
+                    
+                    if "manga" in question.lower():
+                        content_type = "manga"
+                    else:
+                        content_type = "anime"
+
+                    content_type = "manga" if "manga" in question.lower() else "anime"
+
+                        ##### we need to ger anime/manga list
+                    list_content, _ = anilist_api_requests.get_10_newest_entries("ANIME") if content_type == "anime" else anilist_api_requests.get_10_newest_entries("MANGA")
+                    fake_question = f"Madrus: I will give you list of my 10 most recent watched/read {content_type} from site AniList. Here is this list:{list_content}. I want you to remember this because in next question I will ask you to update episodes/chapters of one of them."
+                    messages.append({"role": "user", "content": fake_question})
+
+                        # add as answer
+                    answer = "Okay, I will remember it, Madrus. I'm waiting for your next question. Give it to me nyaa."
+                    messages.append({"role": "assistant", "content": answer})
+                    
 
                     end_question = "I would like you to answer me giving me ONLY THIS: ' title:<title>,id:<id>,"
                     extra = " episodes:<episodes>'. Nothing more." if content_type == "anime" else " chapters:<chapters>'. Nothing more."
@@ -588,8 +653,6 @@ def voice_control(input_text=None):
                     progress(100,"updated on anilist")
 
                 running = False
-                anilist_mode = False
-                content_type_mode =""
                 progress(100,"exited animelist mode")
 
             else: # continue if user does not want to exit
@@ -641,6 +704,13 @@ def start_voice_control_input(text):
     running = True #will start the while loop in voice control
     voice_thread = threading.Thread(target=voice_control, args=(text,))
     voice_thread.start()    
+
+def show_temperature_button():
+    global running
+    running = True #will start the while loop in voice control
+    voice_thread = threading.Thread(target=show_room_temperature)
+    voice_thread.start()   
+
 
 def stop_listening():
     global running
@@ -699,6 +769,11 @@ def hold_timer():
 
     print("Timer stopped after 20 seconds.")
     root.after(0, talk_or_not.set, "Yes")
+
+def reset_table_and_make_new():
+    connect_to_phpmyadmin.reset_chat_history(table_name_input.get())
+    print_log_label("reset chat history")
+    display_messages_from_database_only(take_history_from_database())
 
 
 # GUI elements
@@ -785,7 +860,7 @@ button_3 = Button(
     image=button_image_3,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: (connect_to_phpmyadmin.reset_chat_history(table_name_input.get()), print_log_label("reset chat history")),
+    command=reset_table_and_make_new,
     relief="flat"
 )
 button_3.place(
@@ -1051,7 +1126,7 @@ button_18 = Button(
     image=button_image_18,
     borderwidth=0,
     highlightthickness=0,
-    command=exit_anilist_mode,
+    command=show_temperature_button,
     relief="flat"
 )
 button_18.place(
@@ -1060,7 +1135,7 @@ button_18.place(
     width=42.0,
     height=42.0
 )
-tooltip = ToolTip(button_18, "Exit anime list mode and return to chat mode OR WRITE stop: IN CHAT")
+tooltip = ToolTip(button_18, "Show room temerature (using home assistant sensors")
 
 entry_image_1 = PhotoImage(
     file=relative_to_assets("entry_1.png"))
@@ -1219,6 +1294,16 @@ agent_mode_yes = ttk.Radiobutton(root, text=" agent mode ON", variable=agent_mod
 agent_mode_no = ttk.Radiobutton(root, text=" normal mode", variable=agent_mode, value="No", style="Custom.TRadiobutton")
 agent_mode_yes.place(x=499, y=630)
 agent_mode_no.place(x=499, y=663)
+
+   # AGENT MODE OR NOT
+update_list_checkbox = tk.StringVar()
+update_list_checkbox.set("No")
+update_list_checkbox.trace("w", on_talk_or_not_change) #this is looking for changes of state
+update_list_checkbox_yes = ttk.Radiobutton(root, text=" update list mode ON", variable=update_list_checkbox, value="Yes", style="Custom.TRadiobutton")
+update_list_checkbox_no = ttk.Radiobutton(root, text=" normal mode", variable=update_list_checkbox, value="No", style="Custom.TRadiobutton")
+update_list_checkbox_yes.place(x=499, y=520)
+update_list_checkbox_no.place(x=499, y=553)
+
 
 #OMG RADIO BUTTONS ENDDD--------------------------------------------------------------------------------------------------
 
