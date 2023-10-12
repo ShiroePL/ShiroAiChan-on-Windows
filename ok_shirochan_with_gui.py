@@ -15,7 +15,7 @@ from shared_code import connect_to_phpmyadmin as connect_to_phpmyadmin
 from shared_code import chatgpt_api as chatgpt_api
 import time
 from better_profanity import profanity
-import request_voice_tts as request_voice
+from kiki_hub import request_voice_tts as request_voice
 import sys
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
 from pathlib import Path
