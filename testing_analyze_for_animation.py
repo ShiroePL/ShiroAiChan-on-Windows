@@ -1,4 +1,3 @@
-# clean response using correct_response.py
 # sentimenatl analysis for animation
 # keywords check for animation
 import time
@@ -7,7 +6,7 @@ from sentimental_testing_notoficial import check_sentiment_fn as check_sentiment
 
 # for tests i will just use hand written text
 
-#prompt = "she last thing he remember is going to the park with my friends. we were playing hide and seek and I hid under a bench. Then, I woke up here."
+#prompt = "the last thing he remember is going to the park with my friends. we were playing hide and seek and I hid under a bench. Then, I woke up here."
 def analyzing_fn(prompt, keywords):
     print("this is your prompt: " + prompt)
     print("this is your keywords: " + str(keywords))
