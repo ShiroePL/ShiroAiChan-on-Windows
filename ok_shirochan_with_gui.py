@@ -11,18 +11,15 @@ import base64
 import requests
 import wave
 import pyaudio
-import connect_to_phpmyadmin
+from shared_code import connect_to_phpmyadmin as connect_to_phpmyadmin
+from shared_code import chatgpt_api as chatgpt_api
 import time
 from better_profanity import profanity
-import chatgpt_api
 import request_voice_tts as request_voice
 import sys
-from db_config import conn
-from tkinter import scrolledtext
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
 from pathlib import Path
 from ctypes import windll
-from tkinter import *
 from vtube_studio_api import VTubeStudioAPI
 from PIL import Image, ImageTk
 import string
