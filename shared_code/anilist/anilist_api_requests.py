@@ -40,7 +40,7 @@ def change_anime_status(ANIME_ID: int, NEW_STATUS: str):
 
 def change_episodes_watched(ANIME_ID: int, EPISODES_WATCHED: int):
   """Update the number of episodes watched for an anime"""
-  headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
+  headers = {'Authorization': f'Bearer {api_keys.anilist_access_token}', 'Content-Type': 'application/json'}
 
   # Replace 'ANIME_ID' with the ID of the anime you want to update, and 'NEW_STATUS' with the desired status
       # for testing
