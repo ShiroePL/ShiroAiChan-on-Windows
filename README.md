@@ -207,6 +207,80 @@ VTube Studio 🎬
 ## Configuration
 ### 8. Configuration and Installation 🛠️
 
+1. You need to add and configure api_keys.py file inside 'shared_code' folder: 
+
+```python
+# These are mandatory for connecting to MariaDB
+user_name = ""
+db_password = ""
+host_name = ""  # IP address of MariaDB instance
+db_name = ""
+
+# These three are optional and are only needed if you plan to use the temperature function
+token = ""  # Home Assistant token
+server_ip = ""  # IP address of Home Assistant instance
+weather_api = ""  # OpenWeatherMap API key needed for temperature function
+
+# These are for adding/retrieving plans from the calendar
+calendar_username = ""  # CalDAV username
+calendar_password = ""  # CalDAV password
+nextcloud_url = ""  # Nextcloud URL for DAV functions, e.g., https://example.com/remote.php/dav
+
+# You'll need to manually generate this token by running the 'anilist_api_get_token.py' file in the shared_code/anilist folder if you want to use anime/manga list functions
+anilist_access_token = ""
+
+# Required for using the anime/manga list function; obtain these from the AniList site
+client_id = ""
+client_secret = ""
+
+# Path to the Langchain folder, e.g., 'C:\\example\\folder\\ShiroAiChan-on-Windows\\shared_code\\langchain_database\\'
+path_to_langchain = ""
+```
+
+2. To make sure the application functions properly, you need to add certain API keys to your system's environment variables:
+  *  OpenAI API Key:
+     *  Add your OpenAI API key to the environment variables and name it ```OPENAI_API_KEY```
+  *  Azure Cognitive Speech 
+     *  If you intend to use Text-to-Speech (TTS) functionalities, add ```SPEECH_REGION``` and ```SPEECH_KEY``` to the environment variables. Instructions: https://learn.microsoft.com/en-us/azure/ai-services/multi-service-resource?pivots=azportal&tabs=windows#get-the-keys-for-your-resource
+
+3. To configure the device type for PyTorch in the ``shared_code\langchain_database\langchain_vector_db_queries.py`` file, you'll need to modify the device argument in the HuggingFaceInstructEmbeddings function. Here are the steps:
+
+     * Open the file ``shared_code\langchain_database\langchain_vector_db_queries.py``.
+
+     * Locate the following block of code:
+
+   ```python
+   if type == "pdf":
+       instructor_embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-large", 
+                                                           model_kwargs={"device": "cuda"})
+   ```
+
+
+     * Change the value of the device argument depending on your setup:
+
+        * If you have an Nvidia GPU and have installed the CUDA version of PyTorch, you can leave the device value as ``"cuda"``.
+        * If you don't have a GPU, or haven't installed the CUDA version of PyTorch, change the device value to ``"cpu"``.
+     
+4. Installing Dependencies on Windows
+   ```bash
+   pip install -r requirements.txt
+   ```
+    #### Python Version Compatibility
+
+    * The code has been tested on Python 3.9.0.
+    * If you're using a different Python version, you may need to modify the requirements.txt file to ensure package compatibility.
+    * Specifically, Python 3.10.0 may require different package versions, so you might have to install them manually if the provided requirements.txt file doesn't work for you.
+
+5. MariaDB
+   
+    * If you don't have MariaDB installed, you can use [XAMPP] as an easy way to get started with MariaDB. Download and install [XAMPP] from their official website and activate the MariaDB service through the [XAMPP] control panel, then make database. 
+
+6. Running the Program
+   * To launch the application, execute the following command in your terminal:
+    ```bash
+    python on_key_shirochan_gui.py
+    ```
+
 
 ## Links 
 
@@ -220,9 +294,12 @@ VTube Studio 🎬
 
 [Wearos repo] : https://github.com/ShiroePL/Shiro-AI-Chan-in-container
 
+[XAMPP] : https://www.apachefriends.org/pl/index.html
+
 [ChatGPT API]: https://openai.com/blog/introducing-chatgpt-and-whisper-apis
 [Azure TTS]: https://azure.microsoft.com/en-us/products/cognitive-services/text-to-speech/
 [Streamlit]: https://streamlit.io/
 [Streamlit repo]: https://github.com/ShiroePL/shiro_on_streamlit
 [Desktop repo]: https://github.com/ShiroePL/shiro_chan_desktop
 [Wearos repo]: https://github.com/ShiroePL/Shiro-AI-Chan-in-container
+[XAMPP]: https://www.apachefriends.org/pl/index.html
