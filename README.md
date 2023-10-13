@@ -141,7 +141,21 @@ Room Temperature 🌡️
 
 <img src="pictures/show_temperature.png" width="700">
 
+VTube Studio 🎬
+* Here's a brief showcase of the animations. The avatar is sourced from an open and free collection. I hope to design a unique one in the future!
 
+<table>
+  <tr>
+    <td>
+      <img src="pictures/new_queen_on_chair.png" width="810">
+    </td>
+    <td>Animations:<br>
+      <img src="pictures/smile.gif" width="280">
+      <img src="pictures/shock_1.gif" width="280">
+      <img src="pictures/shock_2.gif" width="280">
+    </td>
+  </tr>
+</table>
 
 ## Icons
 ### Quick description of GUI icon
