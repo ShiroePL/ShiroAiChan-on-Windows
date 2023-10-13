@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 import caldav
 from icalendar import Calendar, Event
 from .. import api_keys #this works if function is used from shiros functions
-#import private_variables # this works if function is used from this file
 from datetime import datetime
 import re
 from pytz import utc

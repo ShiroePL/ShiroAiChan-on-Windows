@@ -72,7 +72,7 @@ def change_episodes_watched(ANIME_ID: int, EPISODES_WATCHED: int):
 
 def change_chapters_count(MANGA_ID: int, CHAPTERS_READ: int):
   """Update the number of episodes watched for an manga/novel"""
-  headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
+  headers = {'Authorization': f'Bearer {api_keys.anilist_access_token}', 'Content-Type': 'application/json'}
 
   # Replace 'ANIME_ID' with the ID of the anime you want to update, and 'NEW_STATUS' with the desired status
       # for testing
@@ -104,7 +104,7 @@ def change_chapters_count(MANGA_ID: int, CHAPTERS_READ: int):
 
 def change_progress(MEDIA_ID: int, PROGRESS: int, MEDIA_TYPE: str):
   """Update the progress for a media. Media type can be 'anime' or 'manga'."""
-  headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
+  headers = {'Authorization': f'Bearer {api_keys.anilist_access_token}', 'Content-Type': 'application/json'}
 
   query = '''
   mutation ($id: Int, $progress: Int) {
