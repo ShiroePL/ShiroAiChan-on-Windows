@@ -91,7 +91,37 @@ To use tools, you can just start question with 'agent mode' or 'agent:' or check
 </tr>
 </table>
 
+<table style="border: none;">
+<tr style="border: none;">
+    <!-- First Icon -->
+    <td style="border: none; vertical-align: middle;"><img src="assets/frame0/button_10.png" alt="Icon 1" width="32"></td>
+    <!-- Second Icon -->
+    <td style="border: none; vertical-align: middle;"><img src="assets/frame0/button_10.png" alt="Icon 2" width="32"></td>
+    <!-- Third Icon -->
+    <td style="border: none; vertical-align: middle;"><img src="assets/frame0/button_10.png" alt="Icon 3" width="32"></td>
+</tr>
+<tr style="border: none;">
+    <!-- First Description -->
+    <td style="border: none; vertical-align: middle;">Description for Icon 1</td>
+    <!-- Second Description -->
+    <td style="border: none; vertical-align: middle;">Description for Icon 2</td>
+    <!-- Third Description -->
+    <td style="border: none; vertical-align: middle;">Description for Icon 3</td>
+</tr>
+</table>
 
+<table border="0">
+  <tr>
+    <td align="center"><img src="assets/frame0/button_10.png" width="50"></td>
+    <td align="center"><img src="assets/frame0/button_10.png" width="50"></td>
+    <td align="center"><img src="assets/frame0/button_10.png" width="50"></td>
+  </tr>
+  <tr>
+    <td align="center"><br><b>Description for Icon 1</b></td>
+    <td align="center"><br><b>Description for Icon 2</b></td>
+    <td align="center"><br><b>Description for Icon 3</b></td>
+  </tr>
+</table>
 ## Links 
 
 [ChatGPT API] : https://openai.com/blog/introducing-chatgpt-and-whisper-apis
