@@ -16,7 +16,7 @@ ShiroAi-chan embodies the persona of a virtual cat-girl fond of anime, manga, li
 - [Features](#Features)
 - [Screenshots](#Screenshots)
 - [Configuration](#Configuration)
-- [cons](#Icons)
+- [GUI Icons](#Icons)
 
 ## Features
 ### 1. Writing ✍️
