@@ -145,13 +145,7 @@ Room Temperature 🌡️
 
 ## GUI Icons
 ### Quick description of GUI icon
-<table border="0" style="width:80%;">
-  <colgroup>
-     <col style="width:25%">
-     <col style="width:25%">
-     <col style="width:25%">
-     <col style="width:25%">
-  </colgroup>
+<table border="0">
   <tr>
     <td align="center"><img src="icon_for_gui/button_7.png" width="50"> <img src="icon_for_gui/button_8.png" width="50"></td>
     <td align="center"><img src="icon_for_gui/button_9.png" width="50"></td>
@@ -166,13 +160,7 @@ Room Temperature 🌡️
   </tr>
 </table>
 
-<table border="0" style="width:80%;">
-  <colgroup>
-     <col style="width:25%">
-     <col style="width:25%">
-     <col style="width:25%">
-     <col style="width:25%">
-  </colgroup>
+<table border="0" >
   <tr>
     <td align="center"><img src="icon_for_gui/button_16.png" width="50"></td>
     <td align="center"><img src="icon_for_gui/button_18.png" width="50"></td>
@@ -187,13 +175,7 @@ Room Temperature 🌡️
   </tr>
 </table>
 
-<table border="0" style="width:80%;">
-  <colgroup>
-     <col style="width:25%">
-     <col style="width:25%">
-     <col style="width:25%">
-     <col style="width:25%">
-  </colgroup>
+<table border="0">
   <tr>
     <td align="center"><img src="icon_for_gui/button_14.png" width="50"></td>
     <td align="center"><img src="icon_for_gui/button_15.png" width="50"></td>
@@ -210,6 +192,8 @@ Room Temperature 🌡️
 
 ## Configuration
 ### 8. Configuration and Installation 🛠️
+
+
 ## Links 
 
 [ChatGPT API] : https://openai.com/blog/introducing-chatgpt-and-whisper-apis
