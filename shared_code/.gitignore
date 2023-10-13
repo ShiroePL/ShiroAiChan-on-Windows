@@ -37,7 +37,7 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
-
+shiro_vector_db
 # Unit test / coverage reports
 htmlcov/
 .tox/
