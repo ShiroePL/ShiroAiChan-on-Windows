@@ -84,7 +84,7 @@ To use tools, you can just start question with 'agent mode' or 'agent:' or check
 
 
 ![Connect Icon](assets/frame0/button_10.png) - Connect to VTube Studio.
-<table>
+<table border="0">
 <tr>
 <td><img src="assets/frame0/button_10.png" alt="Connect Icon" width="32"></td>
 <td>Connect to VTube Studio.</td>
