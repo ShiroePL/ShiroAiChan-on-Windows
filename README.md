@@ -66,22 +66,92 @@ To use tools, you can just start question with 'agent mode' or 'agent:' or check
 
 <table>
   <tr>
-    <td>Are you comfy?
+    <td><strong>Are you comfy?</strong>
       <br>
       <img src="pictures/normal_mode_are_you_comfy.png" width="500">
     </td>
-    <td>Favorite juice?
+    <td><strong>Favorite juice?</strong>
       <br>
       <img src="pictures/favorite_juice.png" width="500">
     </td>
   </tr>
 </table>
 
+Anime/Manga List 📋
+* See your latest watched/read anime/manga.
+
+<table>
+  <tr>
+    <td>
+      <br>
+      <img src="pictures/show_anime_manga.png" width="600">
+    </td>
+  </tr>
+</table>
+
+* Update list.
+
+<table>
+  <tr>
+    <td>
+      <br><strong>Here's list before update</strong>
+      <img src="pictures/update_list_1.png" width="500">
+    </td>
+    <td><strong>Asking for update</strong>
+      <img src="pictures/update_list_2_edit.png" width="500">
+      <br>
+      <strong>It worked, from Anilist site 😊</strong><br><br>
+      <img src="pictures/update_proof.png" width="450">
+    </td>
+  </tr>
+</table>
+
+Calendar Functions 🗓️
+<table>
+  <tr>
+    <td>
+      <strong>Adding a New Event:</strong><br>
+      <img src="pictures/add_event.png" width="450">
+    </td>
+    <td>
+      <strong>Retrieving Plans for a Specified Day:</strong><br>
+      <img src="pictures/plans_for_day.png" width="450">
+    </td>
+  </tr>
+</table>
+
+Vector Database Functions 📚
+<table>
+  <tr>
+    <td>
+      <strong>Saving PDFs to Vector Database:</strong><br>
+      <img src="pictures/add_pdf.png" width="750">
+    </td>
+    <td>
+      <strong>PDF Fragment:</strong><br>
+      <img src="pictures/pdf_fragment.png" width="600">
+      <strong>Asking Questions Based on PDF Content:</strong><br>
+      <img src="pictures/search_pdf.png" width="600">
+    </td>
+  </tr>
+</table>
+
+Room Temperature 🌡️
+* Check out the current temperature of your room.
+
+<img src="pictures/show_temperature.png" width="700">
 
 
-## Icons
+
+## GUI Icons
 ### Quick description of GUI icon
-<table border="0">
+<table border="0" style="width:80%;">
+  <colgroup>
+     <col style="width:25%">
+     <col style="width:25%">
+     <col style="width:25%">
+     <col style="width:25%">
+  </colgroup>
   <tr>
     <td align="center"><img src="icon_for_gui/button_7.png" width="50"> <img src="icon_for_gui/button_8.png" width="50"></td>
     <td align="center"><img src="icon_for_gui/button_9.png" width="50"></td>
@@ -89,38 +159,52 @@ To use tools, you can just start question with 'agent mode' or 'agent:' or check
     <td align="center"><img src="icon_for_gui/button_11.png" width="50"> <img src="icon_for_gui/button_12.png" width="50"></td>
   </tr>
   <tr>
-    <td align="center"><br><b>Description for Icon 1</b></td>
-    <td align="center"><br><b>Description for Icon 2</b></td>
-    <td align="center"><br><b>Description for Icon 3</b></td>
-    <td align="center"><br><b>Description for Icon 3</b></td>
+    <td align="center"><br><b>Previous/next answer</b></td>
+    <td align="center"><br><b>Show current personality prompt</b></td>
+    <td align="center"><br><b>Show all personalities in table</b></td>
+    <td align="center"><br><b>Clear text box</b></td>
   </tr>
 </table>
-<table border="0">
+
+<table border="0" style="width:80%;">
+  <colgroup>
+     <col style="width:25%">
+     <col style="width:25%">
+     <col style="width:25%">
+     <col style="width:25%">
+  </colgroup>
   <tr>
+    <td align="center"><img src="icon_for_gui/button_16.png" width="50"></td>
+    <td align="center"><img src="icon_for_gui/button_18.png" width="50"></td>
+    <td align="center"><img src="icon_for_gui/button_17.png" width="50"></td>
     <td align="center"><img src="icon_for_gui/button_13.png" width="50"></td>
+  </tr>
+  <tr>
+    <td align="center"><br><b>Show 10 most recent anime entries from Anilist</b></td>
+    <td align="center"><br><b>Show room temperature <br>(home assistant)</b></td>
+    <td align="center"><br><b>Show 10 most recent manga entries from Anilist</b></td>
+    <td align="center"><br><b>Swap personality. Current one saves to table. </b></td>
+  </tr>
+</table>
+
+<table border="0" style="width:80%;">
+  <colgroup>
+     <col style="width:25%">
+     <col style="width:25%">
+     <col style="width:25%">
+     <col style="width:25%">
+  </colgroup>
+  <tr>
     <td align="center"><img src="icon_for_gui/button_14.png" width="50"></td>
     <td align="center"><img src="icon_for_gui/button_15.png" width="50"></td>
-    <td align="center"><img src="icon_for_gui/button_16.png" width="50"></td>
-  </tr>
-  <tr>
-    <td align="center"><br><b>Description for Icon 1</b></td>
-    <td align="center"><br><b>Description for Icon 2</b></td>
-    <td align="center"><br><b>Description for Icon 3</b></td>
-    <td align="center"><br><b>Description for Icon 3</b></td>
-  </tr>
-</table>
-<table border="0">
-  <tr>
-    <td align="center"><img src="icon_for_gui/button_17.png" width="50"></td>
-    <td align="center"><img src="icon_for_gui/button_18.png" width="50"></td>
-    <td align="center"><img src="icon_for_gui/button_19.png" width="50"></td>
     <td align="center"><img src="icon_for_gui/button_20.png" width="50"></td>
+    <td align="center"><img src="icon_for_gui/button_19.png" width="50"></td>
   </tr>
   <tr>
-    <td align="center"><br><b>Description for Icon 1</b></td>
-    <td align="center"><br><b>Description for Icon 2</b></td>
-    <td align="center"><br><b>Description for Icon 3</b></td>
-    <td align="center"><br><b>Description for Icon 3</b></td>
+    <td align="center"><br><b>View last 4 Q&A in history table.</b></td>
+    <td align="center"><br><b>Send input to Shiro!</b></td>
+    <td align="center"><br><b>Add PDF to vector database</b></td>
+    <td align="center"><br><b>Stop Shiro from speaking 😭</b></td>
   </tr>
 </table>
 
