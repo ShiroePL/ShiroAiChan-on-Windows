@@ -150,9 +150,9 @@ VTube Studio 🎬
       <img src="pictures/new_queen_on_chair.png" width="810">
     </td>
     <td>Animations:<br>
-      <img src="pictures/smile.gif" width="280">
-      <img src="pictures/shock_1.gif" width="280">
-      <img src="pictures/shock_2.gif" width="280">
+      <img src="pictures/smile.gif" width="250">
+      <img src="pictures/shock_1.gif" width="250">
+      <img src="pictures/shock_2.gif" width="250">
     </td>
   </tr>
 </table>
