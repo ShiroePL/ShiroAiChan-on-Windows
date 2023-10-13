@@ -1,6 +1,7 @@
 import threading
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, BooleanVar
+from numpy import True_
 import speech_recognition as sr
 import pyttsx3
 import time 
@@ -400,7 +401,6 @@ def voice_control(input_text=None):
 
     name = table_name_input.get()  # takes name from input
     tts_or_not = mute_or_unmute.get() # takes tts mode from checkbox
-    agent_mode_variable = agent_mode.get() # takes agent mode from checkbox
     update_list_variable = update_list_checkbox.get() # takes update list mode from checkbox
 
         # hold random questions if i am conversing so she will not ask me in the middle of conversation
@@ -465,7 +465,7 @@ def voice_control(input_text=None):
         cleaned_question = question.translate(str.maketrans("", "", punctuation_without_colon)).strip().lower()
 
                 # CHECK IF IT IS AGENT MODE 
-        if cleaned_question.startswith("agent:") or agent_mode_variable == "Yes" or cleaned_question.startswith("agent mode"):
+        if cleaned_question.startswith("agent:") or agent_mode.get()  or cleaned_question.startswith("agent mode"):
             print("wejscie w if od agenta ")
             progress(10,"entering agent mode...")
             cleaned_question = cleaned_question.replace("agent:", "").strip()
@@ -531,7 +531,7 @@ def voice_control(input_text=None):
                 running = False
                 progress(100,"showed, done")
 
-            elif cleaned_question.lower().startswith("ha:") or "home_assistant" in agent_reply: # show room temperature
+            elif cleaned_question.lower().startswith("ha:") or "homeassistant" in agent_reply: # show room temperature
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S %A")
                 query = cleaned_question.replace("ha:", "").strip()
                 query = f"[current time: {current_time}] {query}"
@@ -557,11 +557,13 @@ def voice_control(input_text=None):
                 progress(100,"showed, done")          
 
             elif cleaned_question.lower().startswith("db:") or "database_search" in agent_reply:
+                print("---------vector db mode ENTERED---------")
                 query = cleaned_question.replace("db:", "").strip()
                 messages.append({"role": "user", "content": query})
+                progress(30,"Searching db...")
                 answer = search_db_with_llm_response(query)
-                
-                progress(60,"got answer")
+                print("answer from db: " + str(answer))
+                progress(60,"Found something!")
                 print_response_label(answer)
                 
                 repetitive_part_of_voice_control_functions(name, cleaned_question, answer, messages)
@@ -569,6 +571,8 @@ def voice_control(input_text=None):
                 running = False
                 progress(100,"showed, done")
 
+
+            
 
             elif "show_anime_list" in agent_reply or "show_manga_list" in agent_reply or "showmangalist" in cleaned_question or "showanimelist" in cleaned_question:
                 if agent_reply == "":
@@ -636,21 +640,23 @@ def voice_control(input_text=None):
                         updated_id = match.group(1)
                         updated_info = match.group(2)
                         print(f"id: {updated_id}, {content_type}: {updated_info}")
+                        print_response_label(answer) # CHANGE THIS TO MORE HUMAN LIKE
+
+                        # send upgrade api do anilist 
+                        progress(50,"sending to anilist...")
+                        anilist_api_requests.change_progress(updated_id, updated_info,content_type)
+                        progress(55,"updated anilist database...")         
+                        # end anilist api
+                        tts_answer = f"Okay, I updated {content_type} to {updated_info} episodes" if content_type == "anime" else f"Okay, I updated {content_type} to {updated_info} chapters"
+                        repetitive_part_of_voice_control_functions_tokens(name, question, answer, messages, prompt_tokens, completion_tokens, total_tokens, tts_answer)
+        
+                        progress(100,"updated on anilist")
                     else:
                         print("No match found")
+                        print_response_label("I'm sorry, I couldn't find the ID and episodes number of updated anime/manga. Please try again.")
                         #----- END find ID and episodes number of updated anime/manga-----
 
-                    print_response_label(answer) # CHANGE THIS TO MORE HUMAN LIKE
-
-                    # send upgrade api do anilist 
-                    progress(50,"sending to anilist...")
-                    anilist_api_requests.change_progress(updated_id, updated_info,content_type)
-                    progress(55,"updated anilist database...")         
-                    # end anilist api
-                    tts_answer = f"Okay, I updated {content_type} to {updated_info} episodes" if content_type == "anime" else f"Okay, I updated {content_type} to {updated_info} chapters"
-                    repetitive_part_of_voice_control_functions_tokens(name, question, answer, messages, prompt_tokens, completion_tokens, total_tokens, tts_answer)
-    
-                    progress(100,"updated on anilist")
+                    
 
                 running = False
                 progress(100,"exited animelist mode")
@@ -1251,27 +1257,6 @@ mute_or_unmute_yes.place(x=169, y=17)
 mute_or_unmute_no.place(x=169, y=50)
 
 
-#canvas.itemconfig("my_image11", state='hidden')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     # for random speaking tts_or_not
 talk_or_not = tk.StringVar()
 talk_or_not.set("No")
@@ -1283,17 +1268,23 @@ talk_or_not_yes.place(x=499, y=350)
 talk_or_not_no.place(x=499, y=383)
 
 
+#    # AGENT MODE OR NOT
+# agent_mode = tk.StringVar()
+# agent_mode.set("No")
+# agent_mode.trace("w", on_talk_or_not_change) #this is looking for changes of state
+# agent_mode_yes = ttk.Radiobutton(root, text=" agent mode ON", variable=agent_mode, value="Yes", style="Custom.TRadiobutton")
+# agent_mode_no = ttk.Radiobutton(root, text=" normal mode", variable=agent_mode, value="No", style="Custom.TRadiobutton")
+# agent_mode_yes.place(x=499, y=630)
+# agent_mode_no.place(x=499, y=663)
 
+# Create a variable to hold the checkbox state
+agent_mode = BooleanVar()
+agent_mode.set(False)  # Default value
+agent_mode.trace("w", on_talk_or_not_change)  # This will look for changes of state
+# Create the checkbox
+checkbox = ttk.Checkbutton(root, text="Agent Mode", variable=agent_mode, style="Custom.TRadiobutton")
+checkbox.place(x=499, y=630)
 
-
-   # AGENT MODE OR NOT
-agent_mode = tk.StringVar()
-agent_mode.set("No")
-agent_mode.trace("w", on_talk_or_not_change) #this is looking for changes of state
-agent_mode_yes = ttk.Radiobutton(root, text=" agent mode ON", variable=agent_mode, value="Yes", style="Custom.TRadiobutton")
-agent_mode_no = ttk.Radiobutton(root, text=" normal mode", variable=agent_mode, value="No", style="Custom.TRadiobutton")
-agent_mode_yes.place(x=499, y=630)
-agent_mode_no.place(x=499, y=663)
 
    # AGENT MODE OR NOT
 update_list_checkbox = tk.StringVar()
