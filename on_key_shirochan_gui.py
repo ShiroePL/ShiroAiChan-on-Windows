@@ -1,7 +1,6 @@
 import threading
 import tkinter as tk
 from tkinter import ttk, BooleanVar
-from numpy import True_
 import speech_recognition as sr
 import pyttsx3
 import time 
@@ -25,7 +24,7 @@ import shared_code.anilist.anilist_api_requests as anilist_api_requests
 import re
 import random
 from shared_code.shiro_agent import CustomToolsAgent
-from shared_code.langchain_database.langchain_vector_db_queries import search_db_with_llm_response
+from shared_code.langchain_database.langchain_vector_db_queries import search_db_with_llm_response, save_to_db
 from shared_code.calendar_functions.test_wszystkiego import add_event_from_shiro, retrieve_plans_for_days
 from shared_code.home_assistant import ha_api_requests, open_weather_api
 from datetime import datetime
@@ -73,8 +72,6 @@ class ToolTip:
         if self.tooltip:
             self.tooltip.destroy()
             self.tooltip = None
-
-
 
 
 def agent_shiro(query):
@@ -134,7 +131,7 @@ def reformat_list_output(data_str, type:str):
                 title = match.group(1)
                 id_str = match.group(2)
                 read_chapters = match.group(3)
-                #table_data.append({"Title": title, "ID": id_str, "Read Chapters": read_chapters}) if type == "manga" else table_data.append({"Title": title, "ID": id_str, "Watched Episodes": read_chapters})
+                
                 if type == "manga":
                     table_data.append({"Title": title, "ID": id_str, "Read Chapters": read_chapters})
                 else:
@@ -157,7 +154,6 @@ def print_anime_list(table_data):
         formatted_str += "-" * 40 + "\n"  # Separator
     
     # Display the formatted string in the Tkinter text widget
-    
     
     response_widget.configure(font=(font_family, 10))  # Update font to Helvetica, size 10
     response_widget.delete('1.0', 'end')
@@ -260,9 +256,6 @@ def show_room_temperature():
 ################################### RANDOM QUESTIONS FROM SHIRO ######################################################
 
 
-
-
-
 timer_running = False
 timer_thread = None
 stop_event = threading.Event()
@@ -273,9 +266,6 @@ def on_talk_or_not_change(*args):
         start_timer()
     else:
         stop_timer()
-
-
-
 
    
 def start_timer():
@@ -338,12 +328,8 @@ def repetitive_part_of_voice_control_functions_tokens(name, question, answer,mes
         request_voice.request_voice_fn(answer if answer_for_tts is None else answer_for_tts)
         progress(70,"got voice")
         
-
-    
-        #show history in text widget
     
     progress(90,"showing in text box...")
-    #show_history_from_db_widget.delete('1.0', 'end')
 
     connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
     connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
@@ -352,7 +338,6 @@ def repetitive_part_of_voice_control_functions_tokens(name, question, answer,mes
     display_messages_from_database_only(take_history_from_database())
     if tts_or_not == "Yes":
         play_audio_thread("response")
-        #play_audio_fn("response")
         beep = "cute_beep" #END OF ANSWER
         play_audio_fn(beep)
 
@@ -369,7 +354,7 @@ def repetitive_part_of_voice_control_functions(name, question, answer,messages, 
         # END OF ARROWS TO PREVIOUS ANSWERS
     print("answer_for_tts: ",answer_for_tts)
     if tts_or_not == "Yes":
-        # If answer_for_tts is provided, use it. If not, use 'answer' as before.
+        
         request_voice.request_voice_fn(answer if answer_for_tts is None else answer_for_tts)
         progress(70,"got voice")
 
@@ -377,14 +362,12 @@ def repetitive_part_of_voice_control_functions(name, question, answer,messages, 
         #show history in text widget
     
     progress(90,"showing in text box...")
-    #show_history_from_db_widget.delete('1.0', 'end')
     
     connect_to_phpmyadmin.insert_message_to_database(name, question, answer, messages) #insert to Azure DB to user table    
     connect_to_phpmyadmin.add_pair_to_general_table(name, answer) #to general table with all  questions and answers
     
     display_messages_from_database_only(take_history_from_database())
     if tts_or_not == "Yes":
-        #play_audio_fn("response")
         play_audio_thread("response")
         beep = "cute_beep" #END OF ANSWER
         play_audio_fn(beep)
@@ -401,8 +384,7 @@ def voice_control(input_text=None):
 
     name = table_name_input.get()  # takes name from input
     tts_or_not = mute_or_unmute.get() # takes tts mode from checkbox
-    update_list_variable = update_list_checkbox.get() # takes update list mode from checkbox
-
+    
         # hold random questions if i am conversing so she will not ask me in the middle of conversation
     if talk_or_not.get() == "Yes":
         talk_or_not.set("No")
@@ -487,9 +469,11 @@ def voice_control(input_text=None):
 
 
             elif cleaned_question.lower().startswith("plan:") or "add_event_to_calendar" in agent_reply:
+                print("---------add event to calendar---------")
+                """add event to calendar"""
                 query = cleaned_question.replace("plan:", "").strip()
                 messages.append({"role": "user", "content": query})
-
+                progress(30,"adding event to calendar...")
                 # use chain to add event to calendar
                 answer, prompt_tokens, completion_tokens, total_tokens, formatted_query_to_calendar = add_event_from_shiro(query)
 
@@ -501,12 +485,14 @@ def voice_control(input_text=None):
         
                 running = False
                 progress(100,"showed, done")    
-
+             
             elif cleaned_question.lower().startswith("schedule:") or "retrieve_event_from_calendar" in agent_reply:
+                """retrieve event from calendar"""
+                print("---------retrieve event from calendar---------")
                 query = cleaned_question.replace("schedule:", "").strip()
                 query = "Madrus: " + query
                 messages.append({"role": "user", "content": query})
-
+                progress(30,"retrieving event from calendar...")
                 # use function chain to add event to calendar
                 answer, prompt_tokens, completion_tokens, total_tokens = retrieve_plans_for_days(query)
 
@@ -530,12 +516,14 @@ def voice_control(input_text=None):
         
                 running = False
                 progress(100,"showed, done")
-
+               
             elif cleaned_question.lower().startswith("ha:") or "homeassistant" in agent_reply: # show room temperature
+                print("---------show room temperature---------")
+                """show room temperature"""
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S %A")
                 query = cleaned_question.replace("ha:", "").strip()
                 query = f"[current time: {current_time}] {query}"
-                
+                progress(30,"getting temperature...")
                     # use function chain to add event to calendar
                 answer_from_ha = ha_api_requests.room_temp()
                 outside_temperature = open_weather_api.current_temperature()
@@ -555,8 +543,8 @@ def voice_control(input_text=None):
         
                 running = False
                 progress(100,"showed, done")          
-
-            elif cleaned_question.lower().startswith("db:") or "database_search" in agent_reply:
+             
+            elif cleaned_question.lower().startswith("db:") or "database_search" in agent_reply or search_chromadb.get():
                 print("---------vector db mode ENTERED---------")
                 query = cleaned_question.replace("db:", "").strip()
                 messages.append({"role": "user", "content": query})
@@ -570,23 +558,23 @@ def voice_control(input_text=None):
                 
                 running = False
                 progress(100,"showed, done")
-
-
             
-
             elif "show_anime_list" in agent_reply or "show_manga_list" in agent_reply or "showmangalist" in cleaned_question or "showanimelist" in cleaned_question:
+                """show anime/manga list"""
+                print("---------show anime/manga list---------")
+                
                 if agent_reply == "":
                     content_type = "anime" if "showanimelist" in cleaned_question else "manga"
                 else:
                     content_type = "anime" if "anime" in agent_reply else "manga"
-
+                progress(30,"getting list...")
                 list_content, _ = anilist_api_requests.get_10_newest_entries("ANIME") if content_type == "anime" else anilist_api_requests.get_10_newest_entries("MANGA")  
 
                 print_response_label(f"Here is your list of most recent {content_type}.{list_content}")
 
                 reformated_list = reformat_list_output(list_content, content_type)
                 print_anime_list(reformated_list)
-
+                progress(60,"got list")
                 print("lista: \n" + list_content) # for testing
                 answer = "Here is your list of most recent " + content_type + "." + list_content
                 repetitive_part_of_voice_control_functions(name, question, answer, messages, f"Here is your list of most recent {content_type}")
@@ -594,18 +582,19 @@ def voice_control(input_text=None):
                 running = False 
                 
                 progress(100,"showed, done")
-
-            elif update_list_variable == "Yes": # she is in animelist mode, so she remembers list i gave her
+            elif update_list_checkbox.get(): # she is in animelist mode, so she remembers list i gave her
                     # make shiro find me id of anime/manga
-                if "manga" in question.lower() or "anime" in question.lower():
                     
+                if "manga" in question.lower() or "anime" in question.lower():
+                    """update anime/manga list"""
+                    print("---------update anime/manga list---------")
                     if "manga" in question.lower():
                         content_type = "manga"
                     else:
                         content_type = "anime"
 
                     content_type = "manga" if "manga" in question.lower() else "anime"
-
+                    progress(30,"getting list...")
                         ##### we need to ger anime/manga list
                     list_content, _ = anilist_api_requests.get_10_newest_entries("ANIME") if content_type == "anime" else anilist_api_requests.get_10_newest_entries("MANGA")
                     fake_question = f"Madrus: I will give you list of my 10 most recent watched/read {content_type} from site AniList. Here is this list:{list_content}. I want you to remember this because in next question I will ask you to update episodes/chapters of one of them."
@@ -625,14 +614,9 @@ def voice_control(input_text=None):
                     # send to open ai for answer
                     progress(40,"sending to openAI...")
                     answer, prompt_tokens, completion_tokens, total_tokens = shared_code.chatgpt_api.send_to_openai(messages) 
-                    
-                        #----- START find ID and episodes number of updated anime/manga-----
-                    # The regex pattern             
-                    #pattern = r"id:(\d+), episodes:(\d+)" if content_type == "anime" else r"id:(\d+), chapters:(\d+)" 
-                        #this should be better pattern, need to test it 
+                              
                     pattern = r"id:\s*(\d+),\s*episodes:\s*(\d+)" if content_type == "anime" else r"id:\s*(\d+),\s*chapters:\s*(\d+)"
 
-                    # Use re.search to find the pattern in the text
                     match = re.search(pattern, answer)
 
                     if match:
@@ -656,12 +640,13 @@ def voice_control(input_text=None):
                         print_response_label("I'm sorry, I couldn't find the ID and episodes number of updated anime/manga. Please try again.")
                         #----- END find ID and episodes number of updated anime/manga-----
 
-                    
 
                 running = False
                 progress(100,"exited animelist mode")
-
+                print("---------END---------")
             else: # continue if user does not want to exit
+                """normal mode"""
+                print("---------normal mode---------")
                 print("cleanded question to to: " + cleaned_question)
                 # to database
                 question = f"Madrus: {question}"
@@ -678,7 +663,6 @@ def voice_control(input_text=None):
                 
                 running = False
                 progress(100,"saved to DB, done")
-
         # Create a new thread and start the timer
         if talk_or_not == "Yes":
             hold_timer_thread = threading.Thread(target=hold_timer)
@@ -781,6 +765,14 @@ def reset_table_and_make_new():
     print_log_label("reset chat history")
     display_messages_from_database_only(take_history_from_database())
 
+def save_pdf(pdf: str, name_of_pdf: str):
+    """Save the PDF to a file"""
+    progress(20,"saving pdf...")
+    print_log_label("saving pdf...")
+    save_to_db(pdf,None,name_of_pdf)
+    print_log_label("saved pdf to db")
+    progress(100,"saved pdf to db")
+    print_response_label(f"I added {name_of_pdf}.pdf to my database :) \n")
 
 # GUI elements
 root = tk.Tk()
@@ -816,8 +808,6 @@ image_2 = canvas.create_image(
     400.0,
     image=image_image_2
 )
-
-
 
 canvas.create_text(
     284.0,
@@ -996,7 +986,7 @@ button_11 = Button(
     image=button_image_11,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: response_widget.delete('1.0', 'end'), #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    command=lambda: response_widget.delete('1.0', 'end'),
     relief="flat"
 )
 button_11.place(
@@ -1017,8 +1007,8 @@ button_12 = Button(
     relief="flat"
 )
 button_12.place(
-    x=166.0,
-    y=536.0,
+    x=139.0,
+    y=534.0,
     width=42.0,
     height=42.0
 )
@@ -1034,8 +1024,8 @@ button_13 = Button(
     relief="flat"
 )
 button_13.place(
-    x=228.0,
-    y=536.0,
+    x=201.0,
+    y=534.0,
     width=42.0,
     height=42.0
 )
@@ -1051,8 +1041,8 @@ button_14 = Button(
     relief="flat"
 )
 button_14.place(
-    x=290.0,
-    y=536.0,
+    x=263.0,
+    y=534.0,
     width=42.0,
     height=42.0
 )
@@ -1068,29 +1058,13 @@ button_15 = Button(
     relief="flat"
 )
 button_15.place(
-    x=352.0,
-    y=536.0,
+    x=325.0,
+    y=534.0,
     width=42.0,
     height=42.0
 )
 tooltip = ToolTip(button_15, "Send text message to Shiro")
 
-button_image_speaking = PhotoImage(
-    file=relative_to_assets("button_19.png"))
-button_stop_speaking = Button(
-    image=button_image_speaking,
-    borderwidth=0,
-    highlightthickness=0,
-    command=stop_audio,
-    relief="flat"
-)
-button_stop_speaking.place(
-    x=509.0,
-    y=459.0,
-    width=42.0,
-    height=42.0
-)
-tooltip = ToolTip(button_stop_speaking, "Stops shiro from speaking")
 
 button_image_16 = PhotoImage(
     file=relative_to_assets("button_16.png"))
@@ -1120,7 +1094,7 @@ button_17 = Button(
 )
 button_17.place(
     x=66.0,
-    y=491.0,
+    y=487.0,
     width=42.0,
     height=42.0
 )
@@ -1142,6 +1116,40 @@ button_18.place(
     height=42.0
 )
 tooltip = ToolTip(button_18, "Show room temerature (using home assistant sensors")
+
+button_image_speaking = PhotoImage(
+    file=relative_to_assets("button_19.png"))
+button_stop_speaking = Button(
+    image=button_image_speaking,
+    borderwidth=0,
+    highlightthickness=0,
+    command=stop_audio,
+    relief="flat"
+)
+button_stop_speaking.place(
+    x=525.0,
+    y=440.0,
+    width=42.0,
+    height=42.0
+)
+tooltip = ToolTip(button_stop_speaking, "Stops shiro from speaking")
+
+button_image_20 = PhotoImage(
+    file=relative_to_assets("button_20.png"))
+button_20 = Button(
+    image=button_image_20,
+    borderwidth=0,
+    highlightthickness=0,
+    command=lambda: save_pdf("pdf", name_of_pdf=show_history_from_db_widget.get("1.0", tk.END).strip()),
+    relief="flat"
+)
+button_20.place(
+    x=387.0,
+    y=534.0,
+    width=42.0,
+    height=42.0
+)
+tooltip = ToolTip(button_20, "Add PDF to vector database, to later ask about it's content, input JUST NAME of PDF file, without '.pdf'")
 
 entry_image_1 = PhotoImage(
     file=relative_to_assets("entry_1.png"))
@@ -1208,25 +1216,6 @@ style.element_create("Custom.TRadiobutton.indicator", "image", normal_image,
                      ("selected", selected_image),
                      sticky="", padding=2)
 
-
-    # for TSS voice tts_or_not# Create radio buttons
-# mute_or_unmute = tk.StringVar()
-# mute_or_unmute.set("No")
-
-# mute_or_unmute_yes = ttk.Radiobutton(root, text=" voice", variable=mute_or_unmute, value="Yes", style="Custom.TRadiobutton")
-# mute_or_unmute_no = ttk.Radiobutton(root, text=" no voice", variable=mute_or_unmute, value="No", style="Custom.TRadiobutton")
-
-# mute_or_unmute_yes.place(x=169, y=17)
-# mute_or_unmute_no.place(x=169, y=50)
-
-# # Listen for changes to mute_or_unmute variable
-# mute_or_unmute.trace_add("write", lambda *args: toggle_image(canvas, image_dont_mute_me))
-# #Create image on canvas
-# image_image_dont_mute_me = PhotoImage(file="assets/frame0/dont_mute_me.png")  # Replace this with your actual image path
-# image_dont_mute_me = canvas.create_image(965.0, 100.0, image=image_image_dont_mute_me)
-
-
-
 # Create image on canvas
 image_image_dont_mute_me = PhotoImage(file="assets/frame0/dont_mute_me.png")  # Replace this with your actual image path
 image_dont_mute_me = canvas.create_image(965.0, 100.0, image=image_image_dont_mute_me, tags="my_image11")
@@ -1245,7 +1234,6 @@ def hide_mute_or_not(*args):
         state = "Hidden"
     canvas.update()
 
-
 # Create Radiobuttons with placement and custom style
 mute_or_unmute = tk.StringVar()
 mute_or_unmute.set("No")
@@ -1255,7 +1243,6 @@ mute_or_unmute_no = ttk.Radiobutton(root, text=" no voice", variable=mute_or_unm
 
 mute_or_unmute_yes.place(x=169, y=17)
 mute_or_unmute_no.place(x=169, y=50)
-
 
     # for random speaking tts_or_not
 talk_or_not = tk.StringVar()
@@ -1267,38 +1254,31 @@ talk_or_not_no = ttk.Radiobutton(root, text=" sleeping...", variable=talk_or_not
 talk_or_not_yes.place(x=499, y=350)
 talk_or_not_no.place(x=499, y=383)
 
+# search vector database aka PDF searching
+search_chromadb = BooleanVar()
+search_chromadb.set(False)  # Default value
+# Create the checkbox
+checkbox = ttk.Checkbutton(root, text="PDF searching", variable=search_chromadb, style="Custom.TRadiobutton")
+checkbox.place(x=499, y=615)
+   
 
-#    # AGENT MODE OR NOT
-# agent_mode = tk.StringVar()
-# agent_mode.set("No")
-# agent_mode.trace("w", on_talk_or_not_change) #this is looking for changes of state
-# agent_mode_yes = ttk.Radiobutton(root, text=" agent mode ON", variable=agent_mode, value="Yes", style="Custom.TRadiobutton")
-# agent_mode_no = ttk.Radiobutton(root, text=" normal mode", variable=agent_mode, value="No", style="Custom.TRadiobutton")
-# agent_mode_yes.place(x=499, y=630)
-# agent_mode_no.place(x=499, y=663)
-
+# update anime/manga list
+update_list_checkbox = BooleanVar()
+update_list_checkbox.set(False)  # Default value
+# Create the checkbox
+checkbox = ttk.Checkbutton(root, text="Update list?", variable=update_list_checkbox, style="Custom.TRadiobutton")
+checkbox.place(x=499, y=650)
+   
 # Create a variable to hold the checkbox state
 agent_mode = BooleanVar()
 agent_mode.set(False)  # Default value
 agent_mode.trace("w", on_talk_or_not_change)  # This will look for changes of state
 # Create the checkbox
 checkbox = ttk.Checkbutton(root, text="Agent Mode", variable=agent_mode, style="Custom.TRadiobutton")
-checkbox.place(x=499, y=630)
+checkbox.place(x=499, y=685)
 
 
-   # AGENT MODE OR NOT
-update_list_checkbox = tk.StringVar()
-update_list_checkbox.set("No")
-update_list_checkbox.trace("w", on_talk_or_not_change) #this is looking for changes of state
-update_list_checkbox_yes = ttk.Radiobutton(root, text=" update list mode ON", variable=update_list_checkbox, value="Yes", style="Custom.TRadiobutton")
-update_list_checkbox_no = ttk.Radiobutton(root, text=" normal mode", variable=update_list_checkbox, value="No", style="Custom.TRadiobutton")
-update_list_checkbox_yes.place(x=499, y=520)
-update_list_checkbox_no.place(x=499, y=553)
-
-
-#OMG RADIO BUTTONS ENDDD--------------------------------------------------------------------------------------------------
-
-# PROGRESS BARRRRRRRRRRRRRRRRRRRR OMGGGGGGGGGGGGGGG
+# PROGRESS BAR
 background_image = Image.open("./assets/frame0/image_3.png")
 filled_image = Image.open("./assets/frame0/image_4.png")
 
@@ -1310,7 +1290,7 @@ canvas2.place(x=543, y=136)
 
 background_progress = canvas2.create_image(0, 0, anchor=tk.NW, image=background_photo)
 filled_progress = canvas2.create_image(0, 0, anchor=tk.NW)
-# END PROGRESS BARRRRRRRRRRRRRRRRRRRR OMGGGGGGGGGGGGGGG
+# END PROGRESS BAR
 
 response_widget = tk.Text(root, wrap=tk.WORD, padx=10, pady=10, width=40, height=10,
                       bg='black', fg='#A8E1F6', font=(font_family, 19 * -1),  bd=0)
