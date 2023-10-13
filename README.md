@@ -78,50 +78,54 @@ To use tools, you can just start question with 'agent mode' or 'agent:' or check
 </table>
 
 
-## Configuration
-### 8. Configuration and Installation 🛠️
 
-
-
-![Connect Icon](assets/frame0/button_10.png) - Connect to VTube Studio.
-<table border="0">
-<tr>
-<td><img src="assets/frame0/button_10.png" alt="Connect Icon" width="32"></td>
-<td>Connect to VTube Studio.</td>
-</tr>
-</table>
-
-<table style="border: none;">
-<tr style="border: none;">
-    <!-- First Icon -->
-    <td style="border: none; vertical-align: middle;"><img src="assets/frame0/button_10.png" alt="Icon 1" width="32"></td>
-    <!-- Second Icon -->
-    <td style="border: none; vertical-align: middle;"><img src="assets/frame0/button_10.png" alt="Icon 2" width="32"></td>
-    <!-- Third Icon -->
-    <td style="border: none; vertical-align: middle;"><img src="assets/frame0/button_10.png" alt="Icon 3" width="32"></td>
-</tr>
-<tr style="border: none;">
-    <!-- First Description -->
-    <td style="border: none; vertical-align: middle;">Description for Icon 1</td>
-    <!-- Second Description -->
-    <td style="border: none; vertical-align: middle;">Description for Icon 2</td>
-    <!-- Third Description -->
-    <td style="border: none; vertical-align: middle;">Description for Icon 3</td>
-</tr>
-</table>
-
+## Icons
+### Quick description of GUI icon
 <table border="0">
   <tr>
-    <td align="center"><img src="assets/frame0/button_10.png" width="50"></td>
-    <td align="center"><img src="assets/frame0/button_10.png" width="50"></td>
-    <td align="center"><img src="assets/frame0/button_10.png" width="50"></td>
+    <td align="center"><img src="icon_for_gui/button_7.png" width="50"> <img src="icon_for_gui/button_8.png" width="50"></td>
+    <td align="center"><img src="icon_for_gui/button_9.png" width="50"></td>
+    <td align="center"><img src="icon_for_gui/button_10.png" width="50"></td>
+    <td align="center"><img src="icon_for_gui/button_11.png" width="50"> <img src="icon_for_gui/button_12.png" width="50"></td>
   </tr>
   <tr>
     <td align="center"><br><b>Description for Icon 1</b></td>
     <td align="center"><br><b>Description for Icon 2</b></td>
     <td align="center"><br><b>Description for Icon 3</b></td>
+    <td align="center"><br><b>Description for Icon 3</b></td>
   </tr>
 </table>
+<table border="0">
+  <tr>
+    <td align="center"><img src="icon_for_gui/button_13.png" width="50"></td>
+    <td align="center"><img src="icon_for_gui/button_14.png" width="50"></td>
+    <td align="center"><img src="icon_for_gui/button_15.png" width="50"></td>
+    <td align="center"><img src="icon_for_gui/button_16.png" width="50"></td>
+  </tr>
+  <tr>
+    <td align="center"><br><b>Description for Icon 1</b></td>
+    <td align="center"><br><b>Description for Icon 2</b></td>
+    <td align="center"><br><b>Description for Icon 3</b></td>
+    <td align="center"><br><b>Description for Icon 3</b></td>
+  </tr>
+</table>
+<table border="0">
+  <tr>
+    <td align="center"><img src="icon_for_gui/button_17.png" width="50"></td>
+    <td align="center"><img src="icon_for_gui/button_18.png" width="50"></td>
+    <td align="center"><img src="icon_for_gui/button_19.png" width="50"></td>
+    <td align="center"><img src="icon_for_gui/button_20.png" width="50"></td>
+  </tr>
+  <tr>
+    <td align="center"><br><b>Description for Icon 1</b></td>
+    <td align="center"><br><b>Description for Icon 2</b></td>
+    <td align="center"><br><b>Description for Icon 3</b></td>
+    <td align="center"><br><b>Description for Icon 3</b></td>
+  </tr>
+</table>
+
+## Configuration
+### 8. Configuration and Installation 🛠️
 ## Links 
 
 [ChatGPT API] : https://openai.com/blog/introducing-chatgpt-and-whisper-apis
