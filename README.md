@@ -1,4 +1,4 @@
-# 1. ShiroAi-chan , personal assistant powered by ChatGPT API
+# ShiroAi-chan's Desktop Delight 🌺
 ![Screenshot](pictures/gui_introduction.png)
 
 ### Introducing My Anime Waifu Assistant: ShiroAi-chan
