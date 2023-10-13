@@ -214,8 +214,15 @@ VTube Studio 🎬
 
 [Azure TTS] : https://azure.microsoft.com/en-us/products/cognitive-services/text-to-speech/
 
-[Streamlit] : https://streamlit.io/
+[Streamlit repo] : https://github.com/ShiroePL/shiro_on_streamlit
+
+[Desktop repo] : https://github.com/ShiroePL/shiro_chan_desktop
+
+[Wearos repo] : https://github.com/ShiroePL/Shiro-AI-Chan-in-container
 
 [ChatGPT API]: https://openai.com/blog/introducing-chatgpt-and-whisper-apis
 [Azure TTS]: https://azure.microsoft.com/en-us/products/cognitive-services/text-to-speech/
 [Streamlit]: https://streamlit.io/
+[Streamlit repo]: https://github.com/ShiroePL/shiro_on_streamlit
+[Desktop repo]: https://github.com/ShiroePL/shiro_chan_desktop
+[Wearos repo]: https://github.com/ShiroePL/Shiro-AI-Chan-in-container
