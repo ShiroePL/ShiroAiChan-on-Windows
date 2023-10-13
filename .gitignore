@@ -190,3 +190,4 @@ cython_debug/
 
 test_agent.py
 langchain_database/db_shiro/chroma-collections.parquet
+kiki_hub/whisper-webUI-cmbitton
