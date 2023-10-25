@@ -275,7 +275,7 @@ webencodings==0.5.1
 websocket==0.2.1
 websocket-client==1.5.1
 websockets==10.4
-werkzeug==3.0.0
+werkzeug==3.0.1
 win-unicode-console==0.5
 win32-setctime==1.1.0
 x-wr-timezone==0.0.5
