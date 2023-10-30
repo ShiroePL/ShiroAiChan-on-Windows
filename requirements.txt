@@ -84,7 +84,7 @@ jsonpatch==1.33
 jsonpointer==2.4
 jsonschema==4.17.3
 keyboard==0.13.5
-langchain==0.0.268
+langchain==0.0.325
 langcodes==3.3.0
 langsmith==0.0.24
 loguru==0.7.2
