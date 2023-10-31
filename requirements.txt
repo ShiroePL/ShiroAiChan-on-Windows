@@ -186,7 +186,7 @@ PyNaCl==1.4.0
 pyodbc==4.0.35
 pypandoc==1.11
 pyparsing==2.4.7
-pypdf==3.9.0
+pypdf==3.17.0
 PyPDF4==1.27.0
 pyperclip==1.8.2
 PyPika==0.48.9
