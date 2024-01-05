@@ -164,7 +164,7 @@ pycaw==20220416
 pycodestyle==2.10.0
 pycountry==22.3.5
 pycparser==2.21
-pycryptodome==3.17
+pycryptodome==3.19.1
 pydantic==1.10.4
 pydantic-core==2.10.1
 pydeck==0.8.1b0
