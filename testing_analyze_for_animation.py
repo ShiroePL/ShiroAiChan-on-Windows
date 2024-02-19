@@ -19,6 +19,7 @@ def analyzing_fn(prompt, keywords):
     if sentimental == "negative" and counting > 1:
         print("negative and zaimek 'i cry' jest, running animation 'crying'")
 
+
     #main program playing animation
 
     # ADD ALL KEYWORDS IN IFS AND IF IT WILL PASS THEN RUN ANIMATION
