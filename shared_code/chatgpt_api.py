@@ -1,22 +1,30 @@
 # Note: you need to be using OpenAI Python v0.27.0 for the code below to work
-
 import openai
+print(openai.VERSION)
+from openai import OpenAI
+
 def send_to_openai(messages):
+    client = OpenAI()
     try:
-        completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo-0125",
             messages=messages,
             temperature = 0.6
         )
-
-        answer = completion.choices[0].message.content
-        prompt_tokens = completion.usage.prompt_tokens
-        completion_tokens = completion.usage.completion_tokens
-        total_tokens = completion.usage.total_tokens
+        if completion.choices:
+            answer = completion.choices[0].message.content
+            prompt_tokens = completion.usage.prompt_tokens
+            completion_tokens = completion.usage.completion_tokens
+            total_tokens = completion.usage.total_tokens
+        else:
+            print("completion.choices is empty!")
+    # Handle it accordingly
+        
+        
         
         return answer, prompt_tokens, completion_tokens, total_tokens
 
-    except openai.error.APIError as e:
+    except openai.APIError as e:
         print(f"OpenAI API returned an API Error: {e}")
         return f"Error: {e.args[0]}", 0, 0, 0
 
@@ -30,6 +38,7 @@ def send_to_openai(messages):
             return "Request to OpenAI API timed out", 0, 0, 0
         else:
             return f"Error: {e.args[0]}", 0, 0, 0
+    
 
 
 #   #completion_tokens = result[2] or _,_,completion_tokens,_ = result if i would like ot take only one

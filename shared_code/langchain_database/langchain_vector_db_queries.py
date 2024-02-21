@@ -1,16 +1,12 @@
-from langchain.vectorstores import Chroma
-from langchain.chat_models import ChatOpenAI
+from langchain_community.vectorstores import Chroma
+from langchain_community.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.llms import OpenAI
-from langchain.document_loaders import TextLoader
-from langchain.document_loaders import PyPDFLoader
-from langchain.document_loaders import DirectoryLoader
-from InstructorEmbedding import INSTRUCTOR
-from langchain.embeddings import HuggingFaceInstructEmbeddings
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.embeddings import HuggingFaceInstructEmbeddings
 import datetime
 from .. import api_keys
-#import api_keys
+#import api_keyss
 
 def search_db_with_llm_response(query):
     instructor_embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-large", 

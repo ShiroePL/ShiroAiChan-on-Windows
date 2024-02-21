@@ -2,7 +2,6 @@ import threading
 import tkinter as tk
 from tkinter import ttk, BooleanVar
 import speech_recognition as sr
-import pyttsx3
 import time 
 import kiki_hub.request_whisper as request_whisper
 import base64
@@ -33,8 +32,7 @@ OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"assets\frame0")
 windll.shcore.SetProcessDpiAwareness(1) #make window sharp on high dpi screens
 
-# Initialize the question to speech engine 
-engine=pyttsx3.init()
+
 conn = None
 api = None
 global stop_listening_flag
@@ -77,6 +75,7 @@ class ToolTip:
 def agent_shiro(query):
     agent = CustomToolsAgent()
     final_answer = agent.run(query)
+    print("final answer from agent: " + final_answer)
     return final_answer
 
 def transcribe_audio_question(filename):
@@ -517,7 +516,7 @@ def voice_control(input_text=None):
                 running = False
                 progress(100,"showed, done")
                
-            elif cleaned_question.lower().startswith("ha:") or "homeassistant" in agent_reply: # show room temperature
+            elif cleaned_question.lower().startswith("ha:") or "home_assistant" in agent_reply: # show room temperature
                 print("---------show room temperature---------")
                 """show room temperature"""
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S %A")
