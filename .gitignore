@@ -43,7 +43,8 @@ langchain_database/mydata
 kiki_hub/whisper-webUI-cmbitton
 # Mac/OSX
 .DS_Store
-
+/venv2
+requirements_old.txt
 #chromedb files
 *.pkl
 *.bin
@@ -188,6 +189,6 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-test_agent.py
+requirements_depricated.txt
 langchain_database/db_shiro/chroma-collections.parquet
 kiki_hub/whisper-webUI-cmbitton
